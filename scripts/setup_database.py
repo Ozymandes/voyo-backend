@@ -10,10 +10,23 @@ import logging
 from pathlib import Path
 
 # Add src directory to Python path
-sys.path.append(str(Path(__file__).parent.parent / "src"))
+script_dir = Path(__file__).parent
+src_dir = script_dir.parent / "src"
+sys.path.insert(0, str(src_dir))
 
-from database.supabase_client import initialize_database
-from database.schema_manager import schema_manager
+# Add current directory to Python path
+sys.path.insert(0, str(script_dir.parent))
+
+try:
+    from database.supabase_client import initialize_database
+    from database.schema_manager import schema_manager
+except ImportError as e:
+    print(f"Import error: {e}")
+    print(f"Current Python path: {sys.path}")
+    print(f"Script directory: {script_dir}")
+    print(f"Src directory: {src_dir}")
+    print(f"Src directory exists: {src_dir.exists()}")
+    sys.exit(1)
 
 # Configure logging
 logging.basicConfig(
