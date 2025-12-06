@@ -112,51 +112,51 @@ class SchemaManager:
             "Cairo": [
                 POICategory.HISTORICAL.value,
                 POICategory.CULTURAL.value,
-                POICategory.MUSEUMS.value,
                 POICategory.SHOPPING.value,
-                POICategory.DINING.value
+                POICategory.DINING.value,
+                POICategory.ENTERTAINMENT.value
             ],
             "Giza": [
                 POICategory.HISTORICAL.value,
-                POICategory.ARCHAEOLOGICAL.value,
                 POICategory.CULTURAL.value,
-                POICategory.ENTERTAINMENT.value
+                POICategory.ENTERTAINMENT.value,
+                POICategory.SERVICES.value
             ],
             "Alexandria": [
                 POICategory.HISTORICAL.value,
                 POICategory.CULTURAL.value,
-                POICategory.COASTAL.value,
-                POICategory.MUSEUMS.value
+                POICategory.NATURAL.value,
+                POICategory.SHOPPING.value
             ],
             "Luxor": [
                 POICategory.HISTORICAL.value,
-                POICategory.ARCHAEOLOGICAL.value,
-                POICategory.TEMPLES.value,
-                POICategory.NECROPOLIS.value
+                POICategory.CULTURAL.value,
+                POICategory.RELIGIOUS.value,
+                POICategory.ENTERTAINMENT.value
             ],
             "Aswan": [
                 POICategory.HISTORICAL.value,
-                POICategory.TEMPLES.value,
                 POICategory.NATURAL.value,
-                POICategory.CULTURAL.value
+                POICategory.CULTURAL.value,
+                POICategory.RELIGIOUS.value
             ],
             "Hurghada": [
                 POICategory.NATURAL.value,
-                POICategory.BEACHES.value,
-                POICategory.WATER_SPORTS.value,
-                POICategory.RESORTS.value
+                POICategory.ENTERTAINMENT.value,
+                POICategory.DINING.value,
+                POICategory.ACCOMMODATION.value
             ],
             "Marsa Alam": [
                 POICategory.NATURAL.value,
-                POICategory.BEACHES.value,
-                POICategory.DIVING.value,
-                POICategory.RESORTS.value
+                POICategory.ENTERTAINMENT.value,
+                POICategory.DINING.value,
+                POICategory.ACCOMMODATION.value
             ],
             "Sinai": [
                 POICategory.NATURAL.value,
                 POICategory.RELIGIOUS.value,
-                POICategory.DIVING.value,
-                POICategory.MOUNTAIN.value
+                POICategory.ENTERTAINMENT.value,
+                POICategory.TRANSPORTATION.value
             ]
         }
 
