@@ -1,0 +1,243 @@
+"""
+VOYO - Supabase Database Client
+Handles all database interactions with Supabase
+"""
+
+import os
+from typing import Optional, List, Dict, Any
+from dotenv import load_dotenv
+from supabase import create_client, Client
+import logging
+
+# Load environment variables
+load_dotenv()
+
+logger = logging.getLogger(__name__)
+
+class SupabaseClient:
+    """Centralized Supabase client for VOYO application"""
+
+    def __init__(self):
+        """Initialize Supabase client with environment variables"""
+        self.supabase_url: str = os.getenv("SUPABASE_URL")
+        self.supabase_key: str = os.getenv("SUPABASE_KEY")
+        self.supabase_service_key: str = os.getenv("SUPABASE_SERVICE_KEY")
+
+        if not self.supabase_url or not self.supabase_key:
+            raise ValueError("Missing required Supabase credentials in environment variables")
+
+        # Initialize client with public key for most operations
+        self.client: Client = create_client(self.supabase_url, self.supabase_key)
+
+        # Service role client for admin operations
+        self.admin_client: Client = create_client(
+            self.supabase_url,
+            self.supabase_service_key
+        )
+
+        logger.info("Supabase client initialized successfully")
+
+    def test_connection(self) -> bool:
+        """Test connection to Supabase"""
+        try:
+            # Simple query to test connection
+            response = self.client.table('regions').select('count').execute()
+            logger.info("Supabase connection test successful")
+            return True
+        except Exception as e:
+            logger.error(f"Supabase connection test failed: {str(e)}")
+            return False
+
+    # Generic CRUD operations
+    def insert_record(self, table: str, data: Dict[str, Any], use_admin: bool = False) -> Optional[Dict]:
+        """Insert a single record into specified table"""
+        try:
+            client = self.admin_client if use_admin else self.client
+            response = client.table(table).insert(data).execute()
+
+            if response.data:
+                logger.info(f"Successfully inserted record into {table}")
+                return response.data[0]
+            else:
+                logger.error(f"Failed to insert record into {table}: {response.error}")
+                return None
+
+        except Exception as e:
+            logger.error(f"Error inserting record into {table}: {str(e)}")
+            return None
+
+    def batch_insert(self, table: str, records: List[Dict[str, Any]], use_admin: bool = False) -> List[Dict]:
+        """Insert multiple records into specified table"""
+        try:
+            client = self.admin_client if use_admin else self.client
+            response = client.table(table).insert(records).execute()
+
+            if response.data:
+                logger.info(f"Successfully inserted {len(records)} records into {table}")
+                return response.data
+            else:
+                logger.error(f"Failed to batch insert into {table}: {response.error}")
+                return []
+
+        except Exception as e:
+            logger.error(f"Error batch inserting into {table}: {str(e)}")
+            return []
+
+    def get_records(self, table: str, filters: Optional[Dict] = None,
+                   select_columns: str = "*", limit: Optional[int] = None) -> List[Dict]:
+        """Get records from specified table with optional filters"""
+        try:
+            query = self.client.table(table).select(select_columns)
+
+            if filters:
+                for column, value in filters.items():
+                    query = query.eq(column, value)
+
+            if limit:
+                query = query.limit(limit)
+
+            response = query.execute()
+            logger.info(f"Retrieved {len(response.data)} records from {table}")
+            return response.data if response.data else []
+
+        except Exception as e:
+            logger.error(f"Error getting records from {table}: {str(e)}")
+            return []
+
+    def update_record(self, table: str, record_id: int, data: Dict[str, Any],
+                     id_column: str = "id", use_admin: bool = False) -> Optional[Dict]:
+        """Update a specific record"""
+        try:
+            client = self.admin_client if use_admin else self.client
+            response = client.table(table).update(data).eq(id_column, record_id).execute()
+
+            if response.data:
+                logger.info(f"Successfully updated record {record_id} in {table}")
+                return response.data[0]
+            else:
+                logger.error(f"Failed to update record {record_id} in {table}: {response.error}")
+                return None
+
+        except Exception as e:
+            logger.error(f"Error updating record {record_id} in {table}: {str(e)}")
+            return None
+
+    def delete_record(self, table: str, record_id: int, id_column: str = "id",
+                     use_admin: bool = False) -> bool:
+        """Delete a specific record"""
+        try:
+            client = self.admin_client if use_admin else self.client
+            response = client.table(table).delete().eq(id_column, record_id).execute()
+
+            if response.data:
+                logger.info(f"Successfully deleted record {record_id} from {table}")
+                return True
+            else:
+                logger.error(f"Failed to delete record {record_id} from {table}: {response.error}")
+                return False
+
+        except Exception as e:
+            logger.error(f"Error deleting record {record_id} from {table}: {str(e)}")
+            return False
+
+# Specific VOYO database operations
+class VOYODatabase:
+    """VOYO-specific database operations"""
+
+    def __init__(self):
+        self.db = SupabaseClient()
+
+    # Region operations
+    def create_region(self, region_data: Dict[str, Any]) -> Optional[Dict]:
+        """Create a new region"""
+        return self.db.insert_record("regions", region_data, use_admin=True)
+
+    def get_regions(self) -> List[Dict]:
+        """Get all active regions"""
+        return self.db.get_records("regions", filters={"is_active": True})
+
+    def get_region_by_name(self, name: str) -> Optional[Dict]:
+        """Get region by name"""
+        regions = self.db.get_records("regions", filters={"name": name})
+        return regions[0] if regions else None
+
+    # POI operations
+    def create_poi(self, poi_data: Dict[str, Any]) -> Optional[Dict]:
+        """Create a new POI"""
+        return self.db.insert_record("pois", poi_data, use_admin=True)
+
+    def batch_create_pois(self, pois_data: List[Dict[str, Any]]) -> List[Dict]:
+        """Create multiple POIs"""
+        return self.db.batch_insert("pois", pois_data, use_admin=True)
+
+    def get_pois_by_region(self, region_id: int, limit: Optional[int] = None) -> List[Dict]:
+        """Get POIs by region"""
+        return self.db.get_records(
+            "pois",
+            filters={"region_id": region_id, "is_active": True},
+            limit=limit
+        )
+
+    def get_pois_by_category(self, category: str, region_id: Optional[int] = None) -> List[Dict]:
+        """Get POIs by category, optionally filtered by region"""
+        filters = {"category": category, "is_active": True}
+        if region_id:
+            filters["region_id"] = region_id
+
+        return self.db.get_records("pois", filters=filters)
+
+    def update_poi_rating(self, poi_id: int, new_rating: float, total_reviews: int) -> bool:
+        """Update POI rating information"""
+        data = {
+            "average_rating": new_rating,
+            "total_reviews": total_reviews
+        }
+        result = self.db.update_record("pois", poi_id, data, use_admin=True)
+        return result is not None
+
+    # User operations
+    def create_user(self, user_data: Dict[str, Any]) -> Optional[Dict]:
+        """Create a new user"""
+        return self.db.insert_record("users", user_data)
+
+    def get_user_by_email(self, email: str) -> Optional[Dict]:
+        """Get user by email"""
+        users = self.db.get_records("users", filters={"email": email})
+        return users[0] if users else None
+
+    # Specialized queries for recommendations and analytics
+    def get_popular_pois(self, limit: int = 10, region_id: Optional[int] = None) -> List[Dict]:
+        """Get popular POIs based on ratings and reviews"""
+        filters = {"is_active": True}
+        if region_id:
+            filters["region_id"] = region_id
+
+        return self.db.get_records(
+            "pois",
+            filters=filters,
+            select_columns="*",
+            limit=limit
+        )
+
+    def search_pois(self, query: str, region_id: Optional[int] = None) -> List[Dict]:
+        """Search POIs by name or description"""
+        # Note: Supabase full-text search would be implemented here
+        # For now, basic filtering
+        filters = {"is_active": True}
+        if region_id:
+            filters["region_id"] = region_id
+
+        return self.db.get_records("pois", filters=filters)
+
+# Global database instance
+db = VOYODatabase()
+
+# Utility functions
+def initialize_database():
+    """Initialize database connection and test"""
+    if db.db.test_connection():
+        logger.info("Database initialized successfully")
+        return True
+    else:
+        logger.error("Failed to initialize database")
+        return False
