@@ -228,6 +228,87 @@ class VOYODatabase:
             filters["region_id"] = region_id
 
         return self.db.get_records("pois", filters=filters)
+    
+    # --- User Profile Operations ---
+
+    def create_user_profile(self, user_id: str, profile_data: Dict[str, Any]) -> Optional[Dict]:
+        """
+        Creates an initial user profile record after registration.
+        Requires the user_id (UUID) from the user_auth table.
+        """
+        # The Supabase client handles JSONB types automatically by passing a Python dict.
+        data = {"user_id": user_id, **profile_data}
+        
+        # Use admin client to ensure insertion even if RLS is strict on creation
+        return self.db.insert_record("user_profiles", data, use_admin=True)
+
+    def get_user_profile(self, user_id: str) -> Optional[Dict]:
+        """
+        Retrieves a user profile by their UUID.
+        """
+        # Use the standard client, relying on RLS to enforce security
+        profiles = self.db.get_records("user_profiles", filters={"user_id": user_id})
+        return profiles[0] if profiles else None
+
+    def update_user_profile(self, user_id: str, updates: Dict[str, Any]) -> Optional[Dict]:
+        """
+        The agentic system uses this to passively update the user's profile data
+        (e.g., updating interest_scores, adding to personal_interests).
+        """
+        # The Supabase REST API handles partial updates for JSONB columns
+        # by merging the provided dict with the existing data.
+        return self.db.update_record(
+            "user_profiles", 
+            record_id=user_id, 
+            data=updates, 
+            id_column="user_id", 
+            use_admin=False # Rely on RLS (Users can update their own profile)
+        )
+
+    # --- Itinerary Operations ---
+
+    def create_itinerary(self, user_id: str, title: str, region_id: int) -> Optional[Dict]:
+        """
+        Creates a new trip header (Draft, Current, or Completed).
+        """
+        data = {
+            "user_id": user_id,
+            "title": title,
+            "region_id": region_id,
+            "status": "draft"
+        }
+        return self.db.insert_record("itineraries", data, use_admin=False)
+
+    def get_current_itinerary(self, user_id: str) -> Optional[Dict]:
+        """
+        Retrieves the user's active/current trip.
+        """
+        itineraries = self.db.get_records(
+            "itineraries", 
+            filters={"user_id": user_id, "status": "current"},
+            limit=1,
+            select_columns="id, title, start_date, end_date"
+        )
+        return itineraries[0] if itineraries else None
+
+    def add_itinerary_item(self, itinerary_id: int, item_data: Dict[str, Any]) -> Optional[Dict]:
+        """
+        Adds a POI or custom event to a specific itinerary.
+        This is what runs when a user clicks 'Add to Trip'.
+        """
+        data = {"itinerary_id": itinerary_id, **item_data}
+        return self.db.insert_record("itinerary_items", data, use_admin=False)
+
+    def get_itinerary_items(self, itinerary_id: int) -> List[Dict]:
+        """
+        Retrieves all scheduled activities for a trip, ordered by day and sequence.
+        """
+        return self.db.get_records(
+            "itinerary_items", 
+            filters={"itinerary_id": itinerary_id},
+            select_columns="*, poi:poi_id(*)", # Example of joining to POIs (PostgREST embedded query)
+            order_by="day_number,sequence_order"
+        )
 
 # Global database instance
 db = VOYODatabase()
