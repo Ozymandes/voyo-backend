@@ -91,7 +91,7 @@ class BaseScraper(ABC):
         """Get geographic bounds for the region"""
         # Default bounds for major Egyptian regions
         region_bounds = {
-            "Cairo": {"min_lat": 29.8, "max_lat": 30.2, "min_lon": 31.1, "max_lon": 31.5},
+            "Cairo": {"min_lat": 29.7, "max_lat": 30.3, "min_lon": 31.0, "max_lon": 31.6},
             "Giza": {"min_lat": 29.9, "max_lat": 30.1, "min_lon": 31.0, "max_lon": 31.3},
             "Alexandria": {"min_lat": 31.0, "max_lat": 31.3, "min_lon": 29.8, "max_lon": 30.0},
             "Luxor": {"min_lat": 25.6, "max_lat": 25.8, "min_lon": 32.5, "max_lon": 32.8},

@@ -14,6 +14,8 @@ from pathlib import Path
 script_dir = Path(__file__).parent
 src_dir = script_dir.parent / "src"
 sys.path.insert(0, str(src_dir))
+# Also add project root to path for absolute imports
+sys.path.insert(0, str(script_dir.parent))
 
 try:
     from pipeline.orchestrator import VOYOOrchestrator

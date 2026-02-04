@@ -191,10 +191,8 @@ class VOYOOrchestrator:
                 "image_urls": poi.image_urls,
                 "historical_significance": poi.historical_significance,
                 "tags": poi.tags,
-                "source": poi.source,
-                "source_id": poi.source_id,
                 "is_active": True,
-                "is_verified": poi.source != "OpenStreetMap"  # Verify Google Places data
+                "is_verified": poi.average_rating is not None  # Verified if has rating
             }
             poi_data_list.append(poi_dict)
 

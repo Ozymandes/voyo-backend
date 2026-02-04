@@ -10,7 +10,7 @@ from typing import List, Dict, Any, Optional, Set, Tuple
 from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 
-from ..scrapers.base_scraper import POIData, POICategory
+from scrapers.base_scraper import POIData, POICategory
 
 logger = logging.getLogger(__name__)
 

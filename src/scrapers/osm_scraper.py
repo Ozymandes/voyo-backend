@@ -98,9 +98,17 @@ class OSMScraper(BaseScraper):
         # Build query for multiple categories
         category_queries = []
         for category in categories:
-            category_queries.append(f'node["{category}"]({min_lat},{min_lon},{max_lat},{max_lon});')
-            category_queries.append(f'way["{category}"]({min_lat},{min_lon},{max_lat},{max_lon});')
-            category_queries.append(f'relation["{category}"]({min_lat},{min_lon},{max_lat},{max_lon});')
+            # Split "tourism=museum" into key="tourism" and value="museum"
+            if "=" in category:
+                key, value = category.split("=", 1)
+                category_queries.append(f'node["{key}"="{value}"]({min_lat},{min_lon},{max_lat},{max_lon});')
+                category_queries.append(f'way["{key}"="{value}"]({min_lat},{min_lon},{max_lat},{max_lon});')
+                category_queries.append(f'relation["{key}"="{value}"]({min_lat},{min_lon},{max_lat},{max_lon});')
+            else:
+                # Fallback for categories without "="
+                category_queries.append(f'node["{category}"]({min_lat},{min_lon},{max_lat},{max_lon});')
+                category_queries.append(f'way["{category}"]({min_lat},{min_lon},{max_lat},{max_lon});')
+                category_queries.append(f'relation["{category}"]({min_lat},{min_lon},{max_lat},{max_lon});')
 
         query = f"""
         [out:json][timeout:60];

@@ -168,9 +168,10 @@ class GooglePlacesScraper(BaseScraper):
                 )
 
                 if not search_results:
-                    # Try broader search
+                    # Try broader search with default Cairo bounds
+                    cairo_bounds = {"min_lat": 29.7, "max_lat": 30.3, "min_lon": 31.0, "max_lon": 31.6}
                     search_results = self.search_places_by_text(
-                        poi.name, self.get_region_bounds(), limit=5
+                        poi.name, cairo_bounds, limit=5
                     )
 
                 # Find best match
@@ -187,8 +188,8 @@ class GooglePlacesScraper(BaseScraper):
                 else:
                     enhanced_pois.append(poi)
 
-                # Rate limiting between requests
-                time.sleep(0.1)
+                # Rate limiting between requests (free tier: 10 requests/second)
+                time.sleep(0.2)  # Conservative: 5 requests/second
 
             except Exception as e:
                 logger.error(f"Error enhancing POI {poi.name}: {str(e)}")
