@@ -5,7 +5,10 @@
       "mcp__web-search-prime__webSearchPrime",
       "WebSearch",
       "Bash(python:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(ls:*)",
+      "Bash(playwright install:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []
