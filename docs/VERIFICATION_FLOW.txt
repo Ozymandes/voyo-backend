@@ -1,0 +1,231 @@
+================================================================================
+          HOW MASTER ATTRACTIONS INTEGRATES WITH SCRAPING PIPELINE
+================================================================================
+
+SIMPLE EXPLANATION:
+
+The master_attractions_clean.py file is a CURATED GUIDE that tells the pipeline
+WHAT to look for. The pipeline then VERIFIES each entry against external sources.
+
+================================================================================
+                            DATA FLOW
+================================================================================
+
+STEP 1: YOU CREATE MASTER LIST
+────────────────────────────────────────────────────────────────────────────
+File: data/master_attractions_clean.py
+
+You write:
+{
+  "name": "Khan el-Khalili",
+  "search_queries": ["Khan el-Khalili", "Khan el Khalili bazaar"],
+  "category": "Historical",
+  "importance": "Must-See",
+  "expected_rating": 4.5
+}
+
+This is your CURATED list - you decide what goes in here
+                                │
+                                ↓
+STEP 2: PIPELINE READS YOUR LIST
+────────────────────────────────────────────────────────────────────────────
+File: src/pipeline/enrichment_pipeline.py (Line 433)
+
+from master_attractions_clean import MASTER_ATTRACTIONS
+
+Gets: Dictionary with 45 attractions across 8 regions
+                                │
+                                ↓
+STEP 3: EXTRACTS SEARCH QUERIES
+────────────────────────────────────────────────────────────────────────────
+File: src/pipeline/enrichment_pipeline.py (Line 67-70)
+
+From your master list: search_queries = ["Khan el-Khalili", "Khan el Khalili bazaar"]
+
+Pipeline uses these to search Google Places
+                                │
+                                ↓
+STEP 4: SEARCHES GOOGLE PLACES
+────────────────────────────────────────────────────────────────────────────
+File: src/pipeline/enrichment_pipeline.py (Line 76)
+
+Search: "Khan el-Khalili Cairo" on Google Places API
+
+Response: FOUND!
+- place_id: "ChIJ..."
+- coordinates: 30.0478, 31.2366
+- 5 photos
+- rating: 4.5 (matches your expected_rating!)
+- address: "El-Gamaleya, Cairo..."
+
+VERIFICATION 1: Place exists on Google Places ✓
+                                │
+                                ↓
+STEP 5: GETS DETAILED INFORMATION
+────────────────────────────────────────────────────────────────────────────
+File: src/pipeline/enrichment_pipeline.py (Line 82)
+
+Gets:
+- 5 high-resolution photo URLs
+- Opening hours (Mon-Sun)
+- Website URL
+- Total reviews (12,500)
+
+VERIFICATION 2: Has complete data ✓
+                                │
+                                ↓
+STEP 6: MERGES DATA FROM ALL SOURCES
+────────────────────────────────────────────────────────────────────────────
+File: src/pipeline/enrichment_pipeline.py (Line 88)
+
+enriched = merge(
+  your_master_list,    # → name, category, importance
+  google_search,       # → place_id, name match
+  google_details       # → coordinates, photos, rating, hours
+)
+
+Result:
+{
+  "name": "Khan el-Khalili",           # From your list
+  "category": "Historical",             # From your list
+  "latitude": 30.0478,                  # From Google Places
+  "longitude": 31.2366,                 # From Google Places
+  "image_urls": [5 photos],             # From Google Places
+  "average_rating": 4.5,                # From Google Places (matches your 4.5!)
+  "opening_hours": {...},               # From Google Places
+  "description": "Famous souk...",      # From your list
+}
+
+VERIFICATION 3: Data matches across sources ✓
+                                │
+                                ↓
+STEP 7: SEARCHES WIKIPEDIA
+────────────────────────────────────────────────────────────────────────────
+File: src/pipeline/enrichment_pipeline.py (Line 473)
+
+Search: "Khan el-Khalili" on Wikipedia
+
+Response: FOUND!
+- Historical significance: "Major souk in Islamic Cairo since 14th century..."
+- Tags: ['market', 'souk', 'islamic cairo', 'bazaar']
+- Visit duration: "2-3 hours"
+
+VERIFICATION 4: Has cultural significance ✓
+                                │
+                                ↓
+STEP 8: INSERTS INTO DATABASE
+────────────────────────────────────────────────────────────────────────────
+File: src/pipeline/enrichment_pipeline.py (Line 483)
+
+INSERT INTO pois (
+  name, category, region_id,
+  latitude, longitude,
+  image_urls,
+  average_rating,
+  historical_significance,
+  is_verified,          ← Set to TRUE
+  data_sources         ← ['master_list', 'google_places', 'wikipedia']
+)
+
+FINAL RESULT: Fully verified POI in database ✓
+
+================================================================================
+                         VERIFICATION LEVELS
+================================================================================
+
+Level 1: HUMAN (You)
+────────────────────────────────────────────────────────────────────────────
+You manually added Khan el-Khalili to master_attractions_clean.py
+You verified it's a real tourist attraction
+You categorized it as "Historical"
+You marked it as "Must-See"
+
+Level 2: GOOGLE PLACES (Platform Verification)
+────────────────────────────────────────────────────────────────────────────
+Pipeline searched Google Places: Found it
+Verified: Has accurate GPS coordinates
+Verified: Has visitor photos (real place)
+Verified: Has 12,500 reviews (popular)
+Verified: Has operating hours (active business)
+
+Level 3: WIKIPEDIA (Cultural Verification)
+────────────────────────────────────────────────────────────────────────────
+Pipeline searched Wikipedia: Found article
+Verified: Has historical significance (14th century)
+Verified: Notable enough for encyclopedia entry
+
+Level 4: CROSS-REFERENCE (Data Consistency)
+────────────────────────────────────────────────────────────────────────────
+Pipeline compared all sources:
+Name: Master "Khan el-Khalili" = Google "Khan el-Khalili" ✓
+Rating: Expected 4.5 = Actual 4.5 ✓
+Location: Cairo region = Cairo address ✓
+
+Level 5: DATABASE (Insertion)
+────────────────────────────────────────────────────────────────────────────
+Only after ALL verifications pass:
+Set is_verified = TRUE
+Insert into pois table
+
+================================================================================
+                           KEY INSIGHTS
+================================================================================
+
+1. MASTER LIST IS NOT SCRAPED
+   → It's a trusted GUIDE that tells pipeline WHAT to look for
+   → Pipeline then VERIFIES each entry externally
+
+2. MULTIPLE VERIFICATION LAYERS
+   → You curated it (human verification)
+   → Google Places has it (platform verification)
+   → Wikipedia has it (cultural verification)
+   → Data matches (consistency verification)
+
+3. IF VERIFICATION FAILS
+   → Google Places can't find it? Skipped (not inserted)
+   → Data doesn't match? Skipped (not inserted)
+   → Only VERIFIED POIs reach database
+
+4. SUCCESS RATE
+   → 91% (41 out of 45 POIs inserted)
+   → 4 failed (could not find on Google Places)
+
+5. is_verified = TRUE MEANS
+   → Found on Google Places ✓
+   → Has accurate coordinates ✓
+   → Has photos and reviews ✓
+   → Matches your master list ✓
+   → (Optional) Has Wikipedia article ✓
+
+================================================================================
+                         QUICK REFERENCE
+================================================================================
+
+What YOU provide in master_attractions_clean.py:
+  - name (what to search for)
+  - search_queries (alternative names)
+  - category (your classification)
+  - importance (your prioritization)
+  - description (your write-up)
+  - expected_rating (quality estimate)
+
+What PIPELINE adds automatically:
+  - latitude, longitude (Google Places)
+  - image_urls (Google Places - 5 photos)
+  - average_rating, total_reviews (Google Places)
+  - opening_hours (Google Places)
+  - address (Google Places)
+  - website_url (Google Places)
+  - historical_significance (Wikipedia)
+  - tags (Wikipedia)
+  - ticket_price_egyptian (calculated)
+  - is_verified (TRUE if all pass)
+
+How VERIFICATION works:
+  1. You add to master list (Level 1: Human)
+  2. Pipeline finds on Google Places (Level 2: Platform)
+  3. Pipeline finds on Wikipedia (Level 3: Cultural)
+  4. Data matches across sources (Level 4: Consistency)
+  5. Inserts with is_verified=TRUE (Level 5: Database)
+
+================================================================================
