@@ -8,7 +8,14 @@
       "Bash(pip install:*)",
       "Bash(ls:*)",
       "Bash(playwright install:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(grep -c '\"\"name\"\":' data/master_attractions_clean.py)",
+      "Bash(find \"c:\\\\Users\\\\yasee\\\\OneDrive\\\\Desktop\\\\VOYO_Backend\\\\voyo-backend\" -name \"*.pyc\" -delete)",
+      "Bash(find \"c:\\\\Users\\\\yasee\\\\OneDrive\\\\Desktop\\\\VOYO_Backend\\\\voyo-backend\" -name \"__pycache__\" -type d -exec rm -rf {} +)",
+      "Bash(python3 -c \":*)",
+      "Bash(for file:*)",
+      "Bash(do echo:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

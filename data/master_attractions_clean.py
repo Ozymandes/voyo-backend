@@ -116,7 +116,7 @@ MASTER_ATTRACTIONS = {
             "ticket_price": 40.0,
             "expected_rating": 4.5,
             "UNESCO_site": False
-        }
+        },
     ],
 
     "Giza": [
@@ -218,7 +218,7 @@ MASTER_ATTRACTIONS = {
             "ticket_price": 80.0,
             "expected_rating": 4.6,
             "UNESCO_site": True
-        }
+        },
     ],
 
     "Luxor": [
@@ -695,7 +695,7 @@ MASTER_ATTRACTIONS = {
             "ticket_price": 500.0,
             "expected_rating": 4.9,
             "UNESCO_site": False
-        }
+        },
     ],
 
     "Aswan": [
@@ -709,7 +709,7 @@ MASTER_ATTRACTIONS = {
             "ticket_price": 50.0,
             "expected_rating": 4.7,
             "UNESCO_site": False
-        }
+        },
         {
             "name": "Abu Simbel Temples",
             "name_arabic": "معابد أبو سمبل",
@@ -1193,7 +1193,7 @@ MASTER_ATTRACTIONS = {
             "ticket_price": None,
             "expected_rating": 4.4,
             "UNESCO_site": False
-        }
+        },
     ],
 
     "Hurghada": [
@@ -1504,8 +1504,8 @@ MASTER_ATTRACTIONS = {
             "ticket_price": None,
             "expected_rating": 4.5,
             "UNESCO_site": False
-        }
-    ]
+        },
+    ],
 
     "Marsa Alam": [
         {
@@ -1727,7 +1727,7 @@ MASTER_ATTRACTIONS = {
             "ticket_price": None,
             "expected_rating": 4.6,
             "UNESCO_site": False
-        }
+        },
         {
             "name": "Marsa Egla",
             "name_arabic": "مرسى عجلة",
@@ -1947,7 +1947,7 @@ MASTER_ATTRACTIONS = {
             "ticket_price": None,
             "expected_rating": 4.5,
             "UNESCO_site": False
-        }
+        },
     ],
 
     "Sinai": [
