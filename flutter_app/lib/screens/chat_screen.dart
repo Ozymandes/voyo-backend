@@ -84,8 +84,14 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CLEO', style: TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: const Text('Your Egyptian Travel Guide'),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('CLEO', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('Your Egyptian Travel Guide',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal)),
+          ],
+        ),
         backgroundColor: Colors.deepOrange,
         foregroundColor: Colors.white,
       ),
