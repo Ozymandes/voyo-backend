@@ -58,7 +58,8 @@ class UserProfileManager:
         try:
             profiles = self.db.get_records(
                 "user_profiles",
-                filters={"user_id": user_id}
+                filters={"user_id": user_id},
+                use_admin=True
             )
 
             if profiles:

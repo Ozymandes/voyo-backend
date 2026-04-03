@@ -84,14 +84,20 @@ class SupabaseClient:
             return []
 
     def get_records(self, table: str, filters: Optional[Dict] = None,
-                   select_columns: str = "*", limit: Optional[int] = None) -> List[Dict]:
+                   select_columns: str = "*", limit: Optional[int] = None,
+                   use_admin: bool = False, order_by: Optional[str] = None) -> List[Dict]:
         """Get records from specified table with optional filters"""
         try:
-            query = self.client.table(table).select(select_columns)
+            client = self.admin_client if use_admin else self.client
+            query = client.table(table).select(select_columns)
 
             if filters:
                 for column, value in filters.items():
                     query = query.eq(column, value)
+
+            if order_by:
+                for col in order_by.split(","):
+                    query = query.order(col.strip())
 
             if limit:
                 query = query.limit(limit)
@@ -246,8 +252,9 @@ class VOYODatabase:
         """
         Retrieves a user profile by their UUID.
         """
-        # Use the standard client, relying on RLS to enforce security
-        profiles = self.db.get_records("user_profiles", filters={"user_id": user_id})
+        profiles = self.db.get_records(
+            "user_profiles", filters={"user_id": user_id}, use_admin=True
+        )
         return profiles[0] if profiles else None
 
     def update_user_profile(self, user_id: str, updates: Dict[str, Any]) -> Optional[Dict]:
@@ -277,17 +284,18 @@ class VOYODatabase:
             "region_id": region_id,
             "status": "draft"
         }
-        return self.db.insert_record("itineraries", data, use_admin=False)
+        return self.db.insert_record("itineraries", data, use_admin=True)
 
     def get_current_itinerary(self, user_id: str) -> Optional[Dict]:
         """
         Retrieves the user's active/current trip.
         """
         itineraries = self.db.get_records(
-            "itineraries", 
+            "itineraries",
             filters={"user_id": user_id, "status": "current"},
             limit=1,
-            select_columns="id, title, start_date, end_date"
+            select_columns="id, title, start_date, end_date",
+            use_admin=True
         )
         return itineraries[0] if itineraries else None
 
@@ -297,16 +305,17 @@ class VOYODatabase:
         This is what runs when a user clicks 'Add to Trip'.
         """
         data = {"itinerary_id": itinerary_id, **item_data}
-        return self.db.insert_record("itinerary_items", data, use_admin=False)
+        return self.db.insert_record("itinerary_items", data, use_admin=True)
 
     def get_itinerary_items(self, itinerary_id: int) -> List[Dict]:
         """
         Retrieves all scheduled activities for a trip, ordered by day and sequence.
         """
         return self.db.get_records(
-            "itinerary_items", 
+            "itinerary_items",
             filters={"itinerary_id": itinerary_id},
-            select_columns="*, poi:poi_id(*)", # Example of joining to POIs (PostgREST embedded query)
+            select_columns="*, poi:poi_id(*)",
+            use_admin=True,
             order_by="day_number,sequence_order"
         )
 
