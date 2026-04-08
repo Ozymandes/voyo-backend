@@ -207,6 +207,18 @@ class CleoAgent:
                 "complexity": "medium"
             }
 
+        # Itinerary / trip planning requests
+        if any(word in query_lower for word in [
+            "itinerary", "trip", "plan", "schedule", "day", "days",
+            "week", "travel plan", "route", "tour"
+        ]):
+            return {
+                "approach": "llm_agent",
+                "use_cache": False,
+                "tools": ["supabase"],
+                "complexity": "itinerary"
+            }
+
         # Questions about attractions, POIs, locations → Use LLM with tools
         if any(word in query_lower for word in [
             "attraction", "poi", "place", "visit", "see", "temple", "mosque",
@@ -338,17 +350,26 @@ class CleoAgent:
 
             # If reasoning suggests using tools, do pre-query of database
             if reasoning.get("tools") and "supabase" in reasoning["tools"]:
-                # Query database first to get POI data
+                is_itinerary = reasoning.get("complexity") == "itinerary"
+
+                # Query database — fetch more POIs for itinerary requests
                 pois = self.tools["supabase"].search_pois(
                     query=query,
-                    limit=5
+                    limit=15 if is_itinerary else 5
                 )
 
                 if pois:
-                    # Add POI data to context
-                    poi_info = f"\n\nRELEVANT ATTRACTIONS:\n"
-                    for poi in pois[:3]:  # Top 3 POIs
-                        poi_info += f"- {poi.get('name', '')} ({poi.get('category', '')})\n"
+                    poi_info = "\n\nRELEVANT ATTRACTIONS FROM DATABASE:\n"
+                    limit = 12 if is_itinerary else 3
+                    for poi in pois[:limit]:
+                        poi_info += (
+                            f"- {poi.get('name', '')} "
+                            f"[{poi.get('category', '')}] "
+                            f"| Region: {poi.get('region', 'N/A')} "
+                            f"| Visit time: {poi.get('typical_visit_duration', 'N/A')} "
+                            f"| Ticket: {poi.get('ticket_price', 'free')} EGP "
+                            f"| Best time: {poi.get('best_time_to_visit', 'N/A')}\n"
+                        )
 
                     messages.append({
                         "role": "system",
