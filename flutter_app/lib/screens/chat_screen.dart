@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/chat_message.dart';
 import '../services/cleo_service.dart';
-
-// Default to the "history buff" test user seeded in Supabase.
-// Change this UUID or make it configurable once auth is implemented.
-const _defaultUserId = '11111111-1111-1111-1111-111111111111';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -43,9 +40,11 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollToBottom();
 
     try {
+      final userId =
+          Supabase.instance.client.auth.currentUser?.id ?? 'anonymous';
       final reply = await _cleoService.sendMessage(
         text,
-        userId: _defaultUserId,
+        userId: userId,
       );
       setState(() {
         _messages.add(ChatMessage(

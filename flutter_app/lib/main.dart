@@ -3,6 +3,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/map_screen.dart';
 import 'screens/chat_screen.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/auth/onboarding_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +19,24 @@ Future<void> main() async {
   runApp(const VoyoApp());
 }
 
+final _supabase = Supabase.instance.client;
+
+/// Returns true if the user has not completed onboarding yet.
+/// The trigger creates a user_profiles row but leaves full_name null —
+/// once the onboarding form saves a name, this returns false.
+Future<bool> _needsOnboarding(String userId) async {
+  try {
+    final row = await _supabase
+        .from('user_profiles')
+        .select('full_name')
+        .eq('user_id', userId)
+        .maybeSingle();
+    return row == null || row['full_name'] == null;
+  } catch (_) {
+    return false;
+  }
+}
+
 class VoyoApp extends StatelessWidget {
   const VoyoApp({super.key});
 
@@ -28,7 +48,32 @@ class VoyoApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         colorSchemeSeed: Colors.deepOrange,
       ),
-      home: const MainShell(),
+      home: StreamBuilder<AuthState>(
+        stream: _supabase.auth.onAuthStateChange,
+        builder: (context, snapshot) {
+          final session = _supabase.auth.currentSession;
+
+          if (session == null) {
+            return const LoginScreen();
+          }
+
+          return FutureBuilder<bool>(
+            future: _needsOnboarding(session.user.id),
+            builder: (context, onboardingSnapshot) {
+              if (onboardingSnapshot.connectionState ==
+                  ConnectionState.waiting) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+              if (onboardingSnapshot.data == true) {
+                return const OnboardingScreen();
+              }
+              return const MainShell();
+            },
+          );
+        },
+      ),
     );
   }
 }
