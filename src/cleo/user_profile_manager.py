@@ -112,7 +112,9 @@ class UserProfileManager:
             "itinerary_pace": profile.get("itinerary_pace", "balanced"),
             "mobility_preference": profile.get("mobility_preference", ""),
             "budget_estimate": profile.get("trip_budget_estimate", 0),
-            "personal_interests": profile.get("personal_interests", {})
+            "price_sensitivity": profile.get("price_sensitivity", ""),
+            "personal_interests": profile.get("personal_interests", {}),
+            "typical_companions": profile.get("typical_companions", {})
         }
 
     def _transform_to_db_format(self, profile_data: dict) -> dict:

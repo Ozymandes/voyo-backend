@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/poi.dart';
+import '../models/itinerary_poi.dart';
 import '../services/supabase_service.dart';
 
 class MapScreen extends StatefulWidget {
@@ -15,18 +17,19 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   final _supabaseService = SupabaseService();
   List<Poi> _pois = [];
+  List<ItineraryPoi> _itineraryPois = [];
   Timer? _debounceTimer;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    // Load initial POIs after the first frame renders
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadPoisForBounds(LatLngBounds(
         const LatLng(22.0, 24.0), // SW corner of Egypt
         const LatLng(32.0, 37.0), // NE corner of Egypt
       ));
+      _loadItineraryPois();
     });
   }
 
@@ -63,10 +66,30 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  Future<void> _loadItineraryPois() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+    final pois = await _supabaseService.getCurrentItineraryPois(userId);
+    if (mounted) {
+      setState(() => _itineraryPois = pois);
+    }
+  }
+
   void _showPoiSnackBar(Poi poi) {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(poi.name)),
+    );
+  }
+
+  void _showItineraryPoiInfo(ItineraryPoi poi) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Day ${poi.dayNumber} · Stop ${poi.sequenceOrder}: ${poi.name}'),
+        backgroundColor: Colors.blue,
+        duration: const Duration(seconds: 3),
+      ),
     );
   }
 
@@ -84,6 +107,7 @@ class _MapScreenState extends State<MapScreen> {
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             userAgentPackageName: 'com.voyo.mapsandbox',
           ),
+          // Regular POI markers — red pins
           MarkerLayer(
             markers: _pois.map((poi) {
               return Marker(
@@ -96,6 +120,44 @@ class _MapScreenState extends State<MapScreen> {
                     Icons.location_pin,
                     color: Colors.red,
                     size: 40,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          // Itinerary overlay — blue stars with day label, always on top
+          MarkerLayer(
+            markers: _itineraryPois.map((poi) {
+              return Marker(
+                point: LatLng(poi.latitude, poi.longitude),
+                width: 50,
+                height: 50,
+                child: GestureDetector(
+                  onTap: () => _showItineraryPoiInfo(poi),
+                  child: Stack(
+                    alignment: Alignment.topCenter,
+                    children: [
+                      const Icon(Icons.star, color: Colors.blue, size: 36),
+                      Positioned(
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'D${poi.dayNumber}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );

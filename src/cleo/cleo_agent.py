@@ -13,6 +13,8 @@ from src.cleo.semantic_cache import SemanticCache
 from src.cleo.conversation_memory import ConversationMemory
 from src.cleo.prompts import CLEO_SYSTEM_PROMPT, format_cleo_response
 from src.cleo.tools import SupabaseTool, WeatherTool, WebSearchTool
+from src.cleo.tools.profile_update_tool import ProfileUpdateTool
+from src.cleo.user_profile_manager import UserProfileManager
 
 logger = logging.getLogger(__name__)
 
@@ -49,8 +51,12 @@ class CleoAgent:
         self.tools = {
             "supabase": SupabaseTool(),
             "weather": WeatherTool(),
-            "web_search": WebSearchTool()
+            "web_search": WebSearchTool(),
+            "profile_update": ProfileUpdateTool()
         }
+
+        # Profile manager for per-request personalization
+        self.profile_manager = UserProfileManager()
 
         logger.info("CLEO agent initialized successfully")
 
@@ -85,6 +91,14 @@ class CleoAgent:
                 print("CONVERSATION CONTEXT:")
                 print(conversation_context)
                 print()
+
+        # Load user profile for personalization
+        user_profile = None
+        profile_context = ""
+        if user_id:
+            user_profile = self.profile_manager.get_personalization_context(user_id)
+            if user_profile:
+                profile_context = self._format_profile_context(user_profile)
 
         # REASON: Analyze query
         reasoning = self._reason(user_message, user_id, conversation_context)
@@ -141,6 +155,9 @@ class CleoAgent:
                     user_message,
                     conversation_context,
                     reasoning,
+                    user_id=user_id,
+                    user_profile=user_profile,
+                    profile_context=profile_context,
                     debug=debug
                 )
 
@@ -291,6 +308,9 @@ class CleoAgent:
         query: str,
         context: str,
         reasoning: Dict,
+        user_id: Optional[str] = None,
+        user_profile: Optional[Dict] = None,
+        profile_context: str = "",
         debug: bool = False
     ) -> str:
         """
@@ -310,6 +330,10 @@ class CleoAgent:
             messages = [
                 {"role": "system", "content": CLEO_SYSTEM_PROMPT}
             ]
+
+            # Inject user profile for personalization
+            if profile_context:
+                messages.append({"role": "system", "content": profile_context})
 
             # Add conversation context
             if context:
@@ -341,7 +365,8 @@ class CleoAgent:
                 # Query database first to get POI data
                 pois = self.tools["supabase"].search_pois(
                     query=query,
-                    limit=5
+                    limit=5,
+                    user_profile=user_profile
                 )
 
                 if pois:
@@ -369,7 +394,7 @@ class CleoAgent:
                         print(f"  Tool: {tc.function.name} with args: {tc.function.arguments}")
 
                 # Execute tools
-                tool_results = self._execute_tool_calls(response["tool_calls"])
+                tool_results = self._execute_tool_calls(response["tool_calls"], user_id=user_id)
 
                 if debug:
                     print("TOOL RESULTS:", list(tool_results.keys()))
@@ -421,6 +446,37 @@ class CleoAgent:
         except Exception as e:
             logger.error(f"Error in LLM agent execution: {e}")
             return f"I apologize, but I encountered an error: {str(e)}"
+
+    def _format_profile_context(self, profile: Dict) -> str:
+        """Format user profile into a context block injected into the system prompt."""
+        lines = ["USER PROFILE (use this to personalize all responses):"]
+
+        scores = profile.get("interest_scores", {})
+        if scores:
+            top = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:3]
+            top_labels = [k.replace("_", " ") for k, v in top if v > 0.5]
+            if top_labels:
+                lines.append(f"- Top interests: {', '.join(top_labels)}")
+
+        pace = profile.get("itinerary_pace")
+        if pace:
+            lines.append(f"- Travel pace: {pace.replace('_', ' ')}")
+
+        sensitivity = profile.get("price_sensitivity", "")
+        budget = profile.get("budget_estimate")
+        if sensitivity:
+            budget_str = f" (est. ${budget}/day)" if budget else ""
+            lines.append(f"- Budget: {sensitivity}{budget_str}")
+
+        mobility = profile.get("mobility_preference", "")
+        if mobility and mobility != "Full mobility":
+            lines.append(f"- Mobility: {mobility}")
+
+        companions = profile.get("typical_companions", {})
+        if companions and isinstance(companions, dict) and companions.get("type"):
+            lines.append(f"- Travels: {companions['type']}")
+
+        return "\n".join(lines)
 
     def _get_tool_definitions(self) -> List[Dict]:
         """
@@ -492,6 +548,47 @@ class CleoAgent:
             {
                 "type": "function",
                 "function": {
+                    "name": "update_user_preference",
+                    "description": (
+                        "Call this ONLY when the user explicitly and clearly states a personal travel preference "
+                        "(e.g., 'I love historical sites', 'I hate beaches', 'I prefer a relaxed pace', "
+                        "'I'm on a tight budget'). Do NOT call for vague mentions or questions. "
+                        "After calling, include the acknowledgment string naturally in your response."
+                    ),
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "field": {
+                                "type": "string",
+                                "description": "Which profile field to update.",
+                                "enum": ["interest_scores", "itinerary_pace", "price_sensitivity",
+                                         "mobility_preference", "typical_companions"]
+                            },
+                            "value": {
+                                "description": (
+                                    "New value. For interest_scores: dict like {'historical_sites': 0.9}. "
+                                    "For itinerary_pace: 'packed_schedule'|'balanced'|'slow_flexible'. "
+                                    "For price_sensitivity: 'budget'|'moderate'|'luxury'. "
+                                    "For mobility_preference: 'Full mobility'|'Limited walking'|'Wheelchair accessible only'. "
+                                    "For typical_companions: {'type': 'solo'|'couple'|'family'|'group'}."
+                                )
+                            },
+                            "acknowledgment": {
+                                "type": "string",
+                                "description": (
+                                    "A short, warm, natural sentence to include in your response confirming "
+                                    "what you've saved. E.g.: 'I've noted that you love historical sites — "
+                                    "I'll make sure your recommendations lean that way!'"
+                                )
+                            }
+                        },
+                        "required": ["field", "value", "acknowledgment"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
                     "name": "search_web",
                     "description": "Search web for current events, news, or latest information about Egypt",
                     "parameters": {
@@ -508,7 +605,7 @@ class CleoAgent:
             }
         ]
 
-    def _execute_tool_calls(self, tool_calls) -> Dict:
+    def _execute_tool_calls(self, tool_calls, user_id: Optional[str] = None) -> Dict:
         """
         Execute tool calls from LLM
 
@@ -548,6 +645,17 @@ class CleoAgent:
                         query=function_args.get("query", ""),
                         num_results=5
                     )
+
+                elif function_name == "update_user_preference":
+                    if not user_id:
+                        results[function_name] = {"error": "No user_id — cannot update profile for anonymous user."}
+                    else:
+                        results[function_name] = self.tools["profile_update"].update_preference(
+                            user_id=user_id,
+                            field=function_args.get("field"),
+                            value=function_args.get("value"),
+                            acknowledgment=function_args.get("acknowledgment", "")
+                        )
 
                 else:
                     results[function_name] = {"error": f"Unknown tool: {function_name}"}
