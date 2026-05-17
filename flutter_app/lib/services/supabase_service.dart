@@ -59,21 +59,194 @@ class SupabaseService {
     }
   }
 
-  /// Returns all items for a given itinerary, ordered by day and sequence.
-  Future<List<ItineraryItem>> getItineraryItems(int itineraryId) async {
+  // Only columns guaranteed to exist in the base schema.
+  // Optional columns (opening_hours, phone_number, etc.) are fetched
+  // separately when viewing POI details.
+  static const _poiColumns =
+      'id, name, latitude, longitude, category, average_rating, '
+      'total_reviews, description, ticket_price, currency, '
+      'is_active, is_verified, popularity_score, '
+      'historical_significance, average_visit_duration';
+
+  /// Featured POIs ordered by rating. Throws on error so caller can handle.
+  Future<List<Poi>> getFeaturedPois({int limit = 30}) async {
+    final response = await _client
+        .from('pois')
+        .select(_poiColumns)
+        .eq('is_active', true)
+        .order('popularity_score', ascending: false)
+        .limit(limit);
+    return (response as List)
+        .map((json) => Poi.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Full-text search on POI name. Throws on error so caller can handle.
+  Future<List<Poi>> searchPois(String query) async {
+    final response = await _client
+        .from('pois')
+        .select(_poiColumns)
+        .eq('is_active', true)
+        .ilike('name', '%$query%')
+        .order('popularity_score', ascending: false)
+        .limit(20);
+    return (response as List)
+        .map((json) => Poi.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Returns all items for a given itinerary joined with POI name/category.
+  Future<List<Map<String, dynamic>>> getItineraryItemsWithPois(
+      int itineraryId) async {
     try {
       final response = await _client
           .from('itinerary_items')
-          .select()
+          .select('*, pois(name, category)')
           .eq('itinerary_id', itineraryId)
           .order('day_number')
           .order('sequence_order');
-      return (response as List)
-          .map((json) => ItineraryItem.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return (response as List).cast<Map<String, dynamic>>();
     } catch (e) {
       debugPrint('Error fetching itinerary items: $e');
       return [];
+    }
+  }
+
+  /// Adds a POI or custom stop to an itinerary day.
+  Future<void> addItineraryItem({
+    required int itineraryId,
+    int? poiId,
+    String? customTitle,
+    required int dayNumber,
+    required String startTime, // "HH:MM:00"
+  }) async {
+    // Get next sequence order for this day
+    final existing = await _client
+        .from('itinerary_items')
+        .select('sequence_order')
+        .eq('itinerary_id', itineraryId)
+        .eq('day_number', dayNumber)
+        .order('sequence_order', ascending: false)
+        .limit(1);
+    final nextSeq = existing.isEmpty
+        ? 1
+        : ((existing.first as Map)['sequence_order'] as int) + 1;
+
+    await _client.from('itinerary_items').insert({
+      'itinerary_id': itineraryId,
+      if (poiId != null) 'poi_id': poiId,
+      if (customTitle != null) 'custom_title': customTitle,
+      'day_number': dayNumber,
+      'sequence_order': nextSeq,
+      'start_time': startTime,
+      'agent_suggested': false,
+    });
+  }
+
+  /// Returns all past itineraries (non-current) with a stop count each.
+  Future<List<Map<String, dynamic>>> getPastItineraries(String userId) async {
+    final trips = await _client
+        .from('itineraries')
+        .select()
+        .eq('user_id', userId)
+        .neq('status', 'current')
+        .order('created_at', ascending: false);
+
+    if (trips.isEmpty) return [];
+
+    final ids = trips.map((t) => (t as Map)['id'] as int).toList();
+    final items = await _client
+        .from('itinerary_items')
+        .select('itinerary_id')
+        .inFilter('itinerary_id', ids);
+
+    final counts = <int, int>{};
+    for (final item in items) {
+      final id = (item as Map)['itinerary_id'] as int;
+      counts[id] = (counts[id] ?? 0) + 1;
+    }
+
+    return trips.map((t) {
+      final m = t as Map<String, dynamic>;
+      return {...m, 'stop_count': counts[m['id'] as int] ?? 0};
+    }).toList();
+  }
+
+  /// Returns ALL itineraries for a user (current + past) with stop counts.
+  Future<List<Map<String, dynamic>>> getAllItineraries(String userId) async {
+    final trips = await _client
+        .from('itineraries')
+        .select()
+        .eq('user_id', userId)
+        .order('created_at', ascending: false);
+
+    if (trips.isEmpty) return [];
+
+    final ids = trips.map((t) => (t as Map)['id'] as int).toList();
+    final items = await _client
+        .from('itinerary_items')
+        .select('itinerary_id')
+        .inFilter('itinerary_id', ids);
+
+    final counts = <int, int>{};
+    for (final item in items) {
+      final id = (item as Map)['itinerary_id'] as int;
+      counts[id] = (counts[id] ?? 0) + 1;
+    }
+
+    return trips.map((t) {
+      final m = t as Map<String, dynamic>;
+      return {...m, 'stop_count': counts[m['id'] as int] ?? 0};
+    }).toList();
+  }
+
+  /// Deletes an itinerary and all its items.
+  Future<void> deleteItinerary(int itineraryId) async {
+    await _client
+        .from('itinerary_items')
+        .delete()
+        .eq('itinerary_id', itineraryId);
+    await _client.from('itineraries').delete().eq('id', itineraryId);
+  }
+
+  /// Deletes a single itinerary item by its row id.
+  Future<void> deleteItineraryItem(int itemId) async {
+    await _client.from('itinerary_items').delete().eq('id', itemId);
+  }
+
+  /// Creates a new itinerary for the user with status 'current'.
+  /// Any previously current itinerary is set to 'draft' first.
+  Future<Itinerary?> createItinerary({
+    required String userId,
+    required String title,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    try {
+      // Demote any existing current itinerary
+      await _client
+          .from('itineraries')
+          .update({'status': 'draft'})
+          .eq('user_id', userId)
+          .eq('status', 'current');
+
+      final response = await _client
+          .from('itineraries')
+          .insert({
+            'user_id': userId,
+            'title': title,
+            'status': 'current',
+            if (startDate != null)
+              'start_date': startDate.toIso8601String().split('T').first,
+            if (endDate != null)
+              'end_date': endDate.toIso8601String().split('T').first,
+          })
+          .select()
+          .single();
+      return Itinerary.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      debugPrint('Error creating itinerary: $e');
+      rethrow;
     }
   }
 }

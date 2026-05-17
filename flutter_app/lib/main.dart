@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'screens/map_screen.dart';
-import 'screens/chat_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/onboarding_screen.dart';
+import 'screens/main_shell.dart';
+import 'theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,8 +46,28 @@ class VoyoApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        scaffoldBackgroundColor: Colors.white,
-        colorSchemeSeed: Colors.deepOrange,
+        scaffoldBackgroundColor: VoyoColors.page,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: VoyoColors.expedition,
+          surface: VoyoColors.page,
+        ),
+        textTheme: GoogleFonts.instrumentSansTextTheme(),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: VoyoColors.vellum,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: VoyoColors.smoke),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: VoyoColors.smoke),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: VoyoColors.expedition, width: 1.5),
+          ),
+        ),
       ),
       home: StreamBuilder<AuthState>(
         stream: _supabase.auth.onAuthStateChange,
@@ -78,47 +99,3 @@ class VoyoApp extends StatelessWidget {
   }
 }
 
-class MainShell extends StatefulWidget {
-  const MainShell({super.key});
-
-  @override
-  State<MainShell> createState() => _MainShellState();
-}
-
-class _MainShellState extends State<MainShell> {
-  int _currentIndex = 0;
-
-  // Keep screens alive so the map doesn't reload when switching tabs
-  static const _screens = [
-    MapScreen(),
-    ChatScreen(),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (i) => setState(() => _currentIndex = i),
-        selectedItemColor: Colors.deepOrange,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map_outlined),
-            activeIcon: Icon(Icons.map),
-            label: 'Explore',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            activeIcon: Icon(Icons.chat_bubble),
-            label: 'CLEO',
-          ),
-        ],
-      ),
-    );
-  }
-}

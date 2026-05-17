@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/poi.dart';
 import '../models/itinerary_poi.dart';
 import '../services/supabase_service.dart';
+import '../theme.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -26,8 +28,8 @@ class _MapScreenState extends State<MapScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadPoisForBounds(LatLngBounds(
-        const LatLng(22.0, 24.0), // SW corner of Egypt
-        const LatLng(32.0, 37.0), // NE corner of Egypt
+        const LatLng(22.0, 24.0),
+        const LatLng(32.0, 37.0),
       ));
       _loadItineraryPois();
     });
@@ -70,15 +72,74 @@ class _MapScreenState extends State<MapScreen> {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) return;
     final pois = await _supabaseService.getCurrentItineraryPois(userId);
-    if (mounted) {
-      setState(() => _itineraryPois = pois);
-    }
+    if (mounted) setState(() => _itineraryPois = pois);
   }
 
-  void _showPoiSnackBar(Poi poi) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(poi.name)),
+  void _showPoiBottomSheet(Poi poi) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: VoyoColors.paper,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: VoyoColors.smoke,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              poi.name,
+              style: GoogleFonts.fraunces(
+                fontSize: 24,
+                fontStyle: FontStyle.italic,
+                color: VoyoColors.ink,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              poi.category ?? '',
+              style: GoogleFonts.instrumentSans(
+                fontSize: 13,
+                color: VoyoColors.stone,
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: FilledButton(
+                onPressed: () => Navigator.pop(context),
+                style: FilledButton.styleFrom(
+                  backgroundColor: VoyoColors.terra,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: Text(
+                  '+ Add to Itinerary',
+                  style: GoogleFonts.instrumentSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -86,9 +147,14 @@ class _MapScreenState extends State<MapScreen> {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Day ${poi.dayNumber} · Stop ${poi.sequenceOrder}: ${poi.name}'),
-        backgroundColor: Colors.blue,
+        content: Text(
+          'Day ${poi.dayNumber} · Stop ${poi.sequenceOrder}: ${poi.name}',
+          style: GoogleFonts.instrumentSans(color: Colors.white),
+        ),
+        backgroundColor: VoyoColors.sky,
         duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -96,73 +162,170 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FlutterMap(
-        options: MapOptions(
-          initialCenter: const LatLng(30.0444, 31.2357), // Cairo
-          initialZoom: 7.0,
-          onPositionChanged: _onPositionChanged,
-        ),
+      body: Stack(
         children: [
-          TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.voyo.mapsandbox',
-          ),
-          // Regular POI markers — red pins
-          MarkerLayer(
-            markers: _pois.map((poi) {
-              return Marker(
-                point: LatLng(poi.latitude, poi.longitude),
-                width: 40,
-                height: 40,
-                child: GestureDetector(
-                  onTap: () => _showPoiSnackBar(poi),
-                  child: const Icon(
-                    Icons.location_pin,
-                    color: Colors.red,
-                    size: 40,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-          // Itinerary overlay — blue stars with day label, always on top
-          MarkerLayer(
-            markers: _itineraryPois.map((poi) {
-              return Marker(
-                point: LatLng(poi.latitude, poi.longitude),
-                width: 50,
-                height: 50,
-                child: GestureDetector(
-                  onTap: () => _showItineraryPoiInfo(poi),
-                  child: Stack(
-                    alignment: Alignment.topCenter,
-                    children: [
-                      const Icon(Icons.star, color: Colors.blue, size: 36),
-                      Positioned(
-                        top: 0,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 4, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            'D${poi.dayNumber}',
-                            style: const TextStyle(
+          FlutterMap(
+            options: MapOptions(
+              initialCenter: const LatLng(30.0444, 31.2357),
+              initialZoom: 7.0,
+              onPositionChanged: _onPositionChanged,
+            ),
+            children: [
+              TileLayer(
+                urlTemplate:
+                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.voyo.app',
+              ),
+              // Regular POI markers
+              MarkerLayer(
+                markers: _pois.map((poi) {
+                  return Marker(
+                    point: LatLng(poi.latitude, poi.longitude),
+                    width: 28,
+                    height: 28,
+                    child: GestureDetector(
+                      onTap: () => _showPoiBottomSheet(poi),
+                      child: Container(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: VoyoColors.expedition,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: VoyoColors.expedition.withValues(alpha: 0.35),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Container(
+                            width: 5,
+                            height: 5,
+                            decoration: const BoxDecoration(
                               color: Colors.white,
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
+                              shape: BoxShape.circle,
                             ),
                           ),
                         ),
                       ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              // Itinerary overlay markers
+              MarkerLayer(
+                markers: _itineraryPois.map((poi) {
+                  return Marker(
+                    point: LatLng(poi.latitude, poi.longitude),
+                    width: 44,
+                    height: 44,
+                    child: GestureDetector(
+                      onTap: () => _showItineraryPoiInfo(poi),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: VoyoColors.sky,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: VoyoColors.sky.withValues(alpha: 0.35),
+                                  blurRadius: 6,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Positioned(
+                            top: 2,
+                            child: Text(
+                              'D${poi.dayNumber}',
+                              style: GoogleFonts.instrumentSans(
+                                fontSize: 8,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+          // Back button (shown when pushed via Navigator)
+          if (Navigator.of(context).canPop())
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 12,
+              left: 12,
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: VoyoColors.paper,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
                     ],
                   ),
+                  child: const Icon(Icons.arrow_back, color: VoyoColors.ink, size: 20),
                 ),
-              );
-            }).toList(),
-          ),
+              ),
+            ),
+          // Loading indicator
+          if (_isLoading)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 12,
+              right: 12,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: VoyoColors.paper,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(
+                      width: 12,
+                      height: 12,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: VoyoColors.expedition,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Loading places…',
+                      style: GoogleFonts.instrumentSans(
+                        fontSize: 12,
+                        color: VoyoColors.stone,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );

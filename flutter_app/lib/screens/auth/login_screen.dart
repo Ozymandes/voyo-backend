@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/auth_service.dart';
+import '../../theme.dart';
+import '../../widgets/cleo_owl.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -31,17 +34,16 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
     try {
       await _auth.signIn(email, password);
-      // StreamBuilder in main.dart reacts automatically — no navigation needed
     } on AuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+          SnackBar(content: Text(e.message), backgroundColor: VoyoColors.expedition),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Error: $e'), backgroundColor: VoyoColors.expedition),
         );
       }
     } finally {
@@ -52,6 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: VoyoColors.page,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -59,51 +62,59 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.explore, size: 72, color: Colors.deepOrange),
-                const SizedBox(height: 12),
+                const CleoOwl(size: 72),
+                const SizedBox(height: 16),
                 Text(
-                  'Welcome to Voyo',
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  'Voyo',
+                  style: GoogleFonts.fraunces(
+                    fontSize: 42,
+                    fontWeight: FontWeight.w300,
+                    fontStyle: FontStyle.italic,
+                    color: VoyoColors.ink,
+                  ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
+                const SizedBox(height: 4),
+                Text(
                   'Your Egyptian travel companion',
-                  style: TextStyle(color: Colors.grey),
+                  style: GoogleFonts.instrumentSans(
+                    fontSize: 14,
+                    color: VoyoColors.stone,
+                  ),
                 ),
-                const SizedBox(height: 36),
+                const SizedBox(height: 40),
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
+                  style: GoogleFonts.instrumentSans(color: VoyoColors.ink),
                   decoration: const InputDecoration(
                     labelText: 'Email',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.email_outlined),
+                    prefixIcon: Icon(Icons.email_outlined, color: VoyoColors.stone),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 TextField(
                   controller: _passwordController,
                   obscureText: true,
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _signIn(),
+                  style: GoogleFonts.instrumentSans(color: VoyoColors.ink),
                   decoration: const InputDecoration(
                     labelText: 'Password',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.lock_outlined),
+                    prefixIcon: Icon(Icons.lock_outlined, color: VoyoColors.stone),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 28),
                 SizedBox(
                   width: double.infinity,
-                  height: 48,
+                  height: 52,
                   child: FilledButton(
                     onPressed: _loading ? null : _signIn,
                     style: FilledButton.styleFrom(
-                      backgroundColor: Colors.deepOrange,
+                      backgroundColor: VoyoColors.expedition,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                     child: _loading
                         ? const SizedBox(
@@ -114,18 +125,29 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text('Sign In',
-                            style: TextStyle(fontSize: 16)),
+                        : Text(
+                            'Sign In',
+                            style: GoogleFonts.instrumentSans(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: () => Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (_) => const RegisterScreen()),
+                    MaterialPageRoute(builder: (_) => const RegisterScreen()),
                   ),
-                  child: const Text("Don't have an account? Register"),
+                  child: Text(
+                    "Don't have an account? Register",
+                    style: GoogleFonts.instrumentSans(
+                      color: VoyoColors.sky,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ],
             ),
