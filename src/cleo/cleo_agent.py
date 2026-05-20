@@ -15,6 +15,7 @@ from src.cleo.prompts import CLEO_SYSTEM_PROMPT, format_cleo_response
 from src.cleo.tools import SupabaseTool, WeatherTool, WebSearchTool
 from src.cleo.tools.profile_update_tool import ProfileUpdateTool
 from src.cleo.user_profile_manager import UserProfileManager
+from src.cleo.safeguards import ScopeDetector, SafetyFilter, ResponseValidator
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +59,11 @@ class CleoAgent:
         # Profile manager for per-request personalization
         self.profile_manager = UserProfileManager()
 
+        # Safeguards
+        self.scope_detector = ScopeDetector()
+        self.safety_filter = SafetyFilter()
+        self.response_validator = ResponseValidator()
+
         logger.info("CLEO agent initialized successfully")
 
     def process_message(
@@ -82,6 +88,22 @@ class CleoAgent:
             print(f"USER MESSAGE: {user_message}")
             print(f"USER ID: {user_id or 'None (anonymous)'}")
             print(f"{'='*60}\n")
+
+        # SAFETY CHECK 1: Safety filter for inappropriate content
+        safety_decision = self.safety_filter.check_query_safety(user_message)
+        if not safety_decision.safe:
+            logger.warning(f"Query flagged by safety filter: {safety_decision.reasoning}")
+            if debug:
+                print(f"SAFETY FILTER: {safety_decision.reasoning}")
+            return safety_decision.suggested_response or "I cannot assist with that request. I'm designed to help with Egyptian travel and tourism."
+
+        # SAFETY CHECK 2: Scope detection
+        scope_decision = self.scope_detector.check_scope(user_message)
+        if not scope_decision.in_scope:
+            logger.info(f"Query flagged as out-of-scope: {scope_decision.reasoning}")
+            if debug:
+                print(f"SCOPE DETECTION: {scope_decision.reasoning}")
+            return scope_decision.redirection or "I specialize in Egyptian travel and tourism. How can I help you plan your Egypt trip?"
 
         # Get conversation context
         conversation_context = ""

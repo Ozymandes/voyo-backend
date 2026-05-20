@@ -11,3 +11,15 @@ flutter_app/build/
 flutter_app/.packages
 flutter_app/.flutter-plugins
 flutter_app/.flutter-plugins-dependencies
+
+# Academic Evaluation Data (generated files)
+data/evaluation/cache/
+data/evaluation/results/
+
+# Test cache files
+*.pyc
+__pycache__/
+*.pyc
+
+# Local Claude settings
+.claude/settings.local.json
