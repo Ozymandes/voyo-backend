@@ -5,7 +5,7 @@ Verifies that CLEO produces meaningfully different recommendations
 for users with different profiles stored in Supabase.
 
 Run from project root:
-    python test_personalization.py
+    python tests/integration/personalization/test_personalization.py
 
 Requires mock users to be seeded first:
     python scripts/seed_test_users.py
@@ -13,7 +13,11 @@ Requires mock users to be seeded first:
 
 import sys
 import os
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(project_root))
 
 from src.cleo.cleo_agent import CleoAgent
 

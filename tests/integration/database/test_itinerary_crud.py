@@ -5,7 +5,7 @@ Verifies that itinerary create/read/add-items/list-items operations
 work correctly against the live Supabase instance.
 
 Run from project root:
-    python test_itinerary_crud.py
+    python tests/integration/database/test_itinerary_crud.py
 
 Requires mock users to be seeded first:
     python scripts/seed_test_users.py
@@ -13,7 +13,11 @@ Requires mock users to be seeded first:
 
 import sys
 import os
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(project_root))
 
 from src.database.supabase_client import VOYODatabase
 

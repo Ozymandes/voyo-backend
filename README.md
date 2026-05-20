@@ -86,11 +86,14 @@ Supabase Database (automatic insertion)
 
 ## Documentation
 
-See [docs/](docs/) for detailed documentation:
-- [Pipeline Architecture](docs/PIPELINE_ARCHITECTURE.md)
-- [Final Status Report](docs/FINAL_STATUS_REPORT.md)
-- [Grad Project Assessment](docs/GRAD_PROJECT_STATUS.md)
-- [Wikipedia Integration](docs/WIKIPEDIA_ENRICHMENT_COMPLETE.md)
+**📚 [Complete Documentation Index](docs/INDEX.md)** - Browse all documentation
+
+### Quick Links
+- **[CLEO AI System](docs/cleo/CLEO_README.md)** - AI-powered travel guide
+- **[Pipeline Architecture](docs/architecture/PIPELINE_ARCHITECTURE.md)** - System design
+- **[Development Guides](docs/guides/)** - How-to guides
+- **[Test Suite](tests/README.md)** - Testing documentation
+- **[API Documentation](docs/architecture/LLM_INTEGRATION_ANALYSIS.md)** - External API integration
 
 ## API Endpoints
 

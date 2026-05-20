@@ -3,7 +3,11 @@ Test CLEO safeguards integration
 """
 
 import sys
-sys.path.insert(0, "c:\\Users\\yasee\\OneDrive\\Desktop\\VOYO_Backend\\voyo-backend")
+from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
 
 from src.cleo.cleo_agent import CleoAgent
 
