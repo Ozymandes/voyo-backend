@@ -119,6 +119,15 @@ class GroqClient:
 
         except Exception as e:
             logger.error(f"Error generating response from Groq: {e}")
+            error_str = str(e)
+
+            # Check for rate limit error
+            if "rate limit" in error_str.lower() or "429" in error_str:
+                return ("I apologize, but I've reached my daily usage limit and need to rest. "
+                       "Please try again in about an hour, or consider upgrading to a higher tier. "
+                       "In the meantime, I can still help with basic information from my database!")
+
+            # Generic connection error
             return "I apologize, but I'm having trouble connecting right now. Please try again."
 
     def test_connection(self) -> bool:

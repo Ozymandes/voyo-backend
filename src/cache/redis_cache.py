@@ -27,7 +27,9 @@ class RedisCache:
             if os.getenv('REDIS_URL'):
                 self.redis_client = redis.from_url(
                     os.getenv('REDIS_URL'),
-                    decode_responses=True
+                    decode_responses=True,
+                    socket_connect_timeout=5,  # 5 second timeout
+                    socket_timeout=5
                 )
             else:
                 self.redis_client = redis.Redis(
@@ -35,13 +37,24 @@ class RedisCache:
                     port=int(os.getenv('REDIS_PORT', 6379)),
                     password=os.getenv('REDIS_PASSWORD'),
                     db=int(os.getenv('REDIS_DB', 0)),
-                    decode_responses=True
+                    decode_responses=True,
+                    socket_connect_timeout=5,  # 5 second timeout
+                    socket_timeout=5
                 )
 
-            # Test connection
+            # Test connection with timeout
             self.redis_client.ping()
             logger.info("Redis cache initialized successfully")
 
+        except redis.exceptions.ConnectionError as e:
+            logger.error(f"Redis connection failed: {e}")
+            logger.warning("Possible causes:")
+            logger.warning("1. Redis Cloud service is down")
+            logger.warning("2. DNS resolution issues (check your Redis Cloud subscription)")
+            logger.warning("3. Network connectivity problems")
+            logger.warning("4. Redis credentials have changed")
+            logger.warning("Running without cache - performance will be slower")
+            self.redis_client = None
         except Exception as e:
             logger.error(f"Failed to initialize Redis cache: {e}")
             logger.warning("Running without cache - performance will be slower")

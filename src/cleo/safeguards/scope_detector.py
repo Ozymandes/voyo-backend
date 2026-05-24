@@ -225,6 +225,14 @@ class ScopeDetector:
                 )
 
         # Low confidence - classify as borderline
+        # For borderline cases with NO out-of-scope signals, allow through (greeting, simple questions)
+        if out_of_scope_score == 0:
+            return self._create_in_scope_decision(
+                in_scope_score + 0.1, egyptian_entities, query,
+                reasoning=f"Borderline case but no out-of-scope signals (in_scope: {in_scope_score:.2f}, out_of_scope: {out_of_scope_score:.2f})"
+            )
+
+        # For borderline cases with actual out-of-scope signals, be conservative
         return ScopeDecision(
             in_scope=False,  # Conservative: treat as out of scope
             confidence=max(in_scope_score, out_of_scope_score),
