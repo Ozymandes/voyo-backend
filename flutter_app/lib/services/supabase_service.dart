@@ -13,12 +13,14 @@ class SupabaseService {
     required double minLng,
     required double maxLng,
   }) async {
-    final response = await _client.rpc('get_pois_in_view', params: {
-      'min_lat': minLat,
-      'max_lat': maxLat,
-      'min_lng': minLng,
-      'max_lng': maxLng,
-    });
+    final response = await _client
+        .from('pois')
+        .select('id, name, latitude, longitude, category, average_rating, description')
+        .gte('latitude', minLat)
+        .lte('latitude', maxLat)
+        .gte('longitude', minLng)
+        .lte('longitude', maxLng)
+        .eq('is_active', true);
 
     final List data = response as List;
     return data
@@ -212,6 +214,22 @@ class SupabaseService {
   /// Deletes a single itinerary item by its row id.
   Future<void> deleteItineraryItem(int itemId) async {
     await _client.from('itinerary_items').delete().eq('id', itemId);
+  }
+
+  /// Switches the active itinerary to [itineraryId].
+  /// All other itineraries for the user are demoted to 'draft'.
+  Future<void> setActiveItinerary({
+    required String userId,
+    required int itineraryId,
+  }) async {
+    await _client
+        .from('itineraries')
+        .update({'status': 'draft'})
+        .eq('user_id', userId);
+    await _client
+        .from('itineraries')
+        .update({'status': 'current'})
+        .eq('id', itineraryId);
   }
 
   /// Creates a new itinerary for the user with status 'current'.

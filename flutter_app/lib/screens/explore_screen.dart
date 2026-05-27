@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
@@ -591,13 +593,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
           children: [
             Stack(
               children: [
-                Container(
+                _WikiPoiImage(
+                  poiName: poi.name,
+                  category: poi.category,
                   height: 108,
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(16)),
-                    gradient: _categoryGradient(poi.category),
-                  ),
+                  borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16)),
                 ),
                 if (poi.isHiddenGem)
                   Positioned(
@@ -692,10 +693,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
         ),
         child: Row(
           children: [
-            Container(
-              width: 42, height: 42,
-              decoration: BoxDecoration(
-                gradient: _categoryGradient(poi.category),
+            SizedBox(
+              width: 42,
+              child: _WikiPoiImage(
+                poiName: poi.name,
+                category: poi.category,
+                height: 42,
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
@@ -1048,30 +1051,120 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
   }
 
-  LinearGradient _categoryGradient(String? category) {
-    return switch (category) {
-      'historical' || 'religious' => const LinearGradient(
-          colors: [Color(0xFF3D2B1F), Color(0xFFC4622A)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight),
-      'natural' => const LinearGradient(
-          colors: [Color(0xFF1A3A2A), Color(0xFF2A7A50)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight),
-      'cultural' || 'entertainment' => const LinearGradient(
-          colors: [Color(0xFF1A2C40), Color(0xFF1C72B4)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight),
-      'dining' || 'shopping' => const LinearGradient(
-          colors: [Color(0xFF1A2A1A), Color(0xFF2A5A3A)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight),
-      _ => const LinearGradient(
-          colors: [Color(0xFF2C1A2E), Color(0xFF6040B0)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight),
-    };
+}
+
+LinearGradient _categoryGradient(String? category) {
+  return switch (category) {
+    'historical' || 'religious' => const LinearGradient(
+        colors: [Color(0xFF3D2B1F), Color(0xFFC4622A)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight),
+    'natural' => const LinearGradient(
+        colors: [Color(0xFF1A3A2A), Color(0xFF2A7A50)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight),
+    'cultural' || 'entertainment' => const LinearGradient(
+        colors: [Color(0xFF1A2C40), Color(0xFF1C72B4)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight),
+    'dining' || 'shopping' => const LinearGradient(
+        colors: [Color(0xFF1A2A1A), Color(0xFF2A5A3A)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight),
+    _ => const LinearGradient(
+        colors: [Color(0xFF2C1A2E), Color(0xFF6040B0)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Wikipedia image cache + widget
+// ---------------------------------------------------------------------------
+
+class _WikiImageService {
+  static final _WikiImageService _instance = _WikiImageService._();
+  factory _WikiImageService() => _instance;
+  _WikiImageService._();
+
+  final _cache = <String, String?>{};
+  final _inflight = <String, Future<String?>>{};
+
+  Future<String?> imageUrl(String poiName) {
+    if (_cache.containsKey(poiName)) return Future.value(_cache[poiName]);
+    return _inflight.putIfAbsent(poiName, () async {
+      final url = await _fetch(poiName);
+      _cache[poiName] = url;
+      _inflight.remove(poiName);
+      return url;
+    });
   }
+
+  Future<String?> _fetch(String name) async {
+    final encoded = Uri.encodeComponent(name);
+    final uri = Uri.parse(
+        'https://en.wikipedia.org/api/rest_v1/page/summary/$encoded');
+    try {
+      final res = await http
+          .get(uri, headers: {'User-Agent': 'VoyoApp/1.0'})
+          .timeout(const Duration(seconds: 6));
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        final thumb = data['thumbnail'] as Map<String, dynamic>?;
+        return thumb?['source'] as String?;
+      }
+    } catch (_) {}
+    return null;
+  }
+}
+
+class _WikiPoiImage extends StatelessWidget {
+  final String poiName;
+  final String? category;
+  final double height;
+  final BorderRadius borderRadius;
+
+  const _WikiPoiImage({
+    required this.poiName,
+    required this.height,
+    required this.borderRadius,
+    this.category,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: _WikiImageService().imageUrl(poiName),
+      builder: (_, snap) {
+        final original = snap.data;
+        return ClipRRect(
+          borderRadius: borderRadius,
+          child: SizedBox(
+            height: height,
+            width: double.infinity,
+            child: original == null
+                ? _fallback()
+                : Image.network(
+                    // Try the 1200px upscaled URL; fall back to original if 404
+                    original.replaceFirst(RegExp(r'/\d+px-'), '/1200px-'),
+                    fit: BoxFit.cover,
+                    filterQuality: FilterQuality.high,
+                    errorBuilder: (ctx1, err1, st1) => Image.network(
+                      original,
+                      fit: BoxFit.cover,
+                      filterQuality: FilterQuality.high,
+                      errorBuilder: (ctx2, err2, st2) => _fallback(),
+                    ),
+                  ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _fallback() => Container(
+        decoration: BoxDecoration(gradient: _categoryGradient(category)),
+      );
 }
 
 // ---------------------------------------------------------------------------
@@ -1112,15 +1205,13 @@ class _PoiSheet extends StatelessWidget {
                 controller: controller,
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
                 children: [
-                  // Gradient image placeholder
                   Stack(
                     children: [
-                      Container(
+                      _WikiPoiImage(
+                        poiName: poi.name,
+                        category: poi.category,
                         height: 180,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14),
-                          gradient: _gradient(),
-                        ),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       if (poi.isHiddenGem)
                         Positioned(
@@ -1395,25 +1486,6 @@ class _PoiSheet extends StatelessWidget {
     return parts.join(' · ');
   }
 
-  LinearGradient _gradient() {
-    return switch (poi.category) {
-      'historical' || 'religious' => const LinearGradient(
-          colors: [Color(0xFF3D2B1F), Color(0xFFC4622A)],
-          begin: Alignment.topLeft, end: Alignment.bottomRight),
-      'natural' => const LinearGradient(
-          colors: [Color(0xFF1A3A2A), Color(0xFF2A7A50)],
-          begin: Alignment.topLeft, end: Alignment.bottomRight),
-      'cultural' || 'entertainment' => const LinearGradient(
-          colors: [Color(0xFF1A2C40), Color(0xFF1C72B4)],
-          begin: Alignment.topLeft, end: Alignment.bottomRight),
-      'dining' || 'shopping' => const LinearGradient(
-          colors: [Color(0xFF1A2A1A), Color(0xFF2A5A3A)],
-          begin: Alignment.topLeft, end: Alignment.bottomRight),
-      _ => const LinearGradient(
-          colors: [Color(0xFF2C1A2E), Color(0xFF6040B0)],
-          begin: Alignment.topLeft, end: Alignment.bottomRight),
-    };
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1552,7 +1624,7 @@ class _SearchOverlayState extends State<_SearchOverlay> {
                               padding:
                                   const EdgeInsets.symmetric(vertical: 8),
                               itemCount: _results.length,
-                              separatorBuilder: (_, __) =>
+                              separatorBuilder: (_, i) =>
                                   Divider(color: VoyoColors.smoke, height: 1),
                               itemBuilder: (_, i) {
                                 final poi = _results[i];

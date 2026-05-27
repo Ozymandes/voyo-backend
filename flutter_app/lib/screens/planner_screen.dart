@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/itinerary.dart';
 import '../services/supabase_service.dart';
 import '../theme.dart';
-import '../widgets/cleo_owl.dart';
+import 'map_screen.dart';
 
 class PlannerScreen extends StatefulWidget {
   const PlannerScreen({super.key});
@@ -347,14 +347,49 @@ class _PlannerScreenState extends State<PlannerScreen> {
               offset: const Offset(0, 2)),
         ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          _statCell(
-              totalDays?.toString() ?? '—', 'days', VoyoColors.terra),
-          _statDivider(),
-          _statCell(totalStops.toString(), 'stops', VoyoColors.sky),
-          _statDivider(),
-          _statCell(daysWithStops.toString(), 'planned', VoyoColors.verified),
+          Row(
+            children: [
+              _statCell(
+                  totalDays?.toString() ?? '—', 'days', VoyoColors.terra),
+              _statDivider(),
+              _statCell(totalStops.toString(), 'stops', VoyoColors.sky),
+              _statDivider(),
+              _statCell(
+                  daysWithStops.toString(), 'planned', VoyoColors.verified),
+            ],
+          ),
+          if (totalStops > 0) ...[
+            const SizedBox(height: 12),
+            Container(height: 1, color: VoyoColors.smoke),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 40,
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MapScreen()),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: VoyoColors.sky),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+                icon: const Icon(Icons.route_outlined,
+                    size: 16, color: VoyoColors.sky),
+                label: Text(
+                  'View Route on Map',
+                  style: GoogleFonts.instrumentSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: VoyoColors.sky,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -812,6 +847,10 @@ class _PlannerScreenState extends State<PlannerScreen> {
         userId: uid,
         currentItineraryId: _itinerary?.id,
         onChanged: _load,
+        onSelected: (id) async {
+          await _service.setActiveItinerary(userId: uid, itineraryId: id);
+          _load();
+        },
       ),
     );
   }
@@ -900,12 +939,14 @@ class _TripsHistorySheet extends StatefulWidget {
   final String userId;
   final int? currentItineraryId;
   final VoidCallback onChanged;
+  final void Function(int itineraryId)? onSelected;
 
   const _TripsHistorySheet({
     required this.service,
     required this.userId,
     required this.currentItineraryId,
     required this.onChanged,
+    this.onSelected,
   });
 
   @override
@@ -1024,7 +1065,7 @@ class _TripsHistorySheetState extends State<_TripsHistorySheet> {
                     : ListView.separated(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         itemCount: _trips.length,
-                        separatorBuilder: (_, __) =>
+                        separatorBuilder: (_, _) =>
                             Divider(color: VoyoColors.smoke, height: 1),
                         itemBuilder: (_, i) => _tripTile(_trips[i]),
                       ),
@@ -1060,6 +1101,12 @@ class _TripsHistorySheetState extends State<_TripsHistorySheet> {
     return ListTile(
       contentPadding:
           const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      onTap: isCurrent
+          ? null
+          : () {
+              Navigator.pop(context);
+              widget.onSelected?.call(id);
+            },
       title: Row(
         children: [
           Expanded(
@@ -1348,7 +1395,7 @@ class _AddStopSheetState extends State<_AddStopSheet> {
                   : ListView.separated(
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       itemCount: _results.length,
-                      separatorBuilder: (_, __) =>
+                      separatorBuilder: (_, _) =>
                           Divider(color: VoyoColors.smoke, height: 1),
                       itemBuilder: (_, i) {
                         final poi = _results[i];

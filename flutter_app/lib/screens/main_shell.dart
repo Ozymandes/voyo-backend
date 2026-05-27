@@ -34,7 +34,7 @@ class _MainShellState extends State<MainShell> {
   late final _screens = [
     ExploreScreen(onSwitchToCleo: () => _onNavTap(3)),
     const PlannerScreen(),
-    const ChatScreen(),
+    ChatScreen(onSwitchToPlanner: () => _onNavTap(1)),
     const JourneyScreen(),
   ];
 

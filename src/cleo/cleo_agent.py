@@ -6,12 +6,13 @@ Cairo Local Expert & Operator - Your Egyptian Travel Guide
 from typing import Dict, List, Optional
 import json
 import logging
+import re
 from datetime import datetime
 
 from src.cleo.config import CleoConfig, GroqClient
 from src.cleo.semantic_cache import SemanticCache
 from src.cleo.conversation_memory import ConversationMemory
-from src.cleo.prompts import CLEO_SYSTEM_PROMPT, format_cleo_response
+from src.cleo.prompts import CLEO_SYSTEM_PROMPT, RESPONSE_STYLE_INSTRUCTIONS, format_cleo_response
 from src.cleo.tools import SupabaseTool, WeatherTool, WebSearchTool
 from src.cleo.tools.profile_update_tool import ProfileUpdateTool
 from src.cleo.user_profile_manager import UserProfileManager
@@ -97,15 +98,8 @@ class CleoAgent:
                 print(f"SAFETY FILTER: {safety_decision.reasoning}")
             return safety_decision.suggested_response or "I cannot assist with that request. I'm designed to help with Egyptian travel and tourism."
 
-        # SAFETY CHECK 2: Scope detection
-        scope_decision = self.scope_detector.check_scope(user_message)
-        if not scope_decision.in_scope:
-            logger.info(f"Query flagged as out-of-scope: {scope_decision.reasoning}")
-            if debug:
-                print(f"SCOPE DETECTION: {scope_decision.reasoning}")
-            return scope_decision.redirection or "I specialize in Egyptian travel and tourism. How can I help you plan your Egypt trip?"
-
-        # Get conversation context
+        # Get conversation context BEFORE scope check so follow-up messages
+        # (e.g. "tell me more about it") can be evaluated with Egypt context.
         conversation_context = ""
         if user_id:
             conversation_context = self.memory.get_context(user_id, last_n=10)
@@ -113,6 +107,16 @@ class CleoAgent:
                 print("CONVERSATION CONTEXT:")
                 print(conversation_context)
                 print()
+
+        # SAFETY CHECK 2: Scope detection (pass context so pronouns/follow-ups resolve)
+        scope_decision = self.scope_detector.check_scope(
+            user_message, conversation_context=conversation_context
+        )
+        if not scope_decision.in_scope:
+            logger.info(f"Query flagged as out-of-scope: {scope_decision.reasoning}")
+            if debug:
+                print(f"SCOPE DETECTION: {scope_decision.reasoning}")
+            return scope_decision.redirection or "I specialize in Egyptian travel and tourism. How can I help you plan your Egypt trip?"
 
         # Load user profile for personalization
         user_profile = None
@@ -131,6 +135,7 @@ class CleoAgent:
             print(f"  Use Cache: {reasoning['use_cache']}")
             print(f"  Tools Needed: {reasoning.get('tools', [])}")
             print(f"  Complexity: {reasoning.get('complexity', 'unknown')}")
+            print(f"  Response Style: {reasoning.get('response_style', 'standard')}")
             print()
 
         # Add user message to memory
@@ -169,7 +174,7 @@ class CleoAgent:
                 if user_id:
                     self.memory.add_message(user_id, "assistant", response)
 
-                return format_cleo_response(response)
+                return self._finalize_response(response)
 
             elif reasoning["approach"] == "llm_agent":
                 # Complex query - use LLM with tools
@@ -191,11 +196,74 @@ class CleoAgent:
                 if user_id:
                     self.memory.add_message(user_id, "assistant", response)
 
-                return format_cleo_response(response)
+                return self._finalize_response(response)
 
         # Fallback
         logger.warning(f"Max iterations reached for: {user_message[:50]}...")
         return "I apologize, but I'm having trouble with that question. Could you rephrase it?"
+
+    def _classify_response_style(self, query: str) -> str:
+        """
+        Classify the response length/style needed for this query.
+
+        Returns one of:
+          "concise"  — 1-3 sentences (single fact, greeting, quick follow-up)
+          "standard" — 2-4 paragraphs (POI description, recommendation, comparison)
+          "detailed" — full structured format (itinerary, multi-day plan, deep guide)
+        """
+        q = query.lower().strip()
+
+        # --- DETAILED: itinerary / planning queries ---
+        detailed_patterns = [
+            r"\b(plan|itinerary|schedule|design|create|build|make)\b.{0,40}\b(trip|tour|visit|days?|week|travel)\b",
+            r"\b\d+[\s\-]days?\b",         # "3-day", "5 day", "5 days"
+            r"\b(week|fortnight|weeks)\b.{0,30}\b(egypt|cairo|luxor|aswan|sinai|nile)\b",
+            r"\bhow (should i|do i|can i) plan\b",
+            r"\b(comprehensive|complete|full|detailed)\b.{0,20}\b(guide|itinerary|plan|tour)\b",
+            r"\bwalk me through\b",
+            r"\bwhat (should|can) i (do|see|visit).{0,20}\b\d+\s*days?\b",
+        ]
+        for pattern in detailed_patterns:
+            if re.search(pattern, q):
+                return "detailed"
+
+        # Multiple Egyptian cities + a planning/travel word → detailed (cross-city trip)
+        # (pure distance/comparison questions between two cities stay "standard")
+        cities = ["cairo", "luxor", "aswan", "alexandria", "giza", "hurghada", "sinai", "sharm"]
+        planning_words = ["plan", "itinerary", "trip", "visit", "travel", "tour", "day", "week", "route"]
+        if sum(c in q for c in cities) >= 2 and any(w in q for w in planning_words):
+            return "detailed"
+
+        # Multi-part question (contains "and" + question word twice, or semicolons/numbered points)
+        if q.count("?") >= 2:
+            return "detailed"
+
+        # --- CONCISE: single-fact, yes/no, greeting, short follow-up ---
+        concise_starters = re.compile(
+            r"^(when|what time|how much|how many|where is|where are|"
+            r"is it|is there|does it|do they|can i|how far|how long does it take|"
+            r"what('s| is) the (price|cost|fee|ticket|address|phone|rating|opening|closing))"
+        )
+        concise_keywords = re.compile(
+            r"\b(opening hours?|closing time|ticket price|entrance fee|"
+            r"address|location|phone number|contact|directions|how to get)\b"
+        )
+        # Short query + no depth signals → concise
+        depth_signals = re.compile(
+            r"\b(tell me about|describe|explain|history of|significance|"
+            r"recommend|suggest|what (should|can) i|best way)\b"
+        )
+        word_count = len(q.split())
+        is_short = word_count <= 12
+        is_greeting = re.match(r"^(hi|hello|hey|thanks|thank you|ok|okay|great|got it|sure|yalla)", q)
+
+        if is_greeting:
+            return "concise"
+        if is_short and (concise_starters.match(q) or concise_keywords.search(q)) and not depth_signals.search(q):
+            return "concise"
+
+        # --- STANDARD: everything else ---
+        return "standard"
 
     def _reason(self, query: str, user_id: Optional[str], context: str) -> Dict:
         """
@@ -210,6 +278,9 @@ class CleoAgent:
             Reasoning dictionary
         """
         query_lower = query.lower()
+
+        # Determine response style up front (used by all paths below)
+        response_style = self._classify_response_style(query)
 
         # Simple factual questions (cacheable)
         cacheable_patterns = [
@@ -234,7 +305,8 @@ class CleoAgent:
                 "approach": "direct_db",
                 "use_cache": True,
                 "tools": [],
-                "complexity": "simple"
+                "complexity": "simple",
+                "response_style": "concise",
             }
 
         # Weather-dependent questions
@@ -243,7 +315,8 @@ class CleoAgent:
                 "approach": "llm_agent",
                 "use_cache": False,  # Weather changes
                 "tools": ["weather"],
-                "complexity": "medium"
+                "complexity": "medium",
+                "response_style": response_style,
             }
 
         # Questions about attractions, POIs, locations → Use LLM with tools
@@ -255,7 +328,8 @@ class CleoAgent:
                 "approach": "llm_agent",
                 "use_cache": False,
                 "tools": ["supabase"],
-                "complexity": "medium"
+                "complexity": "medium",
+                "response_style": response_style,
             }
 
         # Complex questions → LLM agent with tools
@@ -263,7 +337,8 @@ class CleoAgent:
             "approach": "llm_agent",
             "use_cache": use_cache,
             "tools": ["supabase"],  # Enable tools for database queries
-            "complexity": "medium"
+            "complexity": "medium",
+            "response_style": response_style,
         }
 
     def _direct_database_query(self, query: str, reasoning: Dict) -> str:
@@ -363,6 +438,13 @@ class CleoAgent:
                     "role": "system",
                     "content": f"CONVERSATION HISTORY:\n{context}"
                 })
+
+            # Inject per-request response length instruction
+            style = reasoning.get("response_style", "standard")
+            messages.append({
+                "role": "system",
+                "content": RESPONSE_STYLE_INSTRUCTIONS[style]
+            })
 
             # Add user query
             messages.append({"role": "user", "content": query})
@@ -468,6 +550,26 @@ class CleoAgent:
         except Exception as e:
             logger.error(f"Error in LLM agent execution: {e}")
             return f"I apologize, but I encountered an error: {str(e)}"
+
+    def _finalize_response(self, response: str) -> str:
+        """Format response and programmatically append [PLANNER] for itineraries."""
+        formatted = format_cleo_response(response)
+        if '[PLANNER]' in formatted:
+            print("[PLANNER] already in response — skipping append")
+            return formatted
+        # Only treat as an itinerary if there are at least 2 distinct day headers
+        # on their own lines (e.g. "Day 1:", "**Day 2**") — not mid-sentence mentions.
+        day_headers = re.findall(
+            r'(?:^|\n)\s*[\*#]*\s*Day\s+(\d+)',
+            formatted
+        )
+        distinct_days = set(day_headers)
+        if len(distinct_days) >= 2:
+            formatted += '\n[PLANNER]'
+            print(f"[PLANNER] appended — found day headers: {sorted(distinct_days)}")
+        else:
+            print(f"[PLANNER] NOT appended — only {len(distinct_days)} day header(s) found")
+        return formatted
 
     def _format_profile_context(self, profile: Dict) -> str:
         """Format user profile into a context block injected into the system prompt."""

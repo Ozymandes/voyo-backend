@@ -20,7 +20,7 @@ class CleoConfig:
     groq_api_key: str = os.getenv("GROQ_API_KEY", "")
     model: str = os.getenv("LLM_MODEL", "llama-3.3-70b-versatile")
     temperature: float = float(os.getenv("LLM_TEMPERATURE", "0.7"))
-    max_tokens: int = int(os.getenv("LLM_MAX_TOKENS", "2000"))
+    max_tokens: int = int(os.getenv("LLM_MAX_TOKENS", "8000"))
 
     # Semantic Cache (Redis)
     enable_cache: bool = True
@@ -90,45 +90,65 @@ class GroqClient:
         Returns:
             str or dict: Generated response text or dict with tool_calls
         """
-        try:
-            params = {
-                "model": self.model,
-                "messages": messages,
-                "temperature": config.temperature,
-                "max_tokens": config.max_tokens
-            }
+        import time
 
-            if tools:
-                params["tools"] = tools
+        max_retries = 3
+        last_error = None
 
-            response = self.client.chat.completions.create(**params)
-
-            # Handle tool calls - Groq returns ChatCompletion object
-            message = response.choices[0].message
-
-            if message.tool_calls:
-                # Return dict with tool_calls for processing
-                return {
-                    "content": message.content,
-                    "tool_calls": message.tool_calls,
-                    "finish_reason": response.choices[0].finish_reason
+        for attempt in range(max_retries):
+            try:
+                params = {
+                    "model": self.model,
+                    "messages": messages,
+                    "temperature": config.temperature,
+                    "max_tokens": config.max_tokens
                 }
 
-            # Direct text response
-            return message.content
+                if tools:
+                    params["tools"] = tools
 
-        except Exception as e:
-            logger.error(f"Error generating response from Groq: {e}")
-            error_str = str(e)
+                response = self.client.chat.completions.create(**params)
 
-            # Check for rate limit error
-            if "rate limit" in error_str.lower() or "429" in error_str:
-                return ("I apologize, but I've reached my daily usage limit and need to rest. "
-                       "Please try again in about an hour, or consider upgrading to a higher tier. "
-                       "In the meantime, I can still help with basic information from my database!")
+                # Handle tool calls - Groq returns ChatCompletion object
+                message = response.choices[0].message
 
-            # Generic connection error
-            return "I apologize, but I'm having trouble connecting right now. Please try again."
+                if message.tool_calls:
+                    return {
+                        "content": message.content,
+                        "tool_calls": message.tool_calls,
+                        "finish_reason": response.choices[0].finish_reason
+                    }
+
+                return message.content
+
+            except Exception as e:
+                last_error = e
+                error_str = str(e).lower()
+                error_type = type(e).__name__.lower()
+                print(f"[GROQ ERROR] attempt {attempt + 1}/{max_retries} — {type(e).__name__}: {e}")
+
+                # Retry on rate limit or transient server errors
+                is_retryable = (
+                    "rate_limit" in error_type
+                    or "rate limit" in error_str
+                    or "429" in error_str
+                    or "503" in error_str
+                    or "502" in error_str
+                    or "timeout" in error_str
+                    or "connection" in error_str
+                )
+
+                if is_retryable and attempt < max_retries - 1:
+                    wait = 2 ** attempt  # 1 s, 2 s
+                    print(f"[GROQ] Retrying in {wait}s...")
+                    time.sleep(wait)
+                    continue
+
+                # Non-retryable error — break immediately
+                break
+
+        logger.error(f"Groq generate failed after {max_retries} attempts: {last_error}")
+        return "I apologize, but I'm having trouble connecting right now. Please try again in a moment."
 
     def test_connection(self) -> bool:
         """Test Groq API connection"""

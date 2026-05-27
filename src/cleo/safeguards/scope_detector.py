@@ -67,7 +67,7 @@ class ScopeDetector:
         "karnak", "valley", "kings", "abu", "simbel", "khan", "khalili",
 
         # Travel concepts
-        "visit", "travel", "trip", "itinerary", "tour", "hotel", "flight",
+        "visit", "travel", "trip", "itinerary", "planner", "tour", "hotel", "flight",
         "attraction", "poi", "landmark", "destination", "excursion",
 
         # Tourism-specific
@@ -266,6 +266,14 @@ class ScopeDetector:
                 found.append(entity)
         return found
 
+    # Itinerary/planning requests are always Egypt context in this app
+    _ITINERARY_RE = re.compile(
+        r"\b(itinerary|planner?|schedule|trip|tour|route|excursion)\b"
+        r"|\b\d+[\s\-]?days?\b"
+        r"|\b(create|creat|make|build|design|give me|show me)\b.{0,30}\b(trip|tour|planner?|itinerary|days?|week)\b",
+        re.IGNORECASE,
+    )
+
     def _calculate_in_scope_score(
         self,
         egypt_signals: int,
@@ -274,6 +282,10 @@ class ScopeDetector:
     ) -> float:
         """Calculate score for in-scope likelihood"""
         score = 0.0
+
+        # Itinerary / trip-planning requests are always Egypt context
+        if self._ITINERARY_RE.search(query):
+            score += 0.7
 
         # Base score from keywords (increased weight)
         score += min(egypt_signals * 0.20, 0.8)
@@ -373,9 +385,10 @@ class ScopeDetector:
                    f"in Egypt you'd like to know about?")
 
         # General Egypt travel offer
-        return ("I specialize in Egyptian travel and tourism. I'd love to help you plan "
-               "your trip to Egypt, recommend attractions, or share information about "
-               "Egyptian destinations. What would you like to know about visiting Egypt?")
+        return ("That's outside what I can help with — I'm CLEO, an AI guide specialized "
+               "exclusively in Egyptian travel and tourism. I can't assist with unrelated topics, "
+               "but I'm happy to help you explore Egypt! Ask me about attractions, history, "
+               "planning a trip, or anything else Egypt-related.")
 
 
 if __name__ == "__main__":

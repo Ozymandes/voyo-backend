@@ -1,17 +1,17 @@
 {
   "metadata": {
-    "total_queries": 125,
+    "total_queries": 145,
     "categories": {
       "factual": 50,
       "personalized": 30,
       "out_of_scope": 20,
-      "itinerary": 15,
+      "itinerary": 35,
       "complex": 10
     },
     "difficulties": {
       "easy": 72,
       "medium": 31,
-      "hard": 22
+      "hard": 42
     }
   },
   "queries": [
@@ -3322,6 +3322,769 @@
       "max_response_length": 1000,
       "should_arabic_phrases": true,
       "user_profile": null,
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I016",
+      "query": "Plan a 3-day Cairo trip for me. I'm traveling solo and love ancient history — pack my schedule full.",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "cairo",
+        "pyramid",
+        "museum",
+        "day",
+        "morning"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "cultural"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": true,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": "Cairo",
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 300,
+      "max_response_length": 1500,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "solo"},
+        "itinerary_pace": "packed_schedule",
+        "interest_scores": {"historical_sites": 0.95, "cultural": 0.8, "outdoor_nature": 0.3},
+        "price_sensitivity": "moderate",
+        "mobility_preference": "Full mobility",
+        "travel_style": "cultural"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I017",
+      "query": "I'm a solo traveler with 5 days in Egypt. I want to maximize ancient ruins and culture. Give me a packed itinerary.",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "day",
+        "cairo",
+        "luxor",
+        "temple",
+        "museum"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "cultural"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": true,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": null,
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 400,
+      "max_response_length": 2000,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "solo"},
+        "itinerary_pace": "packed_schedule",
+        "interest_scores": {"historical_sites": 0.9, "cultural": 0.85, "outdoor_nature": 0.4},
+        "price_sensitivity": "moderate",
+        "mobility_preference": "Full mobility",
+        "travel_style": "cultural"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I018",
+      "query": "Solo trip to Luxor for 2 days. I'm a history buff — show me everything possible.",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "luxor",
+        "temple",
+        "valley",
+        "kings",
+        "karnak"
+      ],
+      "expected_poi_types": [
+        "historical"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": true,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": "Luxor",
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 300,
+      "max_response_length": 1200,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "solo"},
+        "itinerary_pace": "packed_schedule",
+        "interest_scores": {"historical_sites": 1.0, "cultural": 0.7, "outdoor_nature": 0.2},
+        "price_sensitivity": "moderate",
+        "mobility_preference": "Full mobility",
+        "travel_style": "cultural"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I019",
+      "query": "I'm solo traveling Egypt for a week — starting in Cairo then moving to Luxor. Build me a packed itinerary.",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "cairo",
+        "luxor",
+        "day",
+        "travel",
+        "temple"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "cultural"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": true,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": null,
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 500,
+      "max_response_length": 2500,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "solo"},
+        "itinerary_pace": "packed_schedule",
+        "interest_scores": {"historical_sites": 0.9, "cultural": 0.8, "outdoor_nature": 0.5},
+        "price_sensitivity": "moderate",
+        "mobility_preference": "Full mobility",
+        "travel_style": "adventure"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I020",
+      "query": "Solo traveler here — I have exactly one day in Cairo. Give me the ultimate packed itinerary from morning to night.",
+      "category": "itinerary",
+      "difficulty": "medium",
+      "expected_keywords": [
+        "morning",
+        "afternoon",
+        "evening",
+        "cairo",
+        "pyramid"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "cultural"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": false,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": "Cairo",
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 200,
+      "max_response_length": 1000,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "solo"},
+        "itinerary_pace": "packed_schedule",
+        "interest_scores": {"historical_sites": 0.85, "cultural": 0.75, "outdoor_nature": 0.3},
+        "price_sensitivity": "moderate",
+        "mobility_preference": "Full mobility",
+        "travel_style": "cultural"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I021",
+      "query": "Plan a 4-day Cairo trip for our family with two young kids aged 6 and 9. We need a relaxed pace and kid-friendly activities.",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "family",
+        "kid",
+        "child",
+        "cairo",
+        "day"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "entertainment",
+        "cultural"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": false,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": "Cairo",
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 300,
+      "max_response_length": 1500,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "family", "children_ages": [6, 9]},
+        "itinerary_pace": "slow_flexible",
+        "interest_scores": {"historical_sites": 0.6, "entertainment": 0.85, "cultural": 0.7, "outdoor_nature": 0.5},
+        "price_sensitivity": "moderate",
+        "mobility_preference": "Full mobility",
+        "travel_style": "cultural"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I022",
+      "query": "We're a family of 4 with kids aged 7 and 12 visiting Luxor for 3 days. What itinerary do you suggest?",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "family",
+        "luxor",
+        "kids",
+        "day",
+        "temple"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "entertainment"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": false,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": "Luxor",
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 300,
+      "max_response_length": 1500,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "family", "children_ages": [7, 12]},
+        "itinerary_pace": "slow_flexible",
+        "interest_scores": {"historical_sites": 0.7, "entertainment": 0.8, "cultural": 0.65},
+        "price_sensitivity": "moderate",
+        "mobility_preference": "Full mobility",
+        "travel_style": "cultural"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I023",
+      "query": "Family holiday in Egypt for 5 days with two children. We want a relaxed pace with something fun for the kids every day.",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "family",
+        "kids",
+        "egypt",
+        "day",
+        "fun"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "entertainment",
+        "cultural"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": false,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": null,
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 400,
+      "max_response_length": 2000,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "family"},
+        "itinerary_pace": "slow_flexible",
+        "interest_scores": {"historical_sites": 0.6, "entertainment": 0.9, "cultural": 0.65, "outdoor_nature": 0.5},
+        "price_sensitivity": "moderate",
+        "mobility_preference": "Full mobility",
+        "travel_style": "cultural"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I024",
+      "query": "Weekend in Cairo with kids — just 2 days. What's the best family-friendly itinerary that won't exhaust the children?",
+      "category": "itinerary",
+      "difficulty": "medium",
+      "expected_keywords": [
+        "family",
+        "kids",
+        "cairo",
+        "2 day",
+        "weekend"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "entertainment"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": false,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": "Cairo",
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 200,
+      "max_response_length": 1000,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "family"},
+        "itinerary_pace": "slow_flexible",
+        "interest_scores": {"historical_sites": 0.55, "entertainment": 0.9, "cultural": 0.6},
+        "price_sensitivity": "moderate",
+        "mobility_preference": "Full mobility",
+        "travel_style": "cultural"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I025",
+      "query": "Plan a 7-day Egypt family adventure. We have two teenagers and want a mix of history, adventure activities, and cultural experiences.",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "family",
+        "teen",
+        "egypt",
+        "adventure",
+        "day"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "entertainment",
+        "cultural",
+        "natural"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": true,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": null,
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 500,
+      "max_response_length": 2500,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "family", "children_ages": [14, 16]},
+        "itinerary_pace": "balanced",
+        "interest_scores": {"historical_sites": 0.75, "entertainment": 0.85, "cultural": 0.7, "outdoor_nature": 0.8},
+        "price_sensitivity": "moderate",
+        "mobility_preference": "Full mobility",
+        "travel_style": "adventure"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I026",
+      "query": "Plan a 3-day Cairo itinerary on a tight budget of $30 per day. Show me free or cheap attractions and street food options.",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "budget",
+        "cheap",
+        "free",
+        "cairo",
+        "street food"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "cultural"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": false,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": "Cairo",
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 300,
+      "max_response_length": 1500,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "solo"},
+        "itinerary_pace": "balanced",
+        "interest_scores": {"historical_sites": 0.8, "cultural": 0.75, "outdoor_nature": 0.4},
+        "price_sensitivity": "budget",
+        "trip_budget_estimate": 30,
+        "mobility_preference": "Full mobility",
+        "travel_style": "budget"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I027",
+      "query": "I'm backpacking through Egypt for 5 days with a very limited budget. What's the cheapest way to see the highlights?",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "budget",
+        "backpack",
+        "cheap",
+        "egypt",
+        "free"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "cultural"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": false,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": null,
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 400,
+      "max_response_length": 2000,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "solo"},
+        "itinerary_pace": "balanced",
+        "interest_scores": {"historical_sites": 0.75, "cultural": 0.7, "outdoor_nature": 0.5},
+        "price_sensitivity": "budget",
+        "trip_budget_estimate": 25,
+        "mobility_preference": "Full mobility",
+        "travel_style": "budget"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I028",
+      "query": "Budget week in Egypt — 7 days, trying to spend as little as possible while still seeing the main sites. Help me plan it.",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "budget",
+        "week",
+        "egypt",
+        "cheap",
+        "price"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "cultural"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": false,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": null,
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 500,
+      "max_response_length": 2500,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "solo"},
+        "itinerary_pace": "balanced",
+        "interest_scores": {"historical_sites": 0.8, "cultural": 0.75, "outdoor_nature": 0.4},
+        "price_sensitivity": "budget",
+        "trip_budget_estimate": 40,
+        "mobility_preference": "Full mobility",
+        "travel_style": "budget"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I029",
+      "query": "2 days in Luxor on a shoestring budget. What can I see for free or very cheap? No tourist trap pricing.",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "luxor",
+        "budget",
+        "cheap",
+        "free",
+        "price"
+      ],
+      "expected_poi_types": [
+        "historical"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": false,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": "Luxor",
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 200,
+      "max_response_length": 1000,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "solo"},
+        "itinerary_pace": "balanced",
+        "interest_scores": {"historical_sites": 0.85, "cultural": 0.7},
+        "price_sensitivity": "budget",
+        "trip_budget_estimate": 20,
+        "mobility_preference": "Full mobility",
+        "travel_style": "budget"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I030",
+      "query": "Plan a 4-day Egypt trip on a $200 total budget — include free attractions, street food, cheap transport, and skip overpriced tourist spots.",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "budget",
+        "free",
+        "cheap",
+        "egypt",
+        "transport"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "cultural"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": false,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": null,
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 300,
+      "max_response_length": 1500,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "solo"},
+        "itinerary_pace": "balanced",
+        "interest_scores": {"historical_sites": 0.75, "cultural": 0.8, "outdoor_nature": 0.5},
+        "price_sensitivity": "budget",
+        "trip_budget_estimate": 50,
+        "mobility_preference": "Full mobility",
+        "travel_style": "budget"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I031",
+      "query": "Plan a 5-day luxury Egypt experience. Money is no object — I want private guides, premium hotels, and exclusive after-hours access.",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "luxury",
+        "private",
+        "guide",
+        "premium",
+        "cairo"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "cultural",
+        "dining"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": true,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": null,
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 400,
+      "max_response_length": 2000,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "couple"},
+        "itinerary_pace": "slow_flexible",
+        "interest_scores": {"historical_sites": 0.85, "cultural": 0.8, "dining": 0.9},
+        "price_sensitivity": "luxury",
+        "trip_budget_estimate": 500,
+        "mobility_preference": "Full mobility",
+        "travel_style": "luxury",
+        "accommodation_type_preference": "luxury"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I032",
+      "query": "Design a 7-day premium Egypt tour with private Egyptologist guides, fine dining experiences, and 5-star hotels throughout.",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "luxury",
+        "private",
+        "guide",
+        "5 star",
+        "premium"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "cultural",
+        "dining"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": true,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": null,
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 500,
+      "max_response_length": 2500,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "couple"},
+        "itinerary_pace": "slow_flexible",
+        "interest_scores": {"historical_sites": 0.9, "cultural": 0.85, "dining": 0.95},
+        "price_sensitivity": "luxury",
+        "trip_budget_estimate": 800,
+        "mobility_preference": "Full mobility",
+        "travel_style": "luxury",
+        "accommodation_type_preference": "luxury"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I033",
+      "query": "Plan a 3-day luxury Nile cruise from Luxor to Aswan with premium shore excursions and fine dining on board.",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "luxor",
+        "aswan",
+        "nile",
+        "cruise",
+        "luxury"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "natural"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": true,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": "Luxor",
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 300,
+      "max_response_length": 1500,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "couple"},
+        "itinerary_pace": "slow_flexible",
+        "interest_scores": {"historical_sites": 0.85, "cultural": 0.8, "natural": 0.75, "dining": 0.9},
+        "price_sensitivity": "luxury",
+        "trip_budget_estimate": 600,
+        "mobility_preference": "Full mobility",
+        "travel_style": "luxury",
+        "accommodation_type_preference": "luxury"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I034",
+      "query": "I want a 10-day ultra-luxury Egypt journey covering Cairo, Luxor, and Aswan with the absolute best experiences at each stop.",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "cairo",
+        "luxor",
+        "aswan",
+        "luxury",
+        "private"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "cultural",
+        "natural",
+        "dining"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": true,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": null,
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 700,
+      "max_response_length": 3000,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "couple"},
+        "itinerary_pace": "slow_flexible",
+        "interest_scores": {"historical_sites": 0.9, "cultural": 0.85, "natural": 0.7, "dining": 0.95},
+        "price_sensitivity": "luxury",
+        "trip_budget_estimate": 1000,
+        "mobility_preference": "Full mobility",
+        "travel_style": "luxury",
+        "accommodation_type_preference": "luxury"
+      },
+      "ground_truth_answer": null
+    },
+    {
+      "query_id": "I035",
+      "query": "Plan a 4-day luxury Cairo trip with exclusive access experiences, private rooftop dining, and a desert sunset excursion.",
+      "category": "itinerary",
+      "difficulty": "hard",
+      "expected_keywords": [
+        "cairo",
+        "luxury",
+        "exclusive",
+        "private",
+        "desert"
+      ],
+      "expected_poi_types": [
+        "historical",
+        "cultural",
+        "dining",
+        "natural"
+      ],
+      "requires_factual_accuracy": true,
+      "requires_historical_context": true,
+      "requires_practical_tips": true,
+      "requires_personalization": true,
+      "region_focus": "Cairo",
+      "tools_required": [
+        "supabase"
+      ],
+      "min_response_length": 300,
+      "max_response_length": 1500,
+      "should_arabic_phrases": true,
+      "user_profile": {
+        "typical_companions": {"type": "couple"},
+        "itinerary_pace": "slow_flexible",
+        "interest_scores": {"historical_sites": 0.85, "cultural": 0.8, "natural": 0.65, "dining": 0.95},
+        "price_sensitivity": "luxury",
+        "trip_budget_estimate": 700,
+        "mobility_preference": "Full mobility",
+        "travel_style": "luxury",
+        "accommodation_type_preference": "luxury"
+      },
       "ground_truth_answer": null
     },
     {

@@ -18,21 +18,60 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="Voyo — Your AI-powered Egypt travel guide">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="flutter_app">
+  <meta name="apple-mobile-web-app-title" content="Voyo">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>flutter_app</title>
+  <title>Voyo</title>
+  <style>
+    body { margin: 0; background: #F7F5F1; }
+    #loading-screen {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: #F7F5F1; font-family: Georgia, serif;
+      transition: opacity 0.4s ease;
+    }
+    #loading-screen .brand {
+      font-size: 52px; font-style: italic;
+      color: #D45028; letter-spacing: -1px;
+    }
+    #loading-screen .tagline {
+      font-family: system-ui, sans-serif;
+      font-size: 13px; color: #6A6058;
+      margin-top: 8px; letter-spacing: 0.02em;
+    }
+    #loading-screen .spinner {
+      width: 24px; height: 24px;
+      border: 2.5px solid #E8E2D8;
+      border-top-color: #D45028;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-top: 40px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <div id="loading-screen">
+    <div class="brand">Voyo</div>
+    <div class="tagline">Your Egyptian travel guide</div>
+    <div class="spinner"></div>
+  </div>
   <script src="flutter_bootstrap.js" async></script>
+  <script>
+    window.addEventListener('flutter-first-frame', () => {
+      const screen = document.getElementById('loading-screen');
+      if (screen) { screen.style.opacity = '0'; setTimeout(() => screen.remove(), 400); }
+    });
+  </script>
 </body>
 </html>

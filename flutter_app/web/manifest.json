@@ -1,11 +1,11 @@
 {
-    "name": "flutter_app",
-    "short_name": "flutter_app",
+    "name": "Voyo",
+    "short_name": "Voyo",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F7F5F1",
+    "theme_color": "#D45028",
+    "description": "Your AI-powered Egypt travel guide",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
