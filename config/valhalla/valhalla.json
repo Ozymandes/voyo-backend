@@ -1,0 +1,69 @@
+{
+  "httpd": {
+    "service": {
+      "listen": "tcp://0.0.0.0:8002"
+    }
+  },
+  "mjolnir": {
+    "tile_dir": "/custom_files/tiles",
+    "concurrency": 4,
+    "id_table_size": 1300000000,
+    "use_tiles_with_elevation": false
+  },
+  "meili": {
+    "auto": {
+      "mode": "auto",
+      "max_distance": 100000,
+      "max_distance_with_heading": 200,
+      "search_radius": 50,
+      "search_radius_heading": 200,
+      "turn_penalty_factor": 200
+    },
+    "pedestrian": {
+      "mode": "pedestrian",
+      "max_distance": 200000,
+      "max_distance_with_heading": 200,
+      "search_radius": 50,
+      "search_radius_heading": 100,
+      "turn_penalty_factor": 1.0
+    },
+    "bicycle": {
+      "mode": "bicycle",
+      "max_distance": 50000,
+      "max_distance_with_heading": 200,
+      "search_radius": 50,
+      "search_radius_heading": 100,
+      "turn_penalty_factor": 200
+    }
+  },
+  "loki": {
+    "service": {
+      "worker": {
+        "isochrone": {
+          "max_contours": 4,
+          "max_time": 120
+        }
+      }
+    }
+  },
+  "service_limits": {
+    "auto": {
+      "max_distance": 5000000,
+      "max_locations": 50,
+      "max_matrix_distance": 5000000,
+      "max_matrix_locations": 50
+    },
+    "pedestrian": {
+      "max_distance": 500000,
+      "max_locations": 50,
+      "max_matrix_distance": 500000,
+      "max_matrix_locations": 50
+    },
+    "bicycle": {
+      "max_distance": 1000000,
+      "max_locations": 50,
+      "max_matrix_distance": 1000000,
+      "max_matrix_locations": 50
+    }
+  }
+}

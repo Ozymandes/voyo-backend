@@ -4,6 +4,12 @@ venv
 __pycache__/
 *.log
 
+# Pi Agent Tasks
+TASKS
+docs/devlog
+docs/phase-reports
+LAUNCH.sh
+
 # Flutter
 flutter_app/.env
 flutter_app/.dart_tool/

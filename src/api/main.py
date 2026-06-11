@@ -5,7 +5,7 @@ REST API for CLEO chatbot
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from src.api.routes import chat
+from src.api.routes import chat, profile, recommendations, routing, itinerary
 import logging
 
 logger = logging.getLogger(__name__)
@@ -28,6 +28,10 @@ app.add_middleware(
 
 # Include routers
 app.include_router(chat.router, prefix="/api/v1", tags=["chat"])
+app.include_router(profile.router, prefix="/api/v1", tags=["profile"])
+app.include_router(recommendations.router, tags=["recommendations"])
+app.include_router(routing.router, tags=["routing"])
+app.include_router(itinerary.router, tags=["itinerary"])
 
 @app.get("/")
 async def root():

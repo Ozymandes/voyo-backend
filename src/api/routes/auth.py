@@ -1,0 +1,175 @@
+"""
+Auth Middleware for VOYO API
+Validates Supabase JWT tokens on protected routes.
+"""
+
+import os
+import logging
+from typing import Dict, Optional
+
+import jwt
+from fastapi import Depends, HTTPException, Header, status
+from dotenv import load_dotenv
+
+load_dotenv()
+
+logger = logging.getLogger(__name__)
+
+# Supabase issues JWTs signed with the project's JWT secret.
+# The secret lives in Supabase Dashboard → Settings → API → JWT Secret.
+_JWT_SECRET: Optional[str] = os.getenv("SUPABASE_JWT_SECRET")
+if not _JWT_SECRET:
+    logger.warning(
+        "SUPABASE_JWT_SECRET is not set. "
+        "Auth middleware will reject every request. "
+        "Set it in .env for production use."
+    )
+
+
+class AuthUser(Dict):
+    """
+    Lightweight dict subclass representing the authenticated user.
+
+    Keys guaranteed present:
+        user_id  – UUID string from Supabase auth.users.id
+        email    – user email (may be None for anonymous/phone auth)
+        role     – Supabase role claim (usually "authenticated")
+    """
+
+    pass
+
+
+# ─── Public helper ────────────────────────────────────────────────────
+
+def _decode_supabase_jwt(token: str) -> Dict:
+    """
+    Decode and verify a Supabase-issued JWT.
+
+    Supabase uses HS256 (HMAC-SHA256) by default.  We verify:
+      • signature against the JWT secret
+      • "exp" claim (expiration)
+      • "aud" claim == "authenticated" (Supabase convention)
+
+    Returns the full decoded payload dict.
+    """
+    if not _JWT_SECRET:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "error": "auth_not_configured",
+                "message": "Server auth is not configured (missing JWT secret).",
+            },
+        )
+
+    try:
+        payload: Dict = jwt.decode(
+            token,
+            _JWT_SECRET,
+            algorithms=["HS256"],
+            audience="authenticated",
+        )
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={
+                "error": "token_expired",
+                "message": "Token has expired. Please sign in again.",
+            },
+        )
+    except jwt.InvalidAudienceError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={
+                "error": "invalid_audience",
+                "message": "Token audience is invalid.",
+            },
+        )
+    except jwt.DecodeError as exc:
+        logger.debug("JWT decode error: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={
+                "error": "invalid_token",
+                "message": "Token is malformed or has an invalid signature.",
+            },
+        )
+
+
+# ─── FastAPI dependency ───────────────────────────────────────────────
+
+async def get_current_user(
+    authorization: str = Header(..., description="Bearer <supabase-jwt>"),
+) -> AuthUser:
+    """
+    FastAPI dependency that extracts & validates the Supabase JWT from the
+    Authorization header.
+
+    Usage::
+
+        @router.get("/protected")
+        async def handler(user=Depends(get_current_user)):
+            user_id = user["user_id"]
+
+    Returns an AuthUser dict with at least ``user_id``, ``email``, and ``role``.
+    """
+    # ── Strip the "Bearer " prefix ────────────────────────────────────
+    parts = authorization.split(" ")
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={
+                "error": "invalid_auth_header",
+                "message": "Authorization header must follow: Bearer <token>",
+            },
+        )
+    token = parts[1].strip()
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={
+                "error": "missing_token",
+                "message": "Bearer token is empty.",
+            },
+        )
+
+    # ── Decode & verify ───────────────────────────────────────────────
+    payload = _decode_supabase_jwt(token)
+
+    # Supabase JWTs always have "sub" (user UUID) and "role".
+    sub = payload.get("sub")
+    if not sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={
+                "error": "malformed_token",
+                "message": "Token is missing the 'sub' claim.",
+            },
+        )
+
+    user = AuthUser(
+        user_id=sub,
+        email=payload.get("email"),
+        role=payload.get("role"),
+        # Pass through raw claims in case downstream code needs them
+        _raw=payload,
+    )
+    return user
+
+
+# ─── Optional dependency (doesn't 401 on missing token) ───────────────
+
+async def get_optional_user(
+    authorization: Optional[str] = Header(None),
+) -> Optional[AuthUser]:
+    """
+    Same as ``get_current_user`` but returns ``None`` instead of raising
+    when no token is provided.  Useful for endpoints that behave
+    differently for authenticated vs. anonymous users.
+    """
+    if not authorization:
+        return None
+    try:
+        return await get_current_user(authorization=authorization)
+    except HTTPException:
+        return None

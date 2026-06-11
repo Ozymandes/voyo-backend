@@ -1,22 +1,25 @@
 """
 CLEO Chatbot Configuration
-Cairo Local Expert & Operator - Configuration Settings
+Cairo Local Expert & Operator — Configuration & Async Groq Client
 """
 
 import os
-from typing import Literal
-from dotenv import load_dotenv
+import asyncio
+import json
 import logging
+from typing import Optional, List, Dict, Any, AsyncGenerator
+
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
-# Load environment variables
 load_dotenv()
 
-class CleoConfig:
-    """CLEO chatbot configuration"""
 
-    # Groq API Configuration
+class CleoConfig:
+    """CLEO chatbot configuration — frozen values read from env at import time."""
+
+    # Groq API
     groq_api_key: str = os.getenv("GROQ_API_KEY", "")
     model: str = os.getenv("LLM_MODEL", "llama-3.3-70b-versatile")
     temperature: float = float(os.getenv("LLM_TEMPERATURE", "0.7"))
@@ -25,7 +28,7 @@ class CleoConfig:
     # Semantic Cache (Redis)
     enable_cache: bool = True
     cache_ttl: int = 86400  # 24 hours
-    cache_db: int = 1  # Use Redis DB 1 (separate from pipeline)
+    cache_db: int = 1
 
     # Tools
     enable_weather_tool: bool = True
@@ -34,10 +37,10 @@ class CleoConfig:
 
     # User Profiling
     enable_profiling: bool = True
-    profile_learning: bool = True  # Learn from interactions
+    profile_learning: bool = True
 
     # Conversation Memory
-    max_conversation_history: int = 20  # Messages to remember
+    max_conversation_history: int = 20
     enable_conversation_memory: bool = True
 
     # Personality
@@ -49,85 +52,140 @@ class CleoConfig:
     debug_mode: bool = False
     log_all_queries: bool = True
 
+    # ReAct loop
+    max_agent_iterations: int = 5
+
     def __init__(self):
-        """Initialize configuration"""
         if not self.groq_api_key:
             logger.warning("GROQ_API_KEY not found in environment variables")
 
-# Global config instance
+
 config = CleoConfig()
 
 
+# ---------------------------------------------------------------------------
+# LLM Response dataclass
+# ---------------------------------------------------------------------------
+
+class LLMResponse:
+    """Structured result from a single Groq completion call."""
+
+    def __init__(self, content: Optional[str], tool_calls: Optional[list] = None,
+                 finish_reason: Optional[str] = None):
+        self.content = content
+        self.tool_calls = tool_calls  # list of ChatCompletionMessageToolCall
+        self.finish_reason = finish_reason
+
+    @property
+    def has_tool_calls(self) -> bool:
+        return bool(self.tool_calls)
+
+    def to_message(self) -> Dict[str, Any]:
+        """Return the assistant message dict to append to the messages list.
+
+        When the LLM made tool calls we include them so the conversation
+        history is complete for the next iteration.
+        """
+        msg: Dict[str, Any] = {"role": "assistant"}
+        if self.content:
+            msg["content"] = self.content
+        if self.tool_calls:
+            serialised = []
+            for tc in self.tool_calls:
+                # Groq SDK returns objects with ``.id`` / ``.function``;
+                # if for some reason we get a plain dict, pass it through.
+                if isinstance(tc, dict):
+                    serialised.append(tc)
+                else:
+                    serialised.append({
+                        "id": tc.id,
+                        "type": "function",
+                        "function": {
+                            "name": tc.function.name,
+                            "arguments": tc.function.arguments,
+                        },
+                    })
+            msg["tool_calls"] = serialised
+        return msg
+
+
+# ---------------------------------------------------------------------------
+# Async Groq Client
+# ---------------------------------------------------------------------------
+
 class GroqClient:
-    """Groq API client for CLEO"""
+    """Async Groq API client for CLEO.
+
+    Uses ``groq.AsyncGroq`` so every call is awaitable and never blocks
+    the FastAPI event loop.  A synchronous fallback is provided for
+    non-async callers (tests, scripts).
+    """
 
     def __init__(self):
-        """Initialize Groq client"""
         if not config.groq_api_key:
-            raise ValueError("GROQ_API_KEY not found in environment variables. "
-                           "Please add it to your .env file.")
-
+            raise ValueError(
+                "GROQ_API_KEY not found in environment variables. "
+                "Please add it to your .env file."
+            )
         try:
+            from groq import AsyncGroq
+            self.async_client = AsyncGroq(api_key=config.groq_api_key)
+            # Also keep a sync client for non-async callers
             from groq import Groq
-            self.client = Groq(api_key=config.groq_api_key)
+            self.sync_client = Groq(api_key=config.groq_api_key)
             self.model = config.model
             logger.info(f"Groq client initialized with model: {self.model}")
         except ImportError:
-            raise ImportError("groq package not installed. "
-                            "Run: pip install groq")
+            raise ImportError("groq package not installed. Run: pip install groq")
         except Exception as e:
             logger.error(f"Failed to initialize Groq client: {e}")
             raise
 
-    def generate(self, messages: list, tools: list = None) -> str:
+    # ------------------------------------------------------------------
+    # Async API (primary — used by FastAPI endpoints)
+    # ------------------------------------------------------------------
+
+    async def generate_async(
+        self,
+        messages: list,
+        tools: Optional[list] = None,
+        temperature: Optional[float] = None,
+    ) -> LLMResponse:
+        """Async Groq call with retry logic.
+
+        Returns an ``LLMResponse`` that may contain tool calls, plain
+        text, or both.
         """
-        Generate response using Groq's Llama 3.3 70B
-
-        Args:
-            messages: List of message dictionaries with 'role' and 'content'
-            tools: Optional list of tool definitions for function calling
-
-        Returns:
-            str or dict: Generated response text or dict with tool_calls
-        """
-        import time
-
         max_retries = 3
-        last_error = None
+        last_error: Optional[Exception] = None
 
         for attempt in range(max_retries):
             try:
-                params = {
+                params: Dict[str, Any] = {
                     "model": self.model,
                     "messages": messages,
-                    "temperature": config.temperature,
-                    "max_tokens": config.max_tokens
+                    "temperature": temperature or config.temperature,
+                    "max_tokens": config.max_tokens,
                 }
-
                 if tools:
                     params["tools"] = tools
+                    params["tool_choice"] = "auto"
 
-                response = self.client.chat.completions.create(**params)
-
-                # Handle tool calls - Groq returns ChatCompletion object
+                response = await self.async_client.chat.completions.create(**params)
                 message = response.choices[0].message
 
-                if message.tool_calls:
-                    return {
-                        "content": message.content,
-                        "tool_calls": message.tool_calls,
-                        "finish_reason": response.choices[0].finish_reason
-                    }
-
-                return message.content
+                return LLMResponse(
+                    content=message.content,
+                    tool_calls=message.tool_calls if hasattr(message, "tool_calls") and message.tool_calls else None,
+                    finish_reason=response.choices[0].finish_reason,
+                )
 
             except Exception as e:
                 last_error = e
                 error_str = str(e).lower()
                 error_type = type(e).__name__.lower()
-                print(f"[GROQ ERROR] attempt {attempt + 1}/{max_retries} — {type(e).__name__}: {e}")
+                logger.warning(f"[GROQ ERROR] attempt {attempt + 1}/{max_retries} — {type(e).__name__}: {e}")
 
-                # Retry on rate limit or transient server errors
                 is_retryable = (
                     "rate_limit" in error_type
                     or "rate limit" in error_str
@@ -137,26 +195,120 @@ class GroqClient:
                     or "timeout" in error_str
                     or "connection" in error_str
                 )
-
                 if is_retryable and attempt < max_retries - 1:
-                    wait = 2 ** attempt  # 1 s, 2 s
-                    print(f"[GROQ] Retrying in {wait}s...")
+                    wait = 2 ** attempt
+                    logger.info(f"[GROQ] Retrying in {wait}s...")
+                    await asyncio.sleep(wait)
+                    continue
+                break
+
+        logger.error(f"Groq generate_async failed after {max_retries} attempts: {last_error}")
+        return LLMResponse(
+            content="I apologize, but I'm having trouble connecting right now. Please try again in a moment."
+        )
+
+    async def generate_streaming(
+        self,
+        messages: list,
+        tools: Optional[list] = None,
+        temperature: Optional[float] = None,
+    ) -> AsyncGenerator[str, None]:
+        """Yield response chunks for SSE streaming to the frontend.
+
+        Tool calls are NOT supported in streaming mode — if the LLM
+        decides to call tools the first chunk will contain a flag and
+        the caller should fall back to ``generate_async``.
+        """
+        params: Dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": temperature or config.temperature,
+            "max_tokens": config.max_tokens,
+            "stream": True,
+        }
+        if tools:
+            params["tools"] = tools
+            params["tool_choice"] = "auto"
+
+        try:
+            stream = await self.async_client.chat.completions.create(**params)
+            async for chunk in stream:
+                delta = chunk.choices[0].delta
+                if delta.content:
+                    yield delta.content
+                # If tool calls come through streaming, signal caller
+                if hasattr(delta, "tool_calls") and delta.tool_calls:
+                    # Streaming tool calls are complex; fall back
+                    return
+        except Exception as e:
+            logger.error(f"Groq streaming error: {e}")
+            yield "[Error streaming response]"
+
+    # ------------------------------------------------------------------
+    # Sync API (fallback for scripts / tests)
+    # ------------------------------------------------------------------
+
+    def generate(self, messages: list, tools: Optional[list] = None) -> Any:
+        """Synchronous Groq call (legacy compatibility).
+
+        Prefer ``generate_async`` in async contexts.
+        """
+        max_retries = 3
+        last_error: Optional[Exception] = None
+
+        import time
+        for attempt in range(max_retries):
+            try:
+                params = {
+                    "model": self.model,
+                    "messages": messages,
+                    "temperature": config.temperature,
+                    "max_tokens": config.max_tokens,
+                }
+                if tools:
+                    params["tools"] = tools
+                    params["tool_choice"] = "auto"
+
+                response = self.sync_client.chat.completions.create(**params)
+                message = response.choices[0].message
+
+                if hasattr(message, "tool_calls") and message.tool_calls:
+                    return {
+                        "content": message.content,
+                        "tool_calls": message.tool_calls,
+                        "finish_reason": response.choices[0].finish_reason,
+                    }
+                return message.content
+
+            except Exception as e:
+                last_error = e
+                error_str = str(e).lower()
+                logger.warning(f"[GROQ ERROR] attempt {attempt + 1}/{max_retries} — {type(e).__name__}: {e}")
+
+                is_retryable = (
+                    "429" in error_str
+                    or "503" in error_str
+                    or "502" in error_str
+                    or "timeout" in error_str
+                    or "connection" in error_str
+                )
+                if is_retryable and attempt < max_retries - 1:
+                    wait = 2 ** attempt
+                    logger.info(f"[GROQ] Retrying in {wait}s...")
                     time.sleep(wait)
                     continue
-
-                # Non-retryable error — break immediately
                 break
 
         logger.error(f"Groq generate failed after {max_retries} attempts: {last_error}")
         return "I apologize, but I'm having trouble connecting right now. Please try again in a moment."
 
-    def test_connection(self) -> bool:
-        """Test Groq API connection"""
+    async def test_connection(self) -> bool:
+        """Test Groq API connection (async)."""
         try:
-            response = self.client.chat.completions.create(
+            response = await self.async_client.chat.completions.create(
                 model=self.model,
                 messages=[{"role": "user", "content": "Hello"}],
-                max_tokens=10
+                max_tokens=10,
             )
             logger.info("Groq API connection test successful")
             return True

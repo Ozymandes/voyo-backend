@@ -1,0 +1,51 @@
+version: "3.8"
+
+# VOYO Routing Stack — Valhalla + VROOM
+#
+# Usage:
+#   docker-compose up -d          # Start both services
+#   docker-compose logs -f        # Watch logs
+#   docker-compose down           # Stop
+#
+# First run: Valhalla downloads and processes the Egypt OSM extract (~50 MB PBF).
+# This takes ~5-10 minutes.  Tile data is cached in config/valhalla/custom_files/
+# so subsequent starts are fast.
+
+services:
+  valhalla:
+    image: ghcr.io/gis-ops/docker-valhalla/valhalla:latest
+    container_name: voyo-valhalla
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./config/valhalla/custom_files:/custom_files
+    environment:
+      # Egypt extract from Geofabrik — downloaded and processed on first run
+      - tile_urls=https://download.geofabrik.de/africa/egypt-latest.osm.pbf
+      # Use 4 threads for tile building (reasonable on most dev machines)
+      - build_tar=false
+      - min_x=24.0
+      - min_y=21.0
+      - max_x=37.0
+      - max_y=32.5
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8002/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+    restart: unless-stopped
+
+  vroom:
+    image: vroomvrp/vroom-docker:v1.13.0
+    container_name: voyo-vroom
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./config/vroom/conf:/conf
+    environment:
+      - VROOM_ROUTER=osrm
+    depends_on:
+      valhalla:
+        condition: service_healthy
+    restart: unless-stopped

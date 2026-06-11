@@ -2,6 +2,6 @@
 CLEO API Routes Package
 """
 
-from . import chat
+from . import chat, profile
 
-__all__ = ['chat']
+__all__ = ["chat", "profile"]

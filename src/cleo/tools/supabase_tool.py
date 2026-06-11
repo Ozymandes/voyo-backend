@@ -1,21 +1,40 @@
 """
-Supabase Tool for CLEO
-Personalized POI queries based on user profile
+Supabase Tool for CLEO — 3-Tier POI Search (Server-Side)
+Cairo Local Expert & Operator
+
+Tier 1: Name match via Supabase ``ilike``
+Tier 2: Description + tag match via Supabase ``ilike`` (server-side,
+        zero rows pulled into Python)
+Tier 3: Category + region refinement filters
+
+Future: Replace Tier 2 with pgvector embedding search (see
+        config/sql/003_poi_search_vector.sql when ready).
 """
 
 from typing import List, Dict, Optional
-from src.database.supabase_client import SupabaseClient
 import logging
+
+from src.database.supabase_client import SupabaseClient
 
 logger = logging.getLogger(__name__)
 
+
 class SupabaseTool:
-    """Personalized Supabase queries for CLEO"""
+    """Three-tier POI search — all matching runs on the Supabase side.
+
+    No more than ``limit`` rows ever leave the database.  Python only
+    handles deduplication, region/category filtering on the result set
+    (which is at most ``limit`` rows), and optional personalization
+    re-ranking.
+    """
 
     def __init__(self):
-        """Initialize Supabase tool"""
         self.db = SupabaseClient()
-        logger.info("Supabase tool initialized")
+        logger.info("Supabase tool initialized (3-tier server-side search)")
+
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
 
     def search_pois(
         self,
@@ -23,194 +42,235 @@ class SupabaseTool:
         region: Optional[str] = None,
         category: Optional[str] = None,
         user_profile: Optional[Dict] = None,
-        limit: int = 10
+        limit: int = 10,
     ) -> List[Dict]:
-        """
-        Search POIs with personalization
+        """Search POIs using a three-tier server-side strategy.
 
-        Args:
-            query: Search query string
-            region: Optional region filter
-            category: Optional category filter
-            user_profile: Optional user profile for personalization
-            limit: Maximum number of results
-
-        Returns:
-            List of POI dictionaries
+        1. Name match (Supabase ``ilike`` on name / name_arabic / address)
+        2. Description + tags match (Supabase ``ilike`` on description)
+        3. Category + region filters as refinements
         """
         try:
-            # Build query filters
-            filters = {}
+            results: List[Dict] = []
 
+            # --- Tier 1: Name match ---
+            name_matches = self._search_by_name(query, limit=limit)
+            results.extend(name_matches)
+            logger.debug(f"Tier 1 (name ilike): {len(name_matches)} hits for '{query}'")
+
+            # --- Tier 2: Description / tag match (server-side) ---
+            if len(results) < 3:
+                broader = self._search_by_description(query, limit=limit)
+                before = len(results)
+                results = self._deduplicate(results + broader)
+                logger.debug(f"Tier 2 (desc ilike): {len(results) - before} additional hits")
+
+            # --- Tier 3: Region / category refinement ---
             if region:
-                # Get region ID
-                regions = self.db.get_records("regions", filters={"name": region})
-                if regions:
-                    filters["region_id"] = regions[0]["id"]
-
+                results = [p for p in results if self._matches_region(p, region)]
             if category:
-                filters["category"] = category
+                results = [p for p in results if self._matches_category(p, category)]
 
-            # Search POIs (get more for personalization)
-            pois = self.db.get_records("pois", filters=filters, limit=limit * 3)
-
-            # Filter by query keywords if no exact matches
-            if query and len(pois) < limit:
-                query_lower = query.lower()
-                # Extract keywords from query
-                keywords = ['cairo', 'giza', 'luxor', 'aswan', 'alexandria', 'sinai',
-                           'mosque', 'temple', 'museum', 'pyramid', 'citadel', 'market',
-                           'bazaar', 'church', 'historical', 'cultural', 'natural']
-
-                matching_pois = []
-                for poi in pois:
-                    poi_text = f"{poi.get('name', '')} {poi.get('description', '')} {poi.get('category', '')}".lower()
-                    if any(keyword in query_lower and keyword in poi_text for keyword in keywords):
-                        matching_pois.append(poi)
-
-                if matching_pois:
-                    pois = matching_pois
-
-            # Personalize ranking if profile provided
+            # Personalize ranking when a profile is supplied
             if user_profile:
-                pois = self._personalize_ranking(pois, user_profile)
+                results = self._personalize_ranking(results, user_profile)
 
-            return pois[:limit]
+            return results[:limit]
 
         except Exception as e:
             logger.error(f"Error searching POIs: {e}")
             return []
 
-    def get_poi_details(self, poi_id: str) -> Optional[Dict]:
-        """
-        Get detailed POI information
+    async def search_pois_async(
+        self,
+        query: str,
+        region: Optional[str] = None,
+        category: Optional[str] = None,
+        user_profile: Optional[Dict] = None,
+        limit: int = 10,
+    ) -> List[Dict]:
+        """Async wrapper — runs the synchronous search in a thread."""
+        import asyncio
+        return await asyncio.to_thread(
+            self.search_pois, query, region, category, user_profile, limit
+        )
 
-        Args:
-            poi_id: POI identifier
-
-        Returns:
-            POI dictionary or None
-        """
+    def get_poi_details(self, poi_id: int) -> Optional[Dict]:
+        """Get full POI record by ID."""
         try:
-            pois = self.db.get_records("pois", filters={"id": poi_id}, limit=1)
+            pois = self.db.get_records("pois", filters={"id": int(poi_id)}, limit=1, use_admin=True)
             return pois[0] if pois else None
-
         except Exception as e:
-            logger.error(f"Error getting POI details: {e}")
+            logger.error(f"Error getting POI details for id={poi_id}: {e}")
             return None
 
-    def get_historical_significance(self, poi_id: str) -> str:
-        """
-        Get historical significance for educational content
-
-        Args:
-            poi_id: POI identifier
-
-        Returns:
-            Historical significance text
-        """
+    def get_historical_significance(self, poi_id: int) -> Dict:
+        """Return historical significance text and basic metadata for a POI."""
         try:
             poi = self.get_poi_details(poi_id)
             if poi:
-                return poi.get("historical_significance", "")
-            return ""
-
+                return {
+                    "name": poi.get("name", ""),
+                    "category": poi.get("category", ""),
+                    "historical_significance": poi.get("historical_significance", ""),
+                    "description": poi.get("description", ""),
+                }
+            return {"error": f"POI {poi_id} not found"}
         except Exception as e:
             logger.error(f"Error getting historical significance: {e}")
-            return ""
+            return {"error": str(e)}
 
     def find_nearby_pois(
         self,
         latitude: float,
         longitude: float,
-        radius_km: float = 5,
-        limit: int = 10
+        radius_km: float = 5.0,
+        limit: int = 10,
     ) -> List[Dict]:
-        """
-        Find POIs near a location
+        """Find POIs within ``radius_km`` using geodesic distance.
 
-        Args:
-            latitude: Starting latitude
-            longitude: Starting longitude
-            radius_km: Search radius in kilometers
-            limit: Maximum results
-
-        Returns:
-            List of nearby POIs with distance
+        Note: This is the one method that still fetches a wider set of
+        POIs for client-side distance calc.  A future improvement should
+        use Supabase's PostGIS ``ST_DWithin`` for server-side geo queries.
         """
         try:
             from geopy.distance import geodesic
 
-            # Get all POIs (will filter by distance)
-            all_pois = self.db.get_records("pois", limit=1000)
-
+            all_pois = self.db.get_records("pois", limit=1000, use_admin=True)
             nearby = []
             for poi in all_pois:
                 try:
-                    distance = geodesic(
+                    dist = geodesic(
                         (latitude, longitude),
-                        (poi["latitude"], poi["longitude"])
+                        (poi["latitude"], poi["longitude"]),
                     ).km
-
-                    if distance <= radius_km:
-                        poi["distance_km"] = round(distance, 2)
+                    if dist <= radius_km:
+                        poi["distance_km"] = round(dist, 2)
                         nearby.append(poi)
-
-                except KeyError:
-                    # Skip POIs without coordinates
+                except (KeyError, TypeError):
                     continue
 
-            # Sort by distance
             nearby.sort(key=lambda p: p["distance_km"])
-
             return nearby[:limit]
 
         except Exception as e:
             logger.error(f"Error finding nearby POIs: {e}")
             return []
 
+    # ------------------------------------------------------------------
+    # Tier implementations (all server-side)
+    # ------------------------------------------------------------------
+
+    def _search_by_name(self, query: str, limit: int = 10) -> List[Dict]:
+        """Tier 1: Supabase ``ilike`` on name, name_arabic, address."""
+        try:
+            response = (
+                self.db.admin_client.table("pois")
+                .select("*")
+                .eq("is_active", True)
+                .or_(
+                    f"name.ilike.%{query}%,"
+                    f"name_arabic.ilike.%{query}%,"
+                    f"address.ilike.%{query}%"
+                )
+                .limit(limit)
+                .execute()
+            )
+            return response.data if response.data else []
+        except Exception as e:
+            logger.error(f"Tier 1 name search error: {e}")
+            return []
+
+    def _search_by_description(self, query: str, limit: int = 10) -> List[Dict]:
+        """Tier 2: Supabase ``ilike`` on description + historical_significance.
+
+        Runs entirely on the database side.  Individual words from the
+        query are tried via ``or_`` so "King Tut exhibition" matches
+        descriptions containing any of those terms.
+        """
+        try:
+            # Build per-word ilike clauses for broader matching
+            words = [w.strip() for w in query.split() if len(w.strip()) > 2]
+            if not words:
+                return []
+
+            # Create OR clause: description ilike any word OR historical_significance ilike any word
+            parts = []
+            for word in words:
+                parts.append(f"description.ilike.%{word}%")
+                parts.append(f"historical_significance.ilike.%{word}%")
+
+            or_clause = ",".join(parts)
+
+            response = (
+                self.db.admin_client.table("pois")
+                .select("*")
+                .eq("is_active", True)
+                .or_(or_clause)
+                .limit(limit)
+                .execute()
+            )
+            return response.data if response.data else []
+        except Exception as e:
+            logger.error(f"Tier 2 description search error: {e}")
+            return []
+
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _deduplicate(pois: List[Dict]) -> List[Dict]:
+        """Remove duplicate POIs by ID, preserving first-seen order."""
+        seen: set = set()
+        unique: List[Dict] = []
+        for poi in pois:
+            pid = poi.get("id")
+            if pid not in seen:
+                seen.add(pid)
+                unique.append(poi)
+        return unique
+
+    @staticmethod
+    def _matches_region(poi: Dict, region: str) -> bool:
+        """Check if a POI belongs to the given region name."""
+        region_name = poi.get("region_name", "")
+        if not region_name:
+            return True  # Can't filter — keep it
+        return region.lower() in region_name.lower()
+
+    @staticmethod
+    def _matches_category(poi: Dict, category: str) -> bool:
+        """Check if a POI matches the given category."""
+        poi_cat = poi.get("category", "")
+        return category.lower() in poi_cat.lower()
+
     def _personalize_ranking(self, pois: List[Dict], user_profile: Dict) -> List[Dict]:
-        """
-        Re-rank POIs based on user profile
-
-        Args:
-            pois: List of POI dictionaries
-            user_profile: User profile with preferences
-
-        Returns:
-            Re-ranked list of POIs
-        """
+        """Re-rank POIs based on user profile preferences."""
         interest_scores = user_profile.get("interest_scores", {})
         mobility = user_profile.get("mobility_preference", "")
         budget = user_profile.get("trip_budget_estimate", 0)
 
-        scored_pois = []
-
+        scored: List[tuple] = []
         for poi in pois:
-            score = 0
+            score = 0.0
 
-            # Match category to interests
             category = poi.get("category", "").lower()
-            if category in interest_scores:
-                score += interest_scores[category] * 10
+            for interest_key, weight in interest_scores.items():
+                clean = interest_key.replace("_", " ")
+                if clean in category or category in clean:
+                    score += weight * 10
 
-            # Consider mobility
-            if "limited" in mobility.lower():
-                if poi.get("is_accessible", False):
-                    score += 20
+            if "limited" in mobility.lower() and poi.get("is_accessible", False):
+                score += 20
 
-            # Consider budget (ticket price as % of daily budget)
             if budget > 0:
                 ticket_price = poi.get("ticket_price", 0)
                 if ticket_price and ticket_price <= budget * 0.2:
                     score += 10
 
-            # Consider popularity
-            score += poi.get("popularity_score", 0) * 5
+            score += poi.get("popularity_score", 0) * 0.5
+            scored.append((score, poi))
 
-            scored_pois.append((score, poi))
-
-        # Sort by score (highest first)
-        scored_pois.sort(key=lambda x: x[0], reverse=True)
-
-        return [poi for score, poi in scored_pois]
+        scored.sort(key=lambda x: x[0], reverse=True)
+        return [poi for _, poi in scored]

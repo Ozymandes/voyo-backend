@@ -1,0 +1,8 @@
+{
+  "routers": [
+    {
+      "profile": "auto",
+      "osrm_url": "http://valhalla:8002"
+    }
+  ]
+}
