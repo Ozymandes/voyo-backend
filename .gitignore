@@ -18,6 +18,10 @@ flutter_app/.packages
 flutter_app/.flutter-plugins
 flutter_app/.flutter-plugins-dependencies
 
+# Valhalla routing artifacts (regenerable: 3.6 GB of tiles/PBF/elevation)
+# docker-compose rebuilds these on first run from the Geofabrik Egypt extract.
+config/valhalla/custom_files/
+
 # Academic Evaluation Data (generated files)
 data/evaluation/cache/
 data/evaluation/results/

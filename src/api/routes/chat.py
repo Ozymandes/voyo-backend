@@ -27,9 +27,15 @@ agent = CleoAgent()
 
 class ChatRequest(BaseModel):
     """Request model for chat endpoint."""
-    message: str = Field(..., description="User's message to CLEO")
+    message: str = Field("", description="User's message to CLEO")
     user_id: Optional[str] = Field(None, description="User ID for personalization")
     debug: bool = Field(False, description="Enable debug mode")
+    poi_id: Optional[int] = Field(
+        None, description="POI id for the 'poi_explain' intent (grounded deep-dive)"
+    )
+    intent: Optional[str] = Field(
+        None, description="Request intent, e.g. 'poi_explain' to explain the given poi_id"
+    )
 
 
 class ChatResponse(BaseModel):
@@ -53,13 +59,23 @@ async def chat(request: ChatRequest):
     Main chat endpoint (async).
 
     Processes user messages through CLEO and returns the full response.
+    When ``intent == 'poi_explain'`` and ``poi_id`` is set, runs the
+    grounded POI deep-dive instead of the free-form pipeline.
     """
     try:
-        response = await agent.process_message(
-            user_message=request.message,
-            user_id=request.user_id,
-            debug=request.debug,
-        )
+        if request.intent == "poi_explain" and request.poi_id is not None:
+            response = await agent.explain_poi(
+                poi_id=request.poi_id,
+                user_message=request.message,
+                user_id=request.user_id,
+                debug=request.debug,
+            )
+        else:
+            response = await agent.process_message(
+                user_message=request.message,
+                user_id=request.user_id,
+                debug=request.debug,
+            )
 
         return ChatResponse(
             response=response,
@@ -83,11 +99,21 @@ async def chat_stream(request: ChatRequest):
     """
     async def event_generator():
         try:
-            async for chunk in agent.process_message_stream(
-                user_message=request.message,
-                user_id=request.user_id,
-                debug=request.debug,
-            ):
+            if request.intent == "poi_explain" and request.poi_id is not None:
+                aiter = agent.explain_poi_stream(
+                    poi_id=request.poi_id,
+                    user_message=request.message,
+                    user_id=request.user_id,
+                    debug=request.debug,
+                )
+            else:
+                aiter = agent.process_message_stream(
+                    user_message=request.message,
+                    user_id=request.user_id,
+                    debug=request.debug,
+                )
+
+            async for chunk in aiter:
                 payload = json.dumps({"chunk": chunk, "done": False})
                 yield f"data: {payload}\n\n"
 

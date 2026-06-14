@@ -17,6 +17,9 @@ class Poi {
   final double? popularityScore;
   final String? city;
   final int? averageVisitDuration; // minutes
+  final List<String>? imageUrls;
+  final List<String>? tags;
+  final String? address;
 
   Poi({
     required this.id,
@@ -37,6 +40,9 @@ class Poi {
     this.popularityScore,
     this.city,
     this.averageVisitDuration,
+    this.imageUrls,
+    this.tags,
+    this.address,
   });
 
   /// Hidden gem: low popularity but verified quality
@@ -69,6 +75,11 @@ class Poi {
           : null,
       city: json['city'] as String?,
       averageVisitDuration: json['average_visit_duration'] as int?,
+      imageUrls: (json['image_urls'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
+      tags: (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      address: json['address'] as String?,
     );
   }
 }

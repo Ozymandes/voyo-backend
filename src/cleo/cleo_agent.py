@@ -22,7 +22,7 @@ from src.cleo.prompts import (
     RESPONSE_STYLE_INSTRUCTIONS,
     format_cleo_response,
 )
-from src.cleo.tools import SupabaseTool, WeatherTool, WebSearchTool
+from src.cleo.tools import SupabaseTool, WeatherTool, WebSearchTool, WikimediaImageTool
 from src.cleo.tools.profile_update_tool import ProfileUpdateTool
 from src.cleo.user_profile_manager import UserProfileManager
 from src.cleo.safeguards import ScopeDetector, SafetyFilter, ResponseValidator
@@ -60,6 +60,7 @@ class CleoAgent:
             "weather": WeatherTool(),
             "web_search": WebSearchTool(),
             "profile_update": ProfileUpdateTool(),
+            "wikimedia_image": WikimediaImageTool(),
         }
 
         # Profile manager for per-request personalization
@@ -200,6 +201,211 @@ class CleoAgent:
             yield response[i : i + chunk_size]
 
     # ==================================================================
+    # POI_EXPLAIN — grounded deep-dive on a single POI
+    # ==================================================================
+
+    async def explain_poi(
+        self,
+        poi_id: int,
+        user_message: Optional[str] = None,
+        user_id: Optional[str] = None,
+        debug: bool = False,
+    ) -> str:
+        """Explain a single POI in depth (the ``poi_explain`` intent).
+
+        Loads the full POI row from Supabase, injects it as ground-truth
+        system context, and instructs CLEO to write 2–3 grounded
+        paragraphs, embed images inline, and end with a 3-question
+        follow-ups JSON block.
+
+        No gate layer — this is a structured request about a verified POI
+        whose content is authoritative database data.
+        """
+        import asyncio
+
+        # 1. Load the full POI row (ground truth)
+        poi = await asyncio.to_thread(self.tools["supabase"].get_poi_details, poi_id)
+        if not poi:
+            logger.warning(f"explain_poi: POI id={poi_id} not found")
+            return (
+                f"I couldn't find details for that place (POI id {poi_id}). "
+                "It may have been removed — try another attraction."
+            )
+
+        name = poi.get("name", "this place")
+        user_message = (user_message or "").strip() or f"Tell me about {name}."
+
+        if debug:
+            print(f"\n{'=' * 60}\nPOI_EXPLAIN — id={poi_id} name={name}\n{'=' * 60}")
+
+        # 2. Build the ground-truth + formatting instruction
+        poi_context = self._build_poi_explain_context(poi)
+
+        # 3. Persist the user turn (best-effort)
+        if user_id:
+            try:
+                await self.memory.add_message_async(user_id, "user", user_message)
+            except Exception as e:
+                logger.warning(f"explain_poi: failed to persist user message: {e}")
+
+        # 4. Run the agent loop with POI ground truth + the wikimedia tool
+        response = await self._agent_loop(
+            user_message=user_message,
+            user_id=user_id,
+            conversation_context="",
+            profile_context="",
+            response_style="standard",
+            debug=debug,
+            extra_system_context=poi_context,
+            include_wikimedia_image=True,
+        )
+
+        # 5. Sanitize — strip LLM tool-call artifacts (Groq/Llama sometimes
+        #    leaks ``</function>`` tokens) and guarantee the message ends with
+        #    exactly one clean, valid follow-ups JSON fence.
+        response = self._sanitize_poi_explain_response(
+            response if isinstance(response, str) else str(response)
+        )
+
+        # 6. Persist the assistant turn (best-effort)
+        if user_id:
+            try:
+                await self.memory.add_message_async(user_id, "assistant", response)
+            except Exception as e:
+                logger.warning(f"explain_poi: failed to persist assistant message: {e}")
+
+        return response
+
+    async def explain_poi_stream(
+        self,
+        poi_id: int,
+        user_message: Optional[str] = None,
+        user_id: Optional[str] = None,
+        debug: bool = False,
+    ) -> AsyncGenerator[str, None]:
+        """Stream the POI_EXPLAIN response (mirrors ``process_message_stream``)."""
+        response = await self.explain_poi(poi_id, user_message, user_id, debug)
+        chunk_size = 5
+        for i in range(0, len(response), chunk_size):
+            yield response[i : i + chunk_size]
+
+    def _sanitize_poi_explain_response(self, response: str) -> str:
+        """Repair common LLM artifacts in the POI_EXPLAIN output.
+
+        Groq/Llama occasionally leaks tool-call tokens (``</function>``)
+        into the content and can fumble the closing code fence. This
+        guarantees:
+          1. no stray ``<function>`` tags remain,
+          2. the message ends with exactly one clean, valid
+             ``json {"follow_ups": [...]}`` `` fence.
+        """
+        if not response:
+            return response
+
+        # 1. Strip leaked tool-call tags (Groq/Llama artifact)
+        text = re.sub(r"</?function[^>]*>", "", response)
+
+        # 2. Find the LAST fenced JSON block (the follow-ups must be final)
+        blocks = list(re.finditer(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.S))
+        raw_json = blocks[-1].group(1) if blocks else None
+
+        follow_ups = None
+        if raw_json:
+            try:
+                parsed = json.loads(raw_json)
+                if isinstance(parsed, dict) and isinstance(parsed.get("follow_ups"), list):
+                    follow_ups = parsed["follow_ups"]
+            except json.JSONDecodeError:
+                follow_ups = None
+
+        # 3. Cut everything from the start of that final block onward
+        if blocks:
+            text = text[: blocks[-1].start()].rstrip()
+        elif raw_json is not None:
+            text = text[: text.find(raw_json)].rstrip()
+
+        text = text.rstrip()
+
+        # 4. Re-append a single clean, validated follow-ups block (max 3)
+        if follow_ups:
+            clean = {"follow_ups": [str(q).strip() for q in follow_ups][:3]}
+            text += "\n\n```json\n" + json.dumps(clean, ensure_ascii=False) + "\n```"
+        else:
+            # Could not parse — keep the cleaned narrative; do not fabricate.
+            logger.warning("explain_poi: could not parse follow_ups JSON from response")
+
+        return text
+
+    def _build_poi_explain_context(self, poi: Dict) -> str:
+        """Build the ground-truth record + formatting rules for POI_EXPLAIN."""
+        name = poi.get("name", "this place")
+        image_urls = poi.get("image_urls") or []
+        has_images = bool(image_urls)
+
+        ground_truth = {
+            "name": name,
+            "name_arabic": poi.get("name_arabic"),
+            "category": poi.get("category"),
+            "description": poi.get("description"),
+            "historical_significance": poi.get("historical_significance"),
+            "ticket_price": poi.get("ticket_price"),
+            "currency": poi.get("currency", "EGP"),
+            "opening_hours": poi.get("opening_hours"),
+            "best_visit_times": poi.get("best_visit_times"),
+            "average_visit_duration": poi.get("average_visit_duration"),
+            "image_urls": image_urls,
+        }
+
+        lines = [
+            f"## POI EXPLAIN MODE — explain **{name}** to the traveler.",
+            "",
+            "### AUTHORITATIVE DATABASE RECORD (your ONLY source of truth)",
+            "```json",
+            json.dumps(ground_truth, ensure_ascii=False, indent=2, default=str),
+            "```",
+            "",
+            "### STRICT OUTPUT RULES (these override all other style instructions)",
+            "1. **ANTI-HALLUCINATION CONTRACT (critical):** The JSON record above is your "
+            "COMPLETE and ONLY source of truth. You are STRICTLY FORBIDDEN from using your "
+            "own training knowledge — no construction dates, dimensions, weights, cardinal "
+            "alignment, dynasty numbers, builder names (beyond what the `name` field itself "
+            "states), or historical anecdotes unless they are LITERALLY written in the JSON "
+            "fields above. Even if you 'know' famous facts about this place, you MUST OMIT "
+            "them when they are absent from the record. The database is intentionally minimal "
+            "for some POIs — a short, HONEST answer is far better than a detailed invented "
+            "one. Before writing each sentence, verify every claim is backed by an explicit "
+            "JSON value; if it is not, delete that sentence.",
+            "   Then write 2–3 vivid paragraphs in CLEO's warm voice using ONLY these fields: "
+            "description, historical_significance, ticket_price, opening_hours, "
+            "best_visit_times, average_visit_duration. If most are empty/null, write less "
+            "rather than invent — lean on the practical fields (price, hours, duration, best "
+            "times) that ARE present.",
+            "2. **Images:** Embed images inline as markdown: `![alt text](url)`.",
+        ]
+        if has_images:
+            lines.append(
+                f"   The record provides {len(image_urls)} image URL(s) in `image_urls`. "
+                "Embed the best 1–2 inline where they fit naturally. Do not use any other URLs."
+            )
+        else:
+            lines.append(
+                "   ⚠️ `image_urls` is EMPTY in the database. You MUST call the "
+                "`search_wikimedia_image` tool with the POI name to obtain a real image URL, "
+                "then embed the returned URL. Do NOT output any image URL you did not get "
+                "from that tool or from the database record."
+            )
+        lines += [
+            "3. **Follow-ups:** End your ENTIRE message with exactly ONE fenced code block "
+            "containing a JSON object with exactly 3 follow-up questions relevant to this POI:",
+            "```json",
+            '{"follow_ups": ["question 1?", "question 2?", "question 3?"]}',
+            "```",
+            "   Put this JSON block at the very end. Write the narrative + images first, "
+            "then the single follow-ups block. Nothing should come after the closing fence.",
+        ]
+        return "\n".join(lines)
+
+    # ==================================================================
     # Agent Core — Genuine ReAct Loop
     # ==================================================================
 
@@ -211,6 +417,8 @@ class CleoAgent:
         profile_context: str = "",
         response_style: str = "standard",
         debug: bool = False,
+        extra_system_context: str = "",
+        include_wikimedia_image: bool = False,
     ) -> str:
         """Genuine ReAct loop.
 
@@ -220,14 +428,24 @@ class CleoAgent:
         3. If the LLM returns plain text → that is the final response.
 
         Up to ``config.max_agent_iterations`` iterations (default 5).
+
+        ``extra_system_context`` is appended as a final system message
+        (highest priority) — used by POI_EXPLAIN to inject ground truth.
+        ``include_wikimedia_image`` exposes the image-search tool.
         """
         # Build the initial message list
         messages = self._build_messages(
-            user_message, conversation_context, profile_context, response_style
+            user_message,
+            conversation_context,
+            profile_context,
+            response_style,
+            extra_system_context=extra_system_context,
         )
 
         # Get tool definitions for the LLM
-        tool_defs = self._get_tool_definitions()
+        tool_defs = self._get_tool_definitions(
+            include_wikimedia_image=include_wikimedia_image
+        )
 
         max_iters = self.config.max_agent_iterations
 
@@ -332,6 +550,11 @@ class CleoAgent:
                     num_results=tool_args.get("num_results", 5),
                 )
 
+            elif tool_name == "search_wikimedia_image":
+                return await self.tools["wikimedia_image"].search_image_async(
+                    query=tool_args.get("query", ""),
+                )
+
             elif tool_name == "update_user_preference":
                 if not user_id:
                     return {"error": "No user_id — cannot update profile for anonymous user."}
@@ -421,6 +644,7 @@ class CleoAgent:
         conversation_context: str,
         profile_context: str,
         response_style: str,
+        extra_system_context: str = "",
     ) -> List[Dict[str, Any]]:
         """Build the full message list for the LLM."""
         messages: List[Dict[str, Any]] = [
@@ -440,6 +664,11 @@ class CleoAgent:
         style_instruction = RESPONSE_STYLE_INSTRUCTIONS.get(response_style, RESPONSE_STYLE_INSTRUCTIONS["standard"])
         messages.append({"role": "system", "content": style_instruction})
 
+        # Caller-supplied ground-truth / mode instructions (POI_EXPLAIN, etc.).
+        # Placed last so it overrides the generic style guidance above.
+        if extra_system_context:
+            messages.append({"role": "system", "content": extra_system_context})
+
         # User's actual message
         messages.append({"role": "user", "content": user_message})
 
@@ -450,9 +679,13 @@ class CleoAgent:
     # ==================================================================
 
     @staticmethod
-    def _get_tool_definitions() -> List[Dict]:
-        """Return the tool schemas the LLM can invoke."""
-        return [
+    def _get_tool_definitions(include_wikimedia_image: bool = False) -> List[Dict]:
+        """Return the tool schemas the LLM can invoke.
+
+        ``include_wikimedia_image`` adds the Wikipedia image-search tool,
+        used by POI_EXPLAIN when a POI has no images in the database.
+        """
+        defs = [
             {
                 "type": "function",
                 "function": {
@@ -636,6 +869,32 @@ class CleoAgent:
                 },
             },
         ]
+
+        if include_wikimedia_image:
+            defs.append({
+                "type": "function",
+                "function": {
+                    "name": "search_wikimedia_image",
+                    "description": (
+                        "Search Wikipedia for a real, freely-licensed image of a place "
+                        "or landmark. Returns an image URL. Call this ONLY when a POI's "
+                        "database image_urls list is EMPTY and you need an image to embed. "
+                        "Do not call it if image_urls already has URLs."
+                    ),
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "The place/landmark name to find an image for (e.g. 'Philae Temple')",
+                            },
+                        },
+                        "required": ["query"],
+                    },
+                },
+            })
+
+        return defs
 
     # ==================================================================
     # Helpers

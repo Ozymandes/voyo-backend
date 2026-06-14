@@ -12,6 +12,8 @@ import '../models/itinerary_poi.dart';
 import '../services/supabase_service.dart';
 import '../services/routing_service.dart';
 import '../theme.dart';
+import '../widgets/poi_detail_sheet.dart';
+import 'chat_screen.dart';
 
 // Day-slot colors (cycle for day 6+)
 const _kDayColors = [
@@ -48,6 +50,12 @@ class _MapScreenState extends State<MapScreen> {
   Map<int, List<LatLng>> _routesByDay = {};
   bool _routeLoading = false;
   bool _routeVisible = true;
+
+  // ── Isochrone state ("Explore from here") ──────────────────────────────────
+  // Long-press the map to draw reachable-area rings + count reachable POIs.
+  List<IsochroneRing> _isochroneRings = [];
+  LatLng? _isochroneCenter;
+  bool _isochroneLoading = false;
 
   // ── Day filter ──────────────────────────────────────────────────────────────
   int? _selectedDay; // null = show all days
@@ -151,6 +159,154 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  // ── Isochrone ("Explore from here") ─────────────────────────────────────────
+
+  /// Long-press handler: draw reachable-area rings from the pressed point and
+  /// count how many known POIs fall inside the outer ring.
+  Future<void> _onMapLongPress(LatLng point) async {
+    setState(() {
+      _isochroneCenter = point;
+      _isochroneLoading = true;
+      _isochroneRings = [];
+    });
+    final rings = await _routingService.fetchIsochrone(
+      point,
+      ranges: const [30, 60],
+      profile: 'auto',
+    );
+    if (!mounted) return;
+    setState(() {
+      _isochroneRings = rings;
+      _isochroneLoading = false;
+    });
+    if (rings.isNotEmpty) {
+      // Fit the reachable area into view, then surface a reachable-POI summary.
+      _fitIsochroneBounds(rings);
+      final reachable = _countReachablePois(rings.last.points);
+      _showIsochroneSheet(point, rings.last.timeMinutes, reachable);
+    }
+  }
+
+  /// Counts loaded POIs whose coordinates fall inside ``polygon``
+  /// (ray-casting point-in-polygon).
+  int _countReachablePois(List<LatLng> polygon) {
+    if (polygon.length < 3) return 0;
+    var count = 0;
+    for (final poi in _pois) {
+      if (_pointInPolygon(LatLng(poi.latitude, poi.longitude), polygon)) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  static bool _pointInPolygon(LatLng p, List<LatLng> poly) {
+    var inside = false;
+    for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      final yi = poly[i].latitude, xi = poly[i].longitude;
+      final yj = poly[j].latitude, xj = poly[j].longitude;
+      final intersect = ((yi > p.latitude) != (yj > p.latitude)) &&
+          (p.longitude <
+              (xj - xi) * (p.latitude - yi) / ((yj - yi).abs() < 1e-12 ? 1e-12 : yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  void _fitIsochroneBounds(List<IsochroneRing> rings) {
+    final all = rings.expand((r) => r.points).toList();
+    if (all.isEmpty) return;
+    final lats = all.map((p) => p.latitude);
+    final lngs = all.map((p) => p.longitude);
+    final bounds = LatLngBounds(
+      LatLng(lats.reduce(min) - 0.01, lngs.reduce(min) - 0.01),
+      LatLng(lats.reduce(max) + 0.01, lngs.reduce(max) + 0.01),
+    );
+    _mapController.fitCamera(
+      CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(56)),
+    );
+  }
+
+  void _showIsochroneSheet(LatLng center, int maxMinutes, int reachableCount) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: VoyoColors.paper,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.explore_rounded,
+                      color: VoyoColors.discovery, size: 22),
+                  const SizedBox(width: 10),
+                  Text('Reachable from this point',
+                      style: GoogleFonts.fraunces(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: VoyoColors.ink,
+                      )),
+                ],
+              ),
+              const SizedBox(height: 12),
+              RichText(
+                text: TextSpan(
+                  style: GoogleFonts.instrumentSans(
+                      fontSize: 14, color: VoyoColors.ink, height: 1.5),
+                  children: [
+                    const TextSpan(text: 'Driving within '),
+                    TextSpan(
+                        text: '$maxMinutes minutes',
+                        style: const TextStyle(fontWeight: FontWeight.w700)),
+                    const TextSpan(
+                        text: ' from here you can reach '),
+                    TextSpan(
+                        text: '$reachableCount',
+                        style: const TextStyle(fontWeight: FontWeight.w700)),
+                    TextSpan(
+                        text: ' ${reachableCount == 1 ? "place" : "places"} in the VOYO database.'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  TextButton.icon(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.check, size: 18),
+                    label: const Text('Got it'),
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _clearIsochrone();
+                    },
+                    child: Text('Clear',
+                        style: TextStyle(color: VoyoColors.stone)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _clearIsochrone() {
+    setState(() {
+      _isochroneRings = [];
+      _isochroneCenter = null;
+    });
+  }
+
   void _fitRouteBounds(List<ItineraryPoi> pois) {
     if (pois.isEmpty) return;
     final lats = pois.map((p) => p.latitude);
@@ -169,59 +325,14 @@ class _MapScreenState extends State<MapScreen> {
   void _showPoiBottomSheet(Poi poi) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: VoyoColors.paper,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 36, height: 4,
-                decoration: BoxDecoration(
-                  color: VoyoColors.smoke,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              poi.name,
-              style: GoogleFonts.fraunces(
-                fontSize: 24, fontStyle: FontStyle.italic,
-                color: VoyoColors.ink,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              poi.category ?? '',
-              style: GoogleFonts.instrumentSans(
-                  fontSize: 13, color: VoyoColors.stone),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity, height: 48,
-              child: FilledButton(
-                onPressed: () => Navigator.pop(context),
-                style: FilledButton.styleFrom(
-                  backgroundColor: VoyoColors.terra,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                ),
-                child: Text(
-                  '+ Add to Itinerary',
-                  style: GoogleFonts.instrumentSans(
-                      fontSize: 15, fontWeight: FontWeight.w600,
-                      color: Colors.white),
-                ),
-              ),
-            ),
-          ],
-        ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => PoiDetailSheet(
+        poi: poi,
+        onAskCleo: () {
+          Navigator.pop(context); // close the detail sheet first
+          openCleoForPoi(context, poi);
+        },
       ),
     );
   }
@@ -270,12 +381,46 @@ class _MapScreenState extends State<MapScreen> {
               initialCenter: const LatLng(30.0444, 31.2357),
               initialZoom: 7.0,
               onPositionChanged: _onPositionChanged,
+              onLongPress: (tapPosition, point) => _onMapLongPress(point),
             ),
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.voyo.app',
               ),
+              // Isochrone reachable-area rings (long-press the map to generate).
+              // Rendered outer-first so inner rings sit on top, like a heatmap.
+              if (_isochroneRings.isNotEmpty)
+                PolygonLayer(
+                  polygons: [
+                    for (final ring
+                        in [..._isochroneRings]..sort((a, b) =>
+                            b.timeMinutes.compareTo(a.timeMinutes)))
+                      Polygon(
+                        points: ring.points,
+                        color:
+                            VoyoColors.discovery.withValues(alpha: 0.10),
+                        borderColor:
+                            VoyoColors.discovery.withValues(alpha: 0.55),
+                        borderStrokeWidth: 1.5,
+                      ),
+                  ],
+                ),
+              if (_isochroneCenter != null)
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: _isochroneCenter!,
+                      width: 40,
+                      height: 40,
+                      child: const Icon(
+                        Icons.radio_button_checked_rounded,
+                        color: VoyoColors.discovery,
+                        size: 28,
+                      ),
+                    ),
+                  ],
+                ),
               if (_routeVisible && _visibleRoutes.isNotEmpty)
                 PolylineLayer(
                   polylines: [
@@ -418,13 +563,41 @@ class _MapScreenState extends State<MapScreen> {
             ),
 
           // ── Top-right controls ────────────────────────────────────────────
+          // ── "Explore from here" hint (empty state only) ───────────────────
+          if (_isochroneRings.isEmpty &&
+              _isochroneCenter == null &&
+              _itineraryPois.isEmpty)
+            Positioned(
+              bottom: MediaQuery.of(context).padding.bottom + 16,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: _HintPill(
+                  icon: Icons.touch_app_rounded,
+                  text: "Long-press the map to explore what's reachable",
+                ),
+              ),
+            ),
+
           Positioned(
             top: topPad + 12, right: 12,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                if (_isLoading || _routeLoading)
-                  _LoadingPill(routeLoading: _routeLoading),
+                if (_isLoading || _routeLoading || _isochroneLoading)
+                  _LoadingPill(
+                    routeLoading: _routeLoading,
+                    isochroneLoading: _isochroneLoading,
+                  ),
+                // Clear isochrone rings when an "Explore from here" result is on screen.
+                if (_isochroneRings.isNotEmpty || _isochroneLoading) ...[
+                  const SizedBox(height: 8),
+                  _MapIconButton(
+                    icon: Icons.explore_off_outlined,
+                    color: VoyoColors.discovery,
+                    onTap: _clearIsochrone,
+                  ),
+                ],
                 if (hasRoute) ...[
                   const SizedBox(height: 8),
                   _MapIconButton(
@@ -476,6 +649,42 @@ class _MapScreenState extends State<MapScreen> {
 
 // ── Small shared widgets ────────────────────────────────────────────────────────
 
+class _HintPill extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  const _HintPill({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: VoyoColors.paper,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08), blurRadius: 10),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: VoyoColors.discovery),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: GoogleFonts.instrumentSans(
+              fontSize: 12,
+              color: VoyoColors.stone,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _MapIconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
@@ -511,10 +720,17 @@ class _MapIconButton extends StatelessWidget {
 
 class _LoadingPill extends StatelessWidget {
   final bool routeLoading;
-  const _LoadingPill({required this.routeLoading});
+  final bool isochroneLoading;
+  const _LoadingPill({required this.routeLoading, this.isochroneLoading = false});
 
   @override
   Widget build(BuildContext context) {
+    final color = isochroneLoading
+        ? VoyoColors.discovery
+        : (routeLoading ? VoyoColors.sky : VoyoColors.expedition);
+    final label = isochroneLoading
+        ? 'Exploring reach…'
+        : (routeLoading ? 'Building route…' : 'Loading places…');
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -532,12 +748,12 @@ class _LoadingPill extends StatelessWidget {
             width: 12, height: 12,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: routeLoading ? VoyoColors.sky : VoyoColors.expedition,
+              color: color,
             ),
           ),
           const SizedBox(width: 6),
           Text(
-            routeLoading ? 'Building route…' : 'Loading places…',
+            label,
             style: GoogleFonts.instrumentSans(
                 fontSize: 12, color: VoyoColors.stone),
           ),

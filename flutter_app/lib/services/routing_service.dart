@@ -1,23 +1,36 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/itinerary_poi.dart';
 
-class RoutingService {
-  static const _osrmBase =
-      'https://router.project-osrm.org/route/v1/driving';
+/// One reachable-area ring returned by the isochrone endpoint.
+class IsochroneRing {
+  final int timeMinutes;
+  final List<LatLng> points;
 
-  /// Fetches a road-following polyline from OSRM.
-  /// Falls back to straight-line connections when the API is unavailable.
-  Future<List<LatLng>> fetchRoute(List<LatLng> waypoints) async {
+  const IsochroneRing({required this.timeMinutes, required this.points});
+}
+
+class RoutingService {
+  static const _defaultBackend = 'http://10.0.2.2:8000';
+
+  String get _backend =>
+      dotenv.env['CLEO_API_URL'] ?? _defaultBackend;
+
+  /// Fetches a road-following polyline from the self-hosted Valhalla backend
+  /// (``GET /api/v1/routing/route``). Falls back to straight-line connections
+  /// when the backend is unavailable so the map never breaks.
+  Future<List<LatLng>> fetchRoute(List<LatLng> waypoints,
+      {String profile = 'auto'}) async {
     if (waypoints.length < 2) return waypoints;
 
     final coords =
-        waypoints.map((p) => '${p.longitude},${p.latitude}').join(';');
+        waypoints.map((p) => '${p.latitude},${p.longitude}').join(';');
     final uri = Uri.parse(
-        '$_osrmBase/$coords?overview=full&geometries=geojson');
+        '$_backend/api/v1/routing/route?waypoints=$coords&profile=$profile');
 
     try {
       final response =
@@ -25,21 +38,101 @@ class RoutingService {
       if (response.statusCode != 200) return waypoints;
 
       final data = json.decode(response.body) as Map<String, dynamic>;
-      final routes = data['routes'] as List?;
-      if (routes == null || routes.isEmpty) return waypoints;
+      // Valhalla backend returns polyline as [[lat, lng], ...]
+      final polyline = data['polyline'] as List?;
+      if (polyline == null || polyline.isEmpty) return waypoints;
 
-      final coordinates =
-          routes[0]['geometry']['coordinates'] as List;
-      return coordinates
+      return polyline
           .map((c) => LatLng(
-                (c[1] as num).toDouble(),
                 (c[0] as num).toDouble(),
+                (c[1] as num).toDouble(),
               ))
           .toList();
     } catch (e) {
-      debugPrint('OSRM unavailable, using straight lines: $e');
+      debugPrint('Valhalla route unavailable, using straight lines: $e');
       return waypoints;
     }
+  }
+
+  /// Fetches reachable-area rings (isochrone) from a center point via the
+  /// self-hosted Valhalla backend (``POST /api/v1/routing/isochrone``).
+  /// Returns one [IsochroneRing] per requested time range, ordered inner
+  /// (shortest time) to outer (longest time). Returns an empty list on error.
+  Future<List<IsochroneRing>> fetchIsochrone(
+    LatLng center, {
+    List<int> ranges = const [30, 60],
+    String profile = 'auto',
+  }) async {
+    final uri = Uri.parse('$_backend/api/v1/routing/isochrone');
+    final body = json.encode({
+      'latitude': center.latitude,
+      'longitude': center.longitude,
+      'ranges': ranges,
+      'profile': profile,
+    });
+
+    try {
+      final response = await http
+          .post(uri,
+              headers: {'Content-Type': 'application/json'}, body: body)
+          .timeout(const Duration(seconds: 15));
+      if (response.statusCode != 200) return [];
+
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      final polygons = data['polygons'] as List?;
+      if (polygons == null) return [];
+
+      final rings = <IsochroneRing>[];
+      for (final p in polygons) {
+        final timeMin = (p['time_minutes'] as num?)?.toInt() ?? 0;
+        final geojson = p['geojson'] as Map<String, dynamic>?;
+        final coords = _extractRingCoordinates(geojson);
+        if (coords.isNotEmpty) {
+          rings.add(IsochroneRing(timeMinutes: timeMin, points: coords));
+        }
+      }
+      // Sort inner (smallest time) first so the outer ring renders underneath.
+      rings.sort((a, b) => a.timeMinutes.compareTo(b.timeMinutes));
+      return rings;
+    } catch (e) {
+      debugPrint('Valhalla isochrone unavailable: $e');
+      return [];
+    }
+  }
+
+  /// Extracts a flat ring of [LatLng] from a Valhalla isochrone GeoJSON
+  /// feature (Polygon or MultiPolygon — takes the largest outer ring).
+  List<LatLng> _extractRingCoordinates(Map<String, dynamic>? geojson) {
+    if (geojson == null) return [];
+    final geom = (geojson['geometry'] ?? geojson) as Map<String, dynamic>;
+    final type = geom['type'];
+    final coords = geom['coordinates'];
+    if (coords == null) return [];
+
+    List ring;
+    if (type == 'Polygon') {
+      // coordinates = [ [outerRing], [hole1], ... ] — take the outer ring.
+      ring = (coords as List).isNotEmpty ? coords[0] as List : [];
+    } else if (type == 'MultiPolygon') {
+      // Pick the polygon with the most points as the representative ring.
+      List best = [];
+      for (final poly in coords as List) {
+        if (poly is List && poly.isNotEmpty && (poly[0] as List).length > best.length) {
+          best = poly[0] as List;
+        }
+      }
+      ring = best;
+    } else {
+      return [];
+    }
+
+    return ring
+        .whereType<List>()
+        .map((c) => LatLng(
+              (c[1] as num).toDouble(),
+              (c[0] as num).toDouble(),
+            ))
+        .toList();
   }
 
   /// Fetches road-following routes for every day in the itinerary.

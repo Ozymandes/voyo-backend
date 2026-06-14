@@ -4,10 +4,12 @@ Cairo Local Expert & Operator — Configuration & Async Groq Client
 """
 
 import os
+import re
 import asyncio
 import json
 import logging
-from typing import Optional, List, Dict, Any, AsyncGenerator
+from dataclasses import dataclass
+from typing import Optional, List, Dict, Any, AsyncGenerator, Tuple
 
 from dotenv import load_dotenv
 
@@ -110,6 +112,152 @@ class LLMResponse:
 
 
 # ---------------------------------------------------------------------------
+# Native tool-call recovery (Llama-3 native XML format → structured)
+# ---------------------------------------------------------------------------
+#
+# `llama-3.3-70b-versatile` intermittently emits tool calls in its NATIVE
+# XML format — `<function=NAME{ARGS}></function>` — inside `content`, instead
+# of the structured `tool_calls` object the OpenAI/Groq schema expects. Groq's
+# server rejects this with HTTP 400 but helpfully returns the raw text in the
+# error body's `failed_generation` field (its documented recovery hook).
+#
+# The code below parses that leaked format into a real `tool_calls` response
+# so the agent loop proceeds. This makes CLEO robust to the model's format
+# instability WITHOUT downgrading the model or disabling tools.
+
+
+@dataclass
+class _RecoveredFunction:
+    """Mimics the groq SDK function-call object: name + arguments (JSON str)."""
+    name: str
+    arguments: str
+
+
+@dataclass
+class _RecoveredToolCall:
+    """Mimics the groq SDK ``ChatCompletionMessageToolCall``.
+
+    Satisfies both ``LLMResponse.to_message()`` (object branch) and the
+    agent loop's attribute access (``tc.function.name`` / ``tc.id`` /
+    ``tc.function.arguments``).
+    """
+    id: str
+    function: _RecoveredFunction
+    type: str = "function"
+
+
+def _extract_failed_generation(exc: Exception) -> Optional[str]:
+    """Pull Groq's ``failed_generation`` text out of a 400 ``BadRequestError``.
+
+    Tries the parsed JSON body the SDK attaches to the exception first, then
+    falls back to scraping the string repr. Returns ``None`` if not present.
+    """
+    # The groq/openai SDKs attach the parsed JSON body under different
+    # attribute names across versions.
+    for attr in ("body", "api_response", "response"):
+        body = getattr(exc, attr, None)
+        if isinstance(body, dict):
+            err = body.get("error", body)
+            if isinstance(err, dict) and err.get("failed_generation"):
+                return err["failed_generation"]
+    # Fallback: best-effort scrape of the raw tags from the string repr.
+    m = re.search(r"(<function=.*</function>)", str(exc), re.DOTALL)
+    return m.group(1) if m else None
+
+
+def _parse_native_tool_calls(text: str) -> List[Tuple[str, str]]:
+    """Parse Llama-3 native tool-call tags into ``(name, args_json_str)`` pairs.
+
+    Handles both observed Llama-3 wire formats robustly:
+      * ``<function=NAME>{ARGS}</function>``  (proper XML — ``>`` before args)
+      * ``<function=NAME{ARGS}></function>``  (compact — no ``>`` before args)
+    The function name is matched as a ``\w+`` token so any stray ``>`` or
+    whitespace between the name and the JSON args is never captured into the
+    name. Brace balancing with string awareness handles nested JSON.
+    """
+    calls: List[Tuple[str, str]] = []
+    i = 0
+    while True:
+        start = text.find("<function=", i)
+        if start == -1:
+            break
+        # Name is the \\w+ token immediately after "<function=".
+        name_match = re.match(r"<function=(\w+)", text[start:])
+        if not name_match:
+            break
+        name = name_match.group(1)
+        brace_start = text.find("{", start + len("<function=") + len(name))
+        if brace_start == -1:
+            break
+        # Walk to the matching close brace, respecting strings + nesting.
+        depth = 0
+        j = brace_start
+        in_str = False
+        escaped = False
+        while j < len(text):
+            ch = text[j]
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_str = not in_str
+            elif not in_str:
+                if ch == "{":
+                    depth += 1
+                elif ch == "}":
+                    depth -= 1
+                    if depth == 0:
+                        break
+            j += 1
+        if depth != 0:
+            break  # unbalanced braces — bail rather than guess
+        raw_args = text[brace_start:j + 1]
+        try:
+            json.loads(raw_args)  # validate
+            args_str = raw_args
+        except json.JSONDecodeError:
+            args_str = "{}"
+        if name:
+            calls.append((name, args_str))
+        i = j + 1
+    return calls
+
+
+def _recover_tool_call_response(exc: Exception) -> Optional["LLMResponse"]:
+    """Recover a structured ``LLMResponse`` from a native-format tool-call leak.
+
+    When the model emits `<function=NAME{ARGS}></function>` and Groq rejects
+    it with a 400, this rebuilds the intended tool call(s) as a proper
+    ``tool_calls`` response so the agent loop executes them. The model HAS
+    decided what to call — only the wire format was wrong — so no retry is
+    needed and no generic 'trouble connecting' message is shown.
+
+    Returns ``None`` when the exception is not a recoverable tool-call leak
+    (so callers fall through to their normal retry / error handling).
+    """
+    failed = _extract_failed_generation(exc)
+    if not failed or "<function=" not in failed:
+        return None
+    parsed = _parse_native_tool_calls(failed)
+    if not parsed:
+        return None
+    tool_calls = [
+        _RecoveredToolCall(
+            id=f"call_recovered_{i}",
+            function=_RecoveredFunction(name=name, arguments=args),
+        )
+        for i, (name, args) in enumerate(parsed)
+    ]
+    logger.info(
+        "[GROQ] Recovered %d native-format tool call(s) from failed_generation: %s",
+        len(tool_calls),
+        ", ".join(tc.function.name for tc in tool_calls),
+    )
+    return LLMResponse(content=None, tool_calls=tool_calls, finish_reason="tool_calls")
+
+
+# ---------------------------------------------------------------------------
 # Async Groq Client
 # ---------------------------------------------------------------------------
 
@@ -185,6 +333,14 @@ class GroqClient:
                 error_str = str(e).lower()
                 error_type = type(e).__name__.lower()
                 logger.warning(f"[GROQ ERROR] attempt {attempt + 1}/{max_retries} — {type(e).__name__}: {e}")
+
+                # RECOVER: Llama-3 native tool-call format leak (HTTP 400
+                # carrying `failed_generation`). The model HAS decided which
+                # tool to call; Groq only rejected its wire format. Parse and
+                # proceed — no retry needed.
+                recovered = _recover_tool_call_response(e)
+                if recovered is not None:
+                    return recovered
 
                 is_retryable = (
                     "rate_limit" in error_type
@@ -284,6 +440,16 @@ class GroqClient:
                 last_error = e
                 error_str = str(e).lower()
                 logger.warning(f"[GROQ ERROR] attempt {attempt + 1}/{max_retries} — {type(e).__name__}: {e}")
+
+                # RECOVER: Llama-3 native tool-call format leak (HTTP 400
+                # carrying `failed_generation`). See `generate_async`.
+                recovered = _recover_tool_call_response(e)
+                if recovered is not None:
+                    return {
+                        "content": recovered.content,
+                        "tool_calls": recovered.tool_calls,
+                        "finish_reason": recovered.finish_reason,
+                    }
 
                 is_retryable = (
                     "429" in error_str

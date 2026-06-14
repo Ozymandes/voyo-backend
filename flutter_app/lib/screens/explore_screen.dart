@@ -1,16 +1,17 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
 import '../models/poi.dart';
 import '../services/supabase_service.dart';
 import '../theme.dart';
-import '../widgets/cleo_owl.dart';
+import '../widgets/poi_card.dart';
+import '../widgets/poi_detail_sheet.dart';
+import '../widgets/poi_image.dart';
 import 'map_screen.dart';
+import 'chat_screen.dart';
 import 'settings_sheets.dart';
 
 const _categories = [
@@ -40,8 +41,7 @@ final _fallbackPois = [
 // ---------------------------------------------------------------------------
 
 class ExploreScreen extends StatefulWidget {
-  final VoidCallback? onSwitchToCleo;
-  const ExploreScreen({super.key, this.onSwitchToCleo});
+  const ExploreScreen({super.key});
 
   @override
   State<ExploreScreen> createState() => _ExploreScreenState();
@@ -558,96 +558,19 @@ class _ExploreScreenState extends State<ExploreScreen> {
           )
         else
           SizedBox(
-            height: 215,
+            height: 224,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: pois.length,
               separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (_, i) => _buildPoiCard(pois[i]),
+              itemBuilder: (_, i) => PoiCard(
+                poi: pois[i],
+                onTap: () => _showPoiSheet(pois[i]),
+              ),
             ),
           ),
       ],
-    );
-  }
-
-  Widget _buildPoiCard(Poi poi) {
-    final subtitle = _poiSubtitle(poi);
-    return GestureDetector(
-      onTap: () => _showPoiSheet(poi),
-      child: Container(
-        width: 148,
-        decoration: BoxDecoration(
-          color: VoyoColors.paper,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: VoyoColors.smoke),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2)),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              children: [
-                _WikiPoiImage(
-                  poiName: poi.name,
-                  category: poi.category,
-                  height: 108,
-                  borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(16)),
-                ),
-                if (poi.isHiddenGem)
-                  Positioned(
-                    top: 8, right: 8,
-                    child: _hiddenGemBadge(),
-                  ),
-                if (poi.isVerified)
-                  Positioned(
-                    bottom: 8, left: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: VoyoColors.verified.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text('✓ Verified',
-                          style: GoogleFonts.instrumentSans(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white)),
-                    ),
-                  ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 2),
-              child: Text(poi.name,
-                  style: GoogleFonts.fraunces(
-                      fontSize: 14, color: VoyoColors.ink, height: 1.3),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
-              child: Text(subtitle,
-                  style: GoogleFonts.instrumentSans(
-                      fontSize: 10, color: VoyoColors.stone),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis),
-            ),
-            if (poi.averageRating != null)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-                child: _miniRatingBar(poi.averageRating!),
-              ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -695,9 +618,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
           children: [
             SizedBox(
               width: 42,
-              child: _WikiPoiImage(
-                poiName: poi.name,
-                category: poi.category,
+              child: PoiImage(
+                poi: poi,
                 height: 42,
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -745,11 +667,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _PoiSheet(
+      builder: (_) => PoiDetailSheet(
         poi: poi,
         onAskCleo: () {
-          Navigator.pop(context);
-          widget.onSwitchToCleo?.call();
+          Navigator.pop(context); // close the detail sheet first
+          openCleoForPoi(context, poi);
         },
       ),
     );
@@ -1002,488 +924,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
       'accommodation' => 'Accommodation',
       _ => cat[0].toUpperCase() + cat.substring(1),
     };
-  }
-
-  Widget _hiddenGemBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-          color: VoyoColors.discovery,
-          borderRadius: BorderRadius.circular(10)),
-      child: Text('Hidden Gem',
-          style: GoogleFonts.instrumentSans(
-              fontSize: 9,
-              fontWeight: FontWeight.w600,
-              color: Colors.white)),
-    );
-  }
-
-  Widget _miniRatingBar(double rating) {
-    final pct = (rating / 5.0).clamp(0.0, 1.0);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Rating',
-                style: GoogleFonts.instrumentSans(
-                    fontSize: 9, color: VoyoColors.stone)),
-            Text('${rating.toStringAsFixed(1)}/5',
-                style: GoogleFonts.jetBrainsMono(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    color: VoyoColors.terra)),
-          ],
-        ),
-        const SizedBox(height: 3),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(3),
-          child: LinearProgressIndicator(
-            value: pct,
-            backgroundColor: VoyoColors.smoke,
-            valueColor:
-                const AlwaysStoppedAnimation(VoyoColors.terra),
-            minHeight: 4,
-          ),
-        ),
-      ],
-    );
-  }
-
-}
-
-LinearGradient _categoryGradient(String? category) {
-  return switch (category) {
-    'historical' || 'religious' => const LinearGradient(
-        colors: [Color(0xFF3D2B1F), Color(0xFFC4622A)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight),
-    'natural' => const LinearGradient(
-        colors: [Color(0xFF1A3A2A), Color(0xFF2A7A50)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight),
-    'cultural' || 'entertainment' => const LinearGradient(
-        colors: [Color(0xFF1A2C40), Color(0xFF1C72B4)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight),
-    'dining' || 'shopping' => const LinearGradient(
-        colors: [Color(0xFF1A2A1A), Color(0xFF2A5A3A)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight),
-    _ => const LinearGradient(
-        colors: [Color(0xFF2C1A2E), Color(0xFF6040B0)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight),
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Wikipedia image cache + widget
-// ---------------------------------------------------------------------------
-
-class _WikiImageService {
-  static final _WikiImageService _instance = _WikiImageService._();
-  factory _WikiImageService() => _instance;
-  _WikiImageService._();
-
-  final _cache = <String, String?>{};
-  final _inflight = <String, Future<String?>>{};
-
-  Future<String?> imageUrl(String poiName) {
-    if (_cache.containsKey(poiName)) return Future.value(_cache[poiName]);
-    return _inflight.putIfAbsent(poiName, () async {
-      final url = await _fetch(poiName);
-      _cache[poiName] = url;
-      _inflight.remove(poiName);
-      return url;
-    });
-  }
-
-  Future<String?> _fetch(String name) async {
-    final encoded = Uri.encodeComponent(name);
-    final uri = Uri.parse(
-        'https://en.wikipedia.org/api/rest_v1/page/summary/$encoded');
-    try {
-      final res = await http
-          .get(uri, headers: {'User-Agent': 'VoyoApp/1.0'})
-          .timeout(const Duration(seconds: 6));
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body) as Map<String, dynamic>;
-        final thumb = data['thumbnail'] as Map<String, dynamic>?;
-        return thumb?['source'] as String?;
-      }
-    } catch (_) {}
-    return null;
-  }
-}
-
-class _WikiPoiImage extends StatelessWidget {
-  final String poiName;
-  final String? category;
-  final double height;
-  final BorderRadius borderRadius;
-
-  const _WikiPoiImage({
-    required this.poiName,
-    required this.height,
-    required this.borderRadius,
-    this.category,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<String?>(
-      future: _WikiImageService().imageUrl(poiName),
-      builder: (_, snap) {
-        final original = snap.data;
-        return ClipRRect(
-          borderRadius: borderRadius,
-          child: SizedBox(
-            height: height,
-            width: double.infinity,
-            child: original == null
-                ? _fallback()
-                : Image.network(
-                    // Try the 1200px upscaled URL; fall back to original if 404
-                    original.replaceFirst(RegExp(r'/\d+px-'), '/1200px-'),
-                    fit: BoxFit.cover,
-                    filterQuality: FilterQuality.high,
-                    errorBuilder: (ctx1, err1, st1) => Image.network(
-                      original,
-                      fit: BoxFit.cover,
-                      filterQuality: FilterQuality.high,
-                      errorBuilder: (ctx2, err2, st2) => _fallback(),
-                    ),
-                  ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _fallback() => Container(
-        decoration: BoxDecoration(gradient: _categoryGradient(category)),
-      );
-}
-
-// ---------------------------------------------------------------------------
-// POI Info Bottom Sheet
-// ---------------------------------------------------------------------------
-
-class _PoiSheet extends StatelessWidget {
-  final Poi poi;
-  final VoidCallback onAskCleo;
-
-  const _PoiSheet({required this.poi, required this.onAskCleo});
-
-  @override
-  Widget build(BuildContext context) {
-    final subtitle = _sub();
-    return DraggableScrollableSheet(
-      initialChildSize: 0.72,
-      minChildSize: 0.4,
-      maxChildSize: 0.93,
-      builder: (_, controller) => Container(
-        decoration: const BoxDecoration(
-          color: VoyoColors.paper,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 12, bottom: 4),
-              child: Container(
-                width: 36, height: 4,
-                decoration: BoxDecoration(
-                    color: VoyoColors.smoke,
-                    borderRadius: BorderRadius.circular(2)),
-              ),
-            ),
-            Expanded(
-              child: ListView(
-                controller: controller,
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
-                children: [
-                  Stack(
-                    children: [
-                      _WikiPoiImage(
-                        poiName: poi.name,
-                        category: poi.category,
-                        height: 180,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      if (poi.isHiddenGem)
-                        Positioned(
-                          top: 10, right: 10,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                                color: VoyoColors.discovery,
-                                borderRadius: BorderRadius.circular(12)),
-                            child: Text('Hidden Gem',
-                                style: GoogleFonts.instrumentSans(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white)),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  // Name + verified
-                  Text(poi.name,
-                      style: GoogleFonts.fraunces(
-                          fontSize: 26,
-                          fontStyle: FontStyle.italic,
-                          color: VoyoColors.ink)),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(subtitle,
-                            style: GoogleFonts.instrumentSans(
-                                fontSize: 13, color: VoyoColors.stone)),
-                      ),
-                      if (poi.isVerified)
-                        Text('✓ Ground Truth Verified',
-                            style: GoogleFonts.instrumentSans(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: VoyoColors.verified)),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Confirmed details
-                  Text('Confirmed Details',
-                      style: GoogleFonts.fraunces(
-                          fontSize: 16,
-                          fontStyle: FontStyle.italic,
-                          color: VoyoColors.ink)),
-                  const SizedBox(height: 10),
-
-                  // Ticket price
-                  if (poi.ticketPrice != null)
-                    _detailRow(
-                      Icons.confirmation_number_outlined,
-                      'Entry Fee',
-                      '${poi.ticketPrice!.toStringAsFixed(0)} ${poi.currency ?? 'EGP'}',
-                    ),
-
-                  // Opening hours
-                  if (poi.openingHours != null && poi.openingHours!.isNotEmpty)
-                    _openingHoursRow(poi.openingHours!),
-
-                  // Visit duration
-                  if (poi.averageVisitDuration != null)
-                    _detailRow(
-                      Icons.schedule_outlined,
-                      'Avg. Visit',
-                      _formatDuration(poi.averageVisitDuration!),
-                    ),
-
-                  // Rating
-                  if (poi.averageRating != null)
-                    _detailRow(
-                      Icons.star_outline,
-                      'Rating',
-                      '${poi.averageRating!.toStringAsFixed(1)} / 5.0'
-                          '${poi.totalReviews != null ? ' (${poi.totalReviews} reviews)' : ''}',
-                    ),
-
-                  // Phone
-                  if (poi.phoneNumber != null)
-                    _detailRow(
-                        Icons.phone_outlined, 'Phone', poi.phoneNumber!),
-
-                  // Website
-                  if (poi.websiteUrl != null)
-                    _detailRow(
-                        Icons.language_outlined, 'Website', poi.websiteUrl!),
-
-                  const SizedBox(height: 16),
-
-                  // Historical significance
-                  if (poi.historicalSignificance != null) ...[
-                    Text('Historical Significance',
-                        style: GoogleFonts.fraunces(
-                            fontSize: 16,
-                            fontStyle: FontStyle.italic,
-                            color: VoyoColors.ink)),
-                    const SizedBox(height: 8),
-                    Text(poi.historicalSignificance!,
-                        style: GoogleFonts.instrumentSans(
-                            fontSize: 13,
-                            color: VoyoColors.stone,
-                            height: 1.6)),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // Cleo's Take
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const CleoOwl(size: 32),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.only(left: 12),
-                          decoration: const BoxDecoration(
-                            border: Border(
-                                left: BorderSide(
-                                    color: VoyoColors.sky, width: 3)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Cleo\'s Take',
-                                  style: GoogleFonts.instrumentSans(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                      color: VoyoColors.sky,
-                                      letterSpacing: 0.3)),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Before 9am is a completely different world from after 11am.',
-                                style: GoogleFonts.fraunces(
-                                    fontSize: 15,
-                                    fontStyle: FontStyle.italic,
-                                    color: VoyoColors.ink,
-                                    height: 1.5),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'The tour groups arrive mid-morning and the energy changes entirely. Get there early for the real experience.',
-                                style: GoogleFonts.instrumentSans(
-                                    fontSize: 13,
-                                    color: VoyoColors.stone,
-                                    height: 1.6),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            // Sticky footer
-            Container(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              decoration: const BoxDecoration(
-                color: VoyoColors.paper,
-                border: Border(top: BorderSide(color: VoyoColors.smoke)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: VoyoColors.terra,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: Text('+ Add to Itinerary',
-                          style: GoogleFonts.instrumentSans(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white)),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: onAskCleo,
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(
-                            color: VoyoColors.sky, width: 2),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: Text('Ask Cleo',
-                          style: GoogleFonts.instrumentSans(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: VoyoColors.sky)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _detailRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 16, color: VoyoColors.stone),
-          const SizedBox(width: 8),
-          Text('$label  ',
-              style: GoogleFonts.instrumentSans(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: VoyoColors.stone)),
-          Expanded(
-            child: Text(value,
-                style: GoogleFonts.jetBrainsMono(
-                    fontSize: 12,
-                    color: VoyoColors.ink)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _openingHoursRow(Map<String, dynamic> hours) {
-    final today = _todayKey();
-    final todayHours = hours[today] as String?;
-    final display = todayHours ?? 'See details';
-    return _detailRow(
-        Icons.access_time_outlined, 'Today', display);
-  }
-
-  String _todayKey() {
-    const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
-    return days[DateTime.now().weekday - 1];
-  }
-
-  String _formatDuration(int minutes) {
-    if (minutes < 60) return '$minutes min';
-    final h = minutes ~/ 60;
-    final m = minutes % 60;
-    return m == 0 ? '${h}h' : '${h}h ${m}m';
-  }
-
-  String _sub() {
-    final parts = <String>[];
-    if (poi.category != null) {
-      parts.add(switch (poi.category!) {
-        'historical' => 'Historical Site',
-        'cultural' => 'Cultural',
-        'natural' => 'Nature',
-        'entertainment' => 'Entertainment',
-        'religious' => 'Religious Site',
-        'shopping' => 'Shopping',
-        'dining' => 'Dining',
-        _ => poi.category![0].toUpperCase() + poi.category!.substring(1),
-      });
-    }
-    if (poi.city != null) parts.add(poi.city!);
-    return parts.join(' · ');
   }
 
 }

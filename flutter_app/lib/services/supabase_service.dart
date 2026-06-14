@@ -15,7 +15,7 @@ class SupabaseService {
   }) async {
     final response = await _client
         .from('pois')
-        .select('id, name, latitude, longitude, category, average_rating, description')
+        .select(_poiColumns)
         .gte('latitude', minLat)
         .lte('latitude', maxLat)
         .gte('longitude', minLng)
@@ -68,10 +68,11 @@ class SupabaseService {
       'id, name, latitude, longitude, category, average_rating, '
       'total_reviews, description, ticket_price, currency, '
       'is_active, is_verified, popularity_score, '
-      'historical_significance, average_visit_duration';
+      'historical_significance, average_visit_duration, '
+      'image_urls, tags, address, opening_hours, website_url';
 
   /// Featured POIs ordered by rating. Throws on error so caller can handle.
-  Future<List<Poi>> getFeaturedPois({int limit = 30}) async {
+  Future<List<Poi>> getFeaturedPois({int limit = 500}) async {
     final response = await _client
         .from('pois')
         .select(_poiColumns)

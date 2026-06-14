@@ -10,10 +10,28 @@ class CleoService {
       : _baseUrl = dotenv.env['CLEO_API_URL'] ?? 'http://10.0.2.2:8000';
 
   /// Send a message to CLEO and return the assistant's response text.
-  Future<String> sendMessage(String message, {String? userId}) async {
+  ///
+  /// [poiId] + [intent] ("poi_explain") are sent when the message originates
+  /// from a POI "Ask Cleo" entry point, giving the agent place context per the
+  /// MASTER_PLAN chat contract.
+  Future<String> sendMessage(
+    String message, {
+    String? userId,
+    int? poiId,
+    String? intent,
+  }) async {
+    // Dev affordance: render rich sample responses (image + follow-ups) so the
+    // chat UI is testable before the CLEO `poi_explain` path ships. Enable by
+    // setting CLEO_STUB=1 in flutter_app/.env. Off → real network call.
+    if (dotenv.env['CLEO_STUB'] == '1') {
+      return _stubResponse(message, poiId: poiId, intent: intent);
+    }
+
     final uri = Uri.parse('$_baseUrl/api/v1/chat');
     final body = <String, dynamic>{'message': message};
     if (userId != null) body['user_id'] = userId;
+    if (poiId != null) body['poi_id'] = poiId;
+    if (intent != null) body['intent'] = intent;
 
     final response = await http.post(
       uri,
@@ -27,6 +45,33 @@ class CleoService {
     } else {
       throw Exception('CLEO API error ${response.statusCode}: ${response.body}');
     }
+  }
+
+  /// Sample responses for the `CLEO_STUB` dev toggle. Exercises the markdown
+  /// image styling and the trailing `follow_ups` chip parsing so the UI is
+  /// testable without the backend. Not used in production (toggle is off).
+  String _stubResponse(String message, {int? poiId, String? intent}) {
+    if (intent == 'poi_explain') {
+      final nameMatch =
+          RegExp(r'about\s+(.+)$', caseSensitive: false).firstMatch(message);
+      final place = (nameMatch?.group(1) ?? 'this place')
+          .trim()
+          .replaceAll(RegExp(r'[?.!]'), '');
+      return '''**$place** is one of those sites that rewards a slow visit. Its scale reveals itself gradually, so give yourself a few hours and arrive early, before the tour groups settle in.
+
+The stonework photographs best in the soft light of early morning and late afternoon. Carry water and shade, and wear comfortable shoes — there is always more walking than you expect.
+
+```json
+{"follow_ups": ["What is the best time of day to visit?", "How much are tickets and where do I buy them?", "How do I get there and back?", "What should I wear or bring?"]}
+```''';
+    }
+    return '''Great question. Here is how I would approach it.
+
+For most travellers the sweet spot is to start early, break during the midday heat, and head out again in the late afternoon. That rhythm dodges both the sun and the biggest crowds.
+
+```json
+{"follow_ups": ["Can you turn this into an itinerary?", "What should I pack?", "Any hidden gems nearby?"]}
+```''';
   }
 
   /// Load past conversation history for a user (persisted on backend).

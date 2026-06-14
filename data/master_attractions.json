@@ -1,0 +1,3411 @@
+{
+  "Cairo": [
+    {
+      "name": "Khan el-Khalili",
+      "name_arabic": "خان الخليلي",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Khan el-Khalili",
+        "Khan el Khalili bazaar"
+      ],
+      "description": "Famous historic souk (market) in the heart of Islamic Cairo",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Mosque of Sultan Hassan",
+      "name_arabic": "مسجد ومدرسة السلطان حسن",
+      "category": "religious",
+      "importance": "Must-See",
+      "search_queries": [
+        "Sultan Hassan Mosque",
+        "Mosque-Madrasa of Sultan Hassan"
+      ],
+      "description": "Masterpiece of Mamluk architecture, one of Cairo's largest mosques",
+      "ticket_price": 40.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Citadel of Cairo (Saladin Citadel)",
+      "name_arabic": "قلعة صلاح الدين الأيوبي",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Cairo Citadel",
+        "Saladin Citadel",
+        "Citadel of Muhammad Ali"
+      ],
+      "description": "Medieval Islamic-era fortress with mosques and museums",
+      "ticket_price": 60.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "The Egyptian Museum",
+      "name_arabic": "المتحف المصري",
+      "category": "cultural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Egyptian Museum Cairo",
+        "Egyptian Antiquities Museum"
+      ],
+      "description": "World's largest collection of ancient Egyptian antiquities including Tutankhamun's treasures",
+      "ticket_price": 200.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Al-Azhar Mosque",
+      "name_arabic": "جامع الأزهر",
+      "category": "religious",
+      "importance": "Must-See",
+      "search_queries": [
+        "Al-Azhar Mosque"
+      ],
+      "description": "One of Cairo's oldest mosques and home to Al-Azhar University",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Hanging Church",
+      "name_arabic": "الكنيسة المعلقة",
+      "category": "religious",
+      "importance": "Must-See",
+      "search_queries": [
+        "Hanging Church Cairo",
+        "Saint Virgin Mary's Coptic Church"
+      ],
+      "description": "Famous Coptic church built atop the Babylon Fortress gate",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Cairo Tower",
+      "name_arabic": "برج القاهرة",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Cairo Tower"
+      ],
+      "description": "187-meter tower with panoramic views of Cairo and Nile",
+      "ticket_price": 70.0,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Al-Mu'izz Street",
+      "name_arabic": "شارع المعز",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Al-Muizz Street",
+        "Muizz Street Cairo"
+      ],
+      "description": "Open-air museum of Islamic architecture with historic mosques and mansions",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Ibn Tulun Mosque",
+      "name_arabic": "مسجد أحمد بن طولون",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Ibn Tulun Mosque"
+      ],
+      "description": "One of Cairo's oldest and largest mosques, famous for its minaret",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Coptic Museum",
+      "name_arabic": "المتحف القبطي",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Coptic Museum Cairo"
+      ],
+      "description": "World's largest collection of Coptic Christian artifacts",
+      "ticket_price": 40.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    }
+  ],
+  "Giza": [
+    {
+      "name": "Great Pyramid of Giza (Khufu)",
+      "name_arabic": "هرم خوفو الأكبر",
+      "category": "historical",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Great Pyramid Giza",
+        "Khufu Pyramid"
+      ],
+      "description": "Largest of the three pyramids, oldest of the Seven Wonders",
+      "ticket_price": 240.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Great Sphinx of Giza",
+      "name_arabic": "أبو الهول",
+      "category": "historical",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Great Sphinx Giza",
+        "The Sphinx Egypt"
+      ],
+      "description": "Iconic limestone statue with lion body and human head",
+      "ticket_price": 240.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Pyramid of Khafre",
+      "name_arabic": "هرم خفرع",
+      "category": "historical",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Pyramid of Khafre",
+        "Khafre Pyramid"
+      ],
+      "description": "Second-largest pyramid, distinctive with its casing stones",
+      "ticket_price": 240.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Pyramid of Menkaure",
+      "name_arabic": "هرم منكاور",
+      "category": "historical",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Menkaure Pyramid"
+      ],
+      "description": "Smallest of the three main Giza pyramids",
+      "ticket_price": 100.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Giza Plateau",
+      "name_arabic": "هضبة الأهرامات",
+      "category": "historical",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Giza Plateau"
+      ],
+      "description": "Archaeological site containing the three pyramids and Sphinx",
+      "ticket_price": 240.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Grand Egyptian Museum (GEM)",
+      "name_arabic": "المتحف المصري الكبير",
+      "category": "cultural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Grand Egyptian Museum",
+        "GEM Giza"
+      ],
+      "description": "State-of-the-art museum near Pyramids, housing Tutankhamun collection",
+      "ticket_price": 150.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Saqqara (Step Pyramid)",
+      "name_arabic": "سقارة",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Saqqara Pyramid",
+        "Djoser Step Pyramid"
+      ],
+      "description": "World's oldest stone pyramid, Djoser's Step Pyramid",
+      "ticket_price": 120.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Memphis (Mit Rahina)",
+      "name_arabic": "ممفيس",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Memphis Egypt",
+        "Mit Rahina"
+      ],
+      "description": "Ancient capital of Egypt, statue of Ramesses II",
+      "ticket_price": 80.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Dahshur Pyramids",
+      "name_arabic": "أهرامات دهشور",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Dahshur Pyramids",
+        "Red Pyramid"
+      ],
+      "description": "Red Pyramid and Bent Pyramid, early smooth-sided pyramids",
+      "ticket_price": 80.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": true
+    }
+  ],
+  "Luxor": [
+    {
+      "name": "Colossi of Memnon",
+      "name_arabic": "تمثالا Memnon",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Colossi of Memnon Luxor"
+      ],
+      "description": "Two massive stone statues of Pharaoh Amenhotep III",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Karnak Temple Complex",
+      "name_arabic": "معبد الكرنك",
+      "category": "historical",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Karnak Temple Luxor",
+        "Karnak Temple Complex"
+      ],
+      "description": "Largest ancient religious site in the world, built over 2000 years with massive columns and hieroglyphics",
+      "ticket_price": 220.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Luxor Temple",
+      "name_arabic": "معبد الأقصر",
+      "category": "historical",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Luxor Temple Egypt",
+        "Temple of Luxor"
+      ],
+      "description": "Ancient Egyptian temple complex on the east bank of the Nile, beautifully illuminated at night",
+      "ticket_price": 160.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Avenue of Sphinxes",
+      "name_arabic": "طريق الكباش",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Avenue of Sphinxes Luxor",
+        "Sphinxes Road Luxor"
+      ],
+      "description": "2.7 km ancient road lined with 1,350 sphinx statues connecting Karnak and Luxor temples",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Luxor Museum",
+      "name_arabic": "متحف الأقصر",
+      "category": "cultural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Luxor Museum Egypt"
+      ],
+      "description": "World-class museum with stunning artifacts from Theban temples and necropolis",
+      "ticket_price": 140.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Mummification Museum",
+      "name_arabic": "متحف التحنيط",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Mummification Museum Luxor"
+      ],
+      "description": "Fascinating museum explaining ancient Egyptian mummification process with tools and mummies",
+      "ticket_price": 100.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Valley of the Kings",
+      "name_arabic": "وادي الملوك",
+      "category": "historical",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Valley of the Kings Luxor",
+        "Valley of Kings Egypt"
+      ],
+      "description": "Ancient burial ground of pharaohs with 63 tombs including Tutankhamun's tomb (KV62)",
+      "ticket_price": 300.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tomb of Tutankhamun (KV62)",
+      "name_arabic": "مقبرة توت عنخ آمون",
+      "category": "historical",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Tutankhamun Tomb Luxor",
+        "King Tut Tomb Valley of Kings"
+      ],
+      "description": "The famous tomb of the boy king, discovered intact in 1922 by Howard Carter",
+      "ticket_price": 400.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tomb of Seti I (KV17)",
+      "name_arabic": "مقبرة سيتي الأول",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Seti I Tomb Luxor",
+        "KV17 Valley of Kings"
+      ],
+      "description": "Longest and deepest tomb in Valley of Kings with spectacular wall paintings",
+      "ticket_price": 1400.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tomb of Ramesses VI (KV9)",
+      "name_arabic": "مقبرة رمسيس السادس",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Ramesses VI Tomb",
+        "KV9 Valley of Kings"
+      ],
+      "description": "Beautiful tomb with astronomical ceiling and well-preserved hieroglyphics",
+      "ticket_price": 160.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tomb of Ramesses III (KV11)",
+      "name_arabic": "مقبرة رمسيس الثالث",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Ramesses III Tomb",
+        "KV11 Valley of Kings"
+      ],
+      "description": "Large tomb with vibrant colored reliefs depicting daily life and religious scenes",
+      "ticket_price": 160.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Valley of the Queens",
+      "name_arabic": "وادي الملكات",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Valley of the Queens Luxor"
+      ],
+      "description": "Ancient burial site for queens and royal children with over 75 tombs",
+      "ticket_price": 140.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tomb of Nefertari (QV66)",
+      "name_arabic": "مقبرة نفرتاري",
+      "category": "historical",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Nefertari Tomb Luxor",
+        "QV66 Valley of Queens"
+      ],
+      "description": "Most beautiful tomb in Egypt with stunning wall paintings, wife of Ramesses II",
+      "ticket_price": 1400.0,
+      "expected_rating": 5.0,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Temple of Hatshepsut (Deir el-Bahari)",
+      "name_arabic": "معبد حتشبسوت",
+      "category": "historical",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Hatshepsut Temple Luxor",
+        "Deir el-Bahari"
+      ],
+      "description": "Stunning three-tiered mortuary temple of Egypt's most successful female pharaoh",
+      "ticket_price": 140.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Ramesseum (Mortuary Temple of Ramesses II)",
+      "name_arabic": "الرامسيوم",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Ramesseum Luxor",
+        "Ramesses II Temple Luxor"
+      ],
+      "description": "Impressive mortuary temple of Ramesses the Great with fallen colossus and detailed reliefs",
+      "ticket_price": 100.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Medinet Habu (Mortuary Temple of Ramesses III)",
+      "name_arabic": "مدينة هابو",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Medinet Habu Luxor",
+        "Ramesses III Temple"
+      ],
+      "description": "Best-preserved mortuary temple with massive pylons and vivid battle scenes",
+      "ticket_price": 100.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Temple of Seti I",
+      "name_arabic": "معبد سيتي الأول",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Seti I Temple Luxor",
+        "Qurna Temple"
+      ],
+      "description": "Well-preserved temple dedicated to Seti I and his father Ramesses I",
+      "ticket_price": 60.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Deir el-Medina",
+      "name_arabic": "دير المدينة",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Deir el-Medina Luxor",
+        "Workers Village Luxor"
+      ],
+      "description": "Ancient village of artisans who built the royal tombs, with beautifully decorated private tombs",
+      "ticket_price": 100.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tombs of the Nobles",
+      "name_arabic": "مقابر الأشراف",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Tombs of Nobles Luxor",
+        "Noble Tombs Qurna"
+      ],
+      "description": "Private tombs of high officials with vivid scenes of daily life in ancient Egypt",
+      "ticket_price": 100.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tomb of Sennefer (TT96)",
+      "name_arabic": "مقبرة سننفر",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Sennefer Tomb Luxor",
+        "Tomb of Vineyards"
+      ],
+      "description": "Famous 'Tomb of Vineyards' with grape-decorated ceiling, mayor of Thebes under Amenhotep II",
+      "ticket_price": 100.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tomb of Rekhmire (TT100)",
+      "name_arabic": "مقبرة رخميرع",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Rekhmire Tomb Luxor"
+      ],
+      "description": "Tomb of vizier with detailed scenes of tax collection, workshops, and foreign tribute",
+      "ticket_price": 100.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tomb of Ramose (TT55)",
+      "name_arabic": "مقبرة رعموس",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Ramose Tomb Luxor"
+      ],
+      "description": "Vizier's tomb showing transition from Amenhotep III to Akhenaten's artistic style",
+      "ticket_price": 100.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Dendera Temple Complex (Temple of Hathor)",
+      "name_arabic": "معبد دندرة",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Dendera Temple Egypt",
+        "Temple of Hathor Dendera",
+        "Dendera Zodiac"
+      ],
+      "description": "One of Egypt's best-preserved temple complexes, famous for Hathor columns, zodiac ceiling, and underground crypts",
+      "ticket_price": 200.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Temple of Hathor at Dendera",
+      "name_arabic": "معبد حتحور",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Hathor Temple Dendera"
+      ],
+      "description": "Main temple dedicated to goddess Hathor with famous astronomical ceiling and Cleopatra reliefs",
+      "ticket_price": 200.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Dendera Zodiac",
+      "name_arabic": "البروج المصرية",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Dendera Zodiac Ceiling",
+        "Ancient Egyptian Zodiac"
+      ],
+      "description": "Famous astronomical ceiling showing zodiac constellations and planets, original in Louvre",
+      "ticket_price": 200.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Abydos Temple Complex",
+      "name_arabic": "معابد أبيدوس",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Abydos Temple Egypt",
+        "Abydos Seti I Temple"
+      ],
+      "description": "Most sacred site in ancient Egypt, cult center of Osiris with stunning reliefs and King List",
+      "ticket_price": 100.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Temple of Seti I at Abydos",
+      "name_arabic": "معبد سيتي الأول",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Seti I Temple Abydos",
+        "Abydos King List"
+      ],
+      "description": "Temple with the famous Abydos King List showing 76 pharaohs and exquisite wall carvings",
+      "ticket_price": 100.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Osireion at Abydos",
+      "name_arabic": "الأوزيريون",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Osireion Abydos",
+        "Cenotaph of Seti I"
+      ],
+      "description": "Mysterious underground cenotaph built by Seti I, resembling Valley Temple at Giza",
+      "ticket_price": 100.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Temple of Ramesses II at Abydos",
+      "name_arabic": "معبد رمسيس الثاني",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Ramesses II Abydos Temple"
+      ],
+      "description": "Second major temple at Abydos built by Ramesses II next to his father's temple",
+      "ticket_price": 100.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Temple of Khnum at Esna",
+      "name_arabic": "معبد خنوم",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Esna Temple Egypt",
+        "Temple of Khnum Esna"
+      ],
+      "description": "Greco-Roman temple with magnificent hypostyle hall and astronomical ceiling, partially underground",
+      "ticket_price": 100.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "El-Kab (Nekheb)",
+      "name_arabic": "الكاب",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "El-Kab Egypt",
+        "Nekheb Ancient City"
+      ],
+      "description": "Ancient walled city with rock-cut tombs, temple remains, and desert fortress",
+      "ticket_price": 80.0,
+      "expected_rating": 4.3,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Rock Tombs of El-Kab",
+      "name_arabic": "مقابر الكاب",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "El-Kab Tombs",
+        "Nekheb Rock Tombs"
+      ],
+      "description": "New Kingdom nobles' tombs with well-preserved biographical inscriptions and battle scenes",
+      "ticket_price": 80.0,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Luxor Corniche",
+      "name_arabic": "كورنيش الأقصر",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Luxor Corniche Nile",
+        "Luxor Promenade"
+      ],
+      "description": "Beautiful waterfront promenade along the Nile with cafes, restaurants, and felucca rides",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Luxor Souk",
+      "name_arabic": "سوق الأقصر",
+      "category": "shopping",
+      "importance": "Major",
+      "search_queries": [
+        "Luxor Market",
+        "Luxor Bazaar"
+      ],
+      "description": "Traditional market selling souvenirs, spices, alabaster, and handicrafts",
+      "ticket_price": null,
+      "expected_rating": 4.3,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Banana Island",
+      "name_arabic": "جزيرة الموز",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Banana Island Luxor",
+        "Gezira el-Mozh"
+      ],
+      "description": "Lush island with banana plantations accessible by felucca, popular for relaxation",
+      "ticket_price": 50.0,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Hot Air Balloon Rides Luxor",
+      "name_arabic": "رحلات البالون الساخن",
+      "category": "entertainment",
+      "importance": "Must-See",
+      "search_queries": [
+        "Hot Air Balloon Luxor",
+        "Balloon Ride Luxor"
+      ],
+      "description": "Sunrise balloon flights over Valley of Kings and Nile for spectacular aerial views",
+      "ticket_price": 2500.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Luxor to Aswan Nile Cruise",
+      "name_arabic": "رحلة نيلية الأقصر أسوان",
+      "category": "entertainment",
+      "importance": "Must-See",
+      "search_queries": [
+        "Nile Cruise Luxor Aswan",
+        "Luxury Nile Cruise Egypt"
+      ],
+      "description": "Multi-day luxury cruise between Luxor and Aswan visiting temples along the Nile",
+      "ticket_price": 15000.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "West Bank Bicycle Tour",
+      "name_arabic": "جولة بالدراجة الضفة الغربية",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Luxor West Bank Bike Tour",
+        "Cycling Luxor Tombs"
+      ],
+      "description": "Guided bicycle tour through West Bank villages and ancient sites",
+      "ticket_price": 400.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Sunrise at Karnak Temple",
+      "name_arabic": "شروق الشمس في الكرنك",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Karnak Sunrise Tour",
+        "Early Morning Karnak"
+      ],
+      "description": "Special early access to Karnak Temple before crowds for photography and peaceful exploration",
+      "ticket_price": 500.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    }
+  ],
+  "Aswan": [
+    {
+      "name": "Nubian Village",
+      "name_arabic": "القرية النوبية",
+      "category": "cultural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Nubian Village Aswan"
+      ],
+      "description": "Colorful traditional Nubian village on West Bank",
+      "ticket_price": 50.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Abu Simbel Temples",
+      "name_arabic": "معابد أبو سمبل",
+      "category": "historical",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Abu Simbel Temples Egypt",
+        "Abu Simbel Ramesses II"
+      ],
+      "description": "Massive rock-cut temples of Ramesses II and Nefertari, relocated to save from Lake Nasser flooding",
+      "ticket_price": 420.0,
+      "expected_rating": 5.0,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Philae Temple (Temple of Isis)",
+      "name_arabic": "معبد فيلة",
+      "category": "historical",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Philae Temple Aswan",
+        "Temple of Isis Aswan"
+      ],
+      "description": "Beautiful island temple dedicated to goddess Isis, relocated from Philae Island to Agilkia Island",
+      "ticket_price": 230.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Temple of Kom Ombo",
+      "name_arabic": "معبد كوم أمبو",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Kom Ombo Temple",
+        "Sobek Haroeris Temple"
+      ],
+      "description": "Unique double temple dedicated to crocodile god Sobek and falcon god Haroeris, on Nile bend",
+      "ticket_price": 160.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Temple of Horus at Edfu",
+      "name_arabic": "معبد إدفو",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Edfu Temple",
+        "Temple of Horus Edfu"
+      ],
+      "description": "Best-preserved ancient temple in Egypt dedicated to falcon god Horus, massive pylons",
+      "ticket_price": 180.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Temple of Kalabsha",
+      "name_arabic": "معبد كلابشة",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Kalabsha Temple Aswan",
+        "Temple of Mandulis"
+      ],
+      "description": "Largest free-standing temple of Nubia, dedicated to Nubian god Mandulis, relocated to Lake Nasser",
+      "ticket_price": 100.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Aswan High Dam",
+      "name_arabic": "السد العالي",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Aswan High Dam Egypt",
+        "High Dam Aswan"
+      ],
+      "description": "Modern engineering marvel controlling Nile floods, creating Lake Nasser, built 1960-1970",
+      "ticket_price": 80.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Unfinished Obelisk",
+      "name_arabic": "المسلة الناقصة",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Unfinished Obelisk Aswan",
+        "Ancient Granite Quarry"
+      ],
+      "description": "Massive abandoned obelisk in ancient granite quarries showing how Egyptians carved stone",
+      "ticket_price": 100.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Old Aswan Dam",
+      "name_arabic": "خزان أسوان",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Old Aswan Dam",
+        "British Dam Aswan"
+      ],
+      "description": "Historic 1902 British-built dam, first attempt at Nile flood control",
+      "ticket_price": 50.0,
+      "expected_rating": 4.2,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Tombs of the Nobles (Aswan)",
+      "name_arabic": "مقابر النبلاء",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Tombs of Nobles Aswan",
+        "Qubbet el-Hawa"
+      ],
+      "description": "Rock-cut tombs on west bank hillside with panoramic Aswan views, burial sites of governors",
+      "ticket_price": 100.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Monastery of St. Simeon",
+      "name_arabic": "دير الأنبا سمعان",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "St Simeon Monastery Aswan",
+        "Coptic Monastery Aswan"
+      ],
+      "description": "7th-century fortified Coptic monastery in the desert, accessible by camel or boat",
+      "ticket_price": 60.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Elephantine Island",
+      "name_arabic": "جزيرة الفنتين",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Elephantine Island Aswan",
+        "Aswan Museum Island"
+      ],
+      "description": "Historic island with ancient ruins, Aswan Museum, and Nubian villages",
+      "ticket_price": 100.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Aswan Botanical Garden (Kitchener's Island)",
+      "name_arabic": "حديقة أسوان النباتية",
+      "category": "natural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Aswan Botanical Garden",
+        "Kitchener Island"
+      ],
+      "description": "Beautiful island garden with exotic plants and trees from around the world",
+      "ticket_price": 75.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Lake Nasser",
+      "name_arabic": "بحيرة ناصر",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Lake Nasser Egypt",
+        "Nasser Lake Cruise"
+      ],
+      "description": "Massive artificial lake created by High Dam, second largest in Africa, for Nile cruises",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Nubia Museum",
+      "name_arabic": "متحف النوبة",
+      "category": "cultural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Nubia Museum Aswan",
+        "Nubian Museum Egypt"
+      ],
+      "description": "UNESCO award-winning museum showcasing Nubian history, culture, and rescued monuments",
+      "ticket_price": 140.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Aswan Museum (Elephantine Island)",
+      "name_arabic": "متحف أسوان",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Aswan Museum Egypt",
+        "Elephantine Museum"
+      ],
+      "description": "Museum inside Pasha's palace displaying artifacts from Elephantine excavations",
+      "ticket_price": 100.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Crocodile Museum (Kom Ombo)",
+      "name_arabic": "متحف التماسيح",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Crocodile Museum Kom Ombo",
+        "Sobek Museum"
+      ],
+      "description": "Small museum displaying mummified crocodiles worshipped as sacred animals",
+      "ticket_price": 80.0,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Temple of Wadi es-Sebua",
+      "name_arabic": "معبد وادي السبوع",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Wadi es-Sebua Temple",
+        "Valley of Lions Temple"
+      ],
+      "description": "Ramesses II temple known as 'Valley of the Lions' with sphinx-lined avenue, relocated from Lake Nasser",
+      "ticket_price": 150.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Temple of Amada",
+      "name_arabic": "معبد عمادة",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Amada Temple Lake Nasser",
+        "Temple of Amada Egypt"
+      ],
+      "description": "Oldest temple on Lake Nasser with well-preserved colorful wall paintings from 18th Dynasty",
+      "ticket_price": 150.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Temple of Dakka",
+      "name_arabic": "معبد الدكة",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Dakka Temple Aswan",
+        "Temple of Thoth Dakka"
+      ],
+      "description": "Greco-Roman temple dedicated to Thoth, relocated and now near Wadi es-Sebua",
+      "ticket_price": 100.0,
+      "expected_rating": 4.4,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Temple of Derr",
+      "name_arabic": "معبد الدر",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Derr Temple Lake Nasser"
+      ],
+      "description": "Rock-cut temple of Ramesses II, only Nubian temple on east bank, relocated",
+      "ticket_price": 100.0,
+      "expected_rating": 4.3,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Rock Temples of Beit el-Wali",
+      "name_arabic": "معبد بيت الوالي",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Beit el-Wali Temple",
+        "Ramesses II Nubia Temple"
+      ],
+      "description": "Smallest of Ramesses II Nubian temples with colorful battle reliefs, relocated near Kalabsha",
+      "ticket_price": 100.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Qasr Ibrim",
+      "name_arabic": "قصر إبريم",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Qasr Ibrim Lake Nasser",
+        "Fortress of Ibrim"
+      ],
+      "description": "Only Nubian site remaining in original location, now island fortress in Lake Nasser",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Temple of Satet (Elephantine Island)",
+      "name_arabic": "معبد الإلهة ساتت",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Satet Temple Elephantine",
+        "Temple of Satet Aswan"
+      ],
+      "description": "Ancient temple dedicated to goddess Satet, excavated ruins on southern Elephantine Island",
+      "ticket_price": 100.0,
+      "expected_rating": 4.3,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Nilometer (Elephantine Island)",
+      "name_arabic": "مقياس النيل",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Nilometer Aswan",
+        "Elephantine Nilometer"
+      ],
+      "description": "Ancient device for measuring Nile flood levels, one of oldest and best-preserved nilometers",
+      "ticket_price": 100.0,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Temple of Khnum (Elephantine)",
+      "name_arabic": "معبد خنوم",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Khnum Temple Elephantine Island"
+      ],
+      "description": "Temple ruins dedicated to ram-headed god Khnum, creator deity and Nile flood controller",
+      "ticket_price": 100.0,
+      "expected_rating": 4.2,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Sehel Island",
+      "name_arabic": "جزيرة سهيل",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Sehel Island Aswan",
+        "Famine Stela Sehel"
+      ],
+      "description": "Island covered with ancient rock inscriptions and home to the famous Famine Stela",
+      "ticket_price": 80.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Famine Stela (Sehel Island)",
+      "name_arabic": "لوحة المجاعة",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Famine Stela Egypt",
+        "Seven Years Famine Stela"
+      ],
+      "description": "Ptolemaic inscription describing seven-year famine during reign of Pharaoh Djoser",
+      "ticket_price": 80.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Gharb Soheil Nubian Village",
+      "name_arabic": "قرية غرب سهيل النوبية",
+      "category": "cultural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Gharb Soheil Village",
+        "West Soheil Nubian"
+      ],
+      "description": "Authentic Nubian village with traditional painted houses, handicrafts, and cultural experiences",
+      "ticket_price": 50.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Nubian House Museum",
+      "name_arabic": "بيت نوبي",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Nubian House Aswan",
+        "Traditional Nubian Home"
+      ],
+      "description": "Traditional Nubian home showcasing architecture, handicrafts, and daily life with henna painting",
+      "ticket_price": 100.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Animalia Nubian Village",
+      "name_arabic": "قرية أنيماليا النوبية",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Animalia Village Aswan",
+        "Crocodile Village Aswan"
+      ],
+      "description": "Nubian village with crocodile and camel encounters, traditional food, and cultural shows",
+      "ticket_price": 150.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Aswan Corniche",
+      "name_arabic": "كورنيش أسوان",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Aswan Corniche Nile",
+        "Aswan Waterfront"
+      ],
+      "description": "Scenic Nile promenade with felucca sailing, restaurants, and stunning sunset views",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Aswan Souk",
+      "name_arabic": "سوق أسوان",
+      "category": "shopping",
+      "importance": "Must-See",
+      "search_queries": [
+        "Aswan Market",
+        "Aswan Bazaar"
+      ],
+      "description": "Vibrant traditional market selling spices, textiles, Nubian crafts, and henna",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Felucca Sailing Aswan",
+      "name_arabic": "رحلة الفلوكة",
+      "category": "entertainment",
+      "importance": "Must-See",
+      "search_queries": [
+        "Felucca Ride Aswan",
+        "Sailing Aswan Nile"
+      ],
+      "description": "Traditional sailboat rides around Aswan islands with beautiful Nile scenery",
+      "ticket_price": 200.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Aswan Sound and Light Show (Philae)",
+      "name_arabic": "الصوت والضوء في فيلة",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Philae Sound and Light Show",
+        "Sound Light Aswan"
+      ],
+      "description": "Evening multimedia show at Philae Temple narrating ancient Egyptian mythology",
+      "ticket_price": 450.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Lake Nasser Cruise",
+      "name_arabic": "رحلة بحيرة ناصر",
+      "category": "entertainment",
+      "importance": "Must-See",
+      "search_queries": [
+        "Lake Nasser Cruise Egypt",
+        "Nasser Lake Temple Cruise"
+      ],
+      "description": "Multi-day luxury cruise visiting remote Nubian temples on Lake Nasser shores",
+      "ticket_price": 25000.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Camel Ride to St. Simeon Monastery",
+      "name_arabic": "رحلة جمال دير سمعان",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Camel Ride Aswan Monastery",
+        "Aswan Desert Camel"
+      ],
+      "description": "Traditional camel trek through desert to ancient monastery ruins with sunset views",
+      "ticket_price": 300.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Aswan to Abu Simbel Road Trip",
+      "name_arabic": "رحلة أبو سمبل البرية",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Abu Simbel Day Trip Aswan",
+        "Drive to Abu Simbel"
+      ],
+      "description": "Scenic 280km desert drive to Abu Simbel temples, usually in convoy at dawn",
+      "ticket_price": 800.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Traditional Nubian Dinner Experience",
+      "name_arabic": "عشاء نوبي تقليدي",
+      "category": "dining",
+      "importance": "Major",
+      "search_queries": [
+        "Nubian Dinner Aswan",
+        "Traditional Nubian Food"
+      ],
+      "description": "Authentic Nubian cuisine experience in village home with music and cultural performance",
+      "ticket_price": 400.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Aswan Spice Market",
+      "name_arabic": "سوق التوابل",
+      "category": "shopping",
+      "importance": "Major",
+      "search_queries": [
+        "Aswan Spice Souk",
+        "Spice Market Aswan"
+      ],
+      "description": "Aromatic market section selling Egyptian spices, hibiscus tea, saffron, and traditional remedies",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Nubian Handicraft Workshops",
+      "name_arabic": "ورش الحرف النوبية",
+      "category": "shopping",
+      "importance": "Major",
+      "search_queries": [
+        "Nubian Handicrafts Aswan",
+        "Nubian Pottery Baskets"
+      ],
+      "description": "Traditional workshops where artisans create colorful Nubian pottery, baskets, and textiles",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Daraw Camel Market",
+      "name_arabic": "سوق الجمال دراو",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Daraw Camel Market",
+        "Camel Souk Aswan"
+      ],
+      "description": "Famous Tuesday camel market where Bedouins trade camels brought from Sudan",
+      "ticket_price": null,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    }
+  ],
+  "Hurghada": [
+    {
+      "name": "Port Said Lighthouse",
+      "name_arabic": "فنار بورسعيد القديم",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Port Said Lighthouse history",
+        "Old Port Said Lighthouse"
+      ],
+      "description": "The first building in the world constructed of reinforced concrete (1869), a landmark of maritime engineering",
+      "ticket_price": 50.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Port Said National Museum",
+      "name_arabic": "متحف بورسعيد القومي",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Port Said National Museum artifacts"
+      ],
+      "description": "Houses artifacts from Pharaonic, Roman, and Islamic eras, highlighting the city's role as a global port",
+      "ticket_price": 100.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Suez Canal Authority Building",
+      "name_arabic": "مبنى هيئة قناة السويس",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Suez Canal Authority Building Port Said"
+      ],
+      "description": "Grand 19th-century colonial palace with green domes that serves as the canal's administrative heart",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Salt Mountains (Port Fuad)",
+      "name_arabic": "جبال الملح",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Port Fuad Salt Mountains photography",
+        "Salt Mountains Egypt"
+      ],
+      "description": "Massive white salt piles that resemble snow-capped mountains, popular for unique photography sessions",
+      "ticket_price": 10.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Lake Manzala",
+      "name_arabic": "بحيرة المنزلة",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Lake Manzala bird watching",
+        "Manzala Lake boat tour"
+      ],
+      "description": "A haven for birdwatchers, hosting flamingos, herons, and pelicans in its vast wetlands",
+      "ticket_price": null,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Port Said Fish Market",
+      "name_arabic": "سوق السمك ببورسعيد",
+      "category": "shopping",
+      "importance": "Must-See",
+      "search_queries": [
+        "Port Said Fish Market seafood",
+        "Bazar Port Said"
+      ],
+      "description": "Bustling market where visitors can buy fresh Mediterranean catch and have it cooked on the spot",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Moses' Springs (Oyun Musa)",
+      "name_arabic": "عيون موسى",
+      "category": "religious",
+      "importance": "Must-See",
+      "search_queries": [
+        "Moses Springs Suez",
+        "Oyun Musa Red Sea"
+      ],
+      "description": "Biblical site featuring natural springs believed to be where Moses and the Israelites found water",
+      "ticket_price": 60.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Suez Corniche",
+      "name_arabic": "كورنيش السويس",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Suez Corniche sunset",
+        "Suez waterfront promenade"
+      ],
+      "description": "Scenic walkway offering views of the massive container ships entering the Suez Canal",
+      "ticket_price": null,
+      "expected_rating": 4.3,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Galala Mountain Cable Car",
+      "name_arabic": "تلفريك الجلالة",
+      "category": "entertainment",
+      "importance": "Must-See",
+      "search_queries": [
+        "Galala City cable car",
+        "Porto Sokhna cable car"
+      ],
+      "description": "Longest cable car ride in Egypt, offering panoramic views of the Red Sea from the Galala plateau",
+      "ticket_price": 300.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Porto Sokhna Marina",
+      "name_arabic": "بورتو السخنة",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Porto Sokhna resort activities",
+        "Ain Sokhna golf"
+      ],
+      "description": "Luxury resort complex with a mountain-top hotel, golf courses, and a major marina",
+      "ticket_price": null,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Il Monte Galala Adventure Park",
+      "name_arabic": "منتزه الجلالة للمغامرات",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Il Monte Galala hiking",
+        "Sokhna adventure sports"
+      ],
+      "description": "Hub for mountain biking, rock climbing, and desert hiking in the rugged Galala mountains",
+      "ticket_price": 400.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Jabal el Sakka Reef",
+      "name_arabic": "جبل السقا",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Jabal el Sakka snorkeling Ain Sokhna"
+      ],
+      "description": "A top-tier snorkeling and diving spot for those day-tripping from Cairo to the Red Sea",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Ras Ghareb Lighthouse",
+      "name_arabic": "فنار رأس غارب",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Ras Ghareb Lighthouse Eiffel",
+        "Historic lighthouses Red Sea"
+      ],
+      "description": "An 1871 metal lighthouse designed by the firm of Gustave Eiffel (of Eiffel Tower fame)",
+      "ticket_price": null,
+      "expected_rating": 4.2,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Desert Breath (Land Art)",
+      "name_arabic": "أنفاس الصحراء",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Desert Breath art installation Hurghada",
+        "El Gouna land art"
+      ],
+      "description": "A massive spiral land art installation in the desert, best viewed via satellite or drone",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Mangroovy Beach",
+      "name_arabic": "شاطئ مانجروفي",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Mangroovy Beach El Gouna kitesurfing"
+      ],
+      "description": "Famous kitesurfing beach named after the surrounding mangrove thickets",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "El Gouna Golf Club",
+      "name_arabic": "نادي جولف الجونة",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "El Gouna golf course",
+        "Red Sea golf holidays"
+      ],
+      "description": "Professional 18-hole championship course with views of the lagoons and sea",
+      "ticket_price": 2500.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Abu Minqar Island",
+      "name_arabic": "جزيرة أبو منقار",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Abu Minqar Island low tide",
+        "Hurghada sandbar island"
+      ],
+      "description": "A tranquil, untouched island known for its white sandbars that appear during low tide",
+      "ticket_price": 300.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Magawish Island",
+      "name_arabic": "جزيرة مجاويش",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Magawish Island boat trip",
+        "Hidden islands Hurghada"
+      ],
+      "description": "Often called a 'secret paradise' with calm lagoons and fewer crowds than Giftun",
+      "ticket_price": 400.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Sha'ab Abu Nuhas (Shipwreck Reef)",
+      "name_arabic": "شعب أبو نحاس",
+      "category": "natural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Abu Nuhas shipwrecks",
+        "Giannis D wreck diving"
+      ],
+      "description": "Famous reef north of Hurghada containing four major shipwrecks, a holy grail for wreck divers",
+      "ticket_price": null,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Sahl Hasheesh Piazza",
+      "name_arabic": "ساحة سهل حشيش",
+      "category": "entertainment",
+      "importance": "Must-See",
+      "search_queries": [
+        "Sahl Hasheesh Piazza fountain",
+        "Arrivals Piazza Red Sea"
+      ],
+      "description": "Beautiful open-air plaza with arabesque architecture and illuminated fountains",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "The Sunken City (Sahl Hasheesh)",
+      "name_arabic": "المدينة الغارقة",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Sunken City snorkeling Sahl Hasheesh"
+      ],
+      "description": "Artificial underwater structures designed to mimic a Pharaonic city, perfect for snorkeling",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Mons Claudianus",
+      "name_arabic": "مونز كلوديانوس",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Mons Claudianus Roman quarry Safaga"
+      ],
+      "description": "Ancient Roman quarry and settlement where massive granite columns for the Pantheon were carved",
+      "ticket_price": 80.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Safaga Ghost Town (Umm el-Howeitat)",
+      "name_arabic": "قرية أم الحويطات - مدينة الأشباح",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Safaga ghost town tour",
+        "Umm el-Howeitat abandoned village"
+      ],
+      "description": "Abandoned mining village in the desert with the skeletal remains of a mosque and houses",
+      "ticket_price": 200.0,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Panorama Reef",
+      "name_arabic": "بانوراما ريف",
+      "category": "natural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Panorama Reef Safaga diving",
+        "Safaga best reefs"
+      ],
+      "description": "One of Safaga's largest reefs, featuring massive walls and regular sightings of sharks and barracuda",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Salem Express Shipwreck",
+      "name_arabic": "سالم اكسبريس",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Salem Express diving Safaga history"
+      ],
+      "description": "Tragic shipwreck of a passenger ferry; now a somber and hauntingly beautiful dive site",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Tobia Arba (The Seven Pillars)",
+      "name_arabic": "توبيا أرباع - السبعة أعمدة",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Tobia Arba Safaga snorkeling"
+      ],
+      "description": "Unique formation of seven coral pillars rising from the sandy bottom to the surface",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Safaga Grand Mosque",
+      "name_arabic": "مسجد سفاجا الكبير",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Safaga Grand Mosque architecture"
+      ],
+      "description": "Modern architectural marvel and community hub in the heart of the port town",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    }
+  ],
+  "Marsa Alam": [
+    {
+      "name": "Wadi El Gemal National Park",
+      "name_arabic": "محمية وادي الجمال",
+      "category": "natural",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Wadi El Gemal National Park guide",
+        "Valley of the Camels Egypt"
+      ],
+      "description": "One of Egypt's largest protected areas, combining desert mountains, ancient Roman ruins, and thriving mangrove forests",
+      "ticket_price": 150.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Abu Dabbab Bay",
+      "name_arabic": "خليج أبو دباب",
+      "category": "natural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Abu Dabbab dugong snorkeling",
+        "Dugong Bay Marsa Alam"
+      ],
+      "description": "World-famous bay known for its resident green sea turtles and the elusive, endangered Dugong (sea cow)",
+      "ticket_price": 200.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Sha'ab Samadai (Dolphin House)",
+      "name_arabic": "محمية صمداي - بيت الدرافيل",
+      "category": "natural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Samadai Reef Dolphin House Marsa Alam",
+        "Shaab Samadai diving"
+      ],
+      "description": "A horseshoe-shaped reef protectorate where hundreds of spinner dolphins congregate to rest and play",
+      "ticket_price": 450.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Sharm El Luli (Ras Hankorab)",
+      "name_arabic": "شرم اللولي",
+      "category": "natural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Sharm El Luli beach Marsa Alam",
+        "Egypt Maldives beach"
+      ],
+      "description": "Consistently ranked as one of the world's best beaches; a pristine lagoon with white sands and vibrant shallow reefs",
+      "ticket_price": 100.0,
+      "expected_rating": 5.0,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Marsa Mubarak",
+      "name_arabic": "مرسى مبارك",
+      "category": "natural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Marsa Mubarak snorkeling turtles",
+        "Marsa Mubarak sea cow"
+      ],
+      "description": "A sheltered bay near Port Ghalib famous for its massive sea turtles and crystal-clear visibility",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Sataya Reef (Dolphin Reef)",
+      "name_arabic": "سطايح - شعاب الدرافيل",
+      "category": "natural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Sataya Reef snorkeling trip",
+        "Sataya Dolphin Reef Marsa Alam"
+      ],
+      "description": "Located in the Fury Shoals, this remote reef system offers the highest chance of swimming with wild dolphins in the deep south",
+      "ticket_price": 600.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Al-Quseir Old City",
+      "name_arabic": "القصير القديمة",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Al-Quseir old town tour",
+        "Hatshepsut Punt trip Quseir"
+      ],
+      "description": "A 5,000-year-old port city once used by Queen Hatshepsut for expeditions to the Land of Punt",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Al-Quseir Ottoman Fortress",
+      "name_arabic": "قلعة القصير",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Al-Quseir Fort Egypt history",
+        "Ottoman Castle Red Sea"
+      ],
+      "description": "16th-century fortress built to protect the strategic port and the pilgrim route to Mecca",
+      "ticket_price": 80.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Mons Smaragdus (Emerald Mines)",
+      "name_arabic": "جبل الزبرجد - مناجم الزمرد",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Mons Smaragdus Cleopatra mines",
+        "Ancient Egyptian emerald mines"
+      ],
+      "description": "The world's only known source of emeralds in antiquity, frequented by Cleopatra and later Roman miners",
+      "ticket_price": 150.0,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Red Sea Wonders Museum",
+      "name_arabic": "متحف عجائب البحر الأحمر",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Red Sea Wonders Museum Port Ghalib",
+        "HEPCA museum Egypt"
+      ],
+      "description": "Interactive museum in Port Ghalib showcasing Red Sea biodiversity and Bedouin desert culture",
+      "ticket_price": 120.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Wadi Hammamat Inscriptions",
+      "name_arabic": "وادي الحمامات",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Wadi Hammamat rock inscriptions",
+        "Ancient road to Nile Valley"
+      ],
+      "description": "An ancient riverbed trail between the Nile and Red Sea featuring thousands of Pharaonic-era hieroglyphics",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Elphinstone Reef",
+      "name_arabic": "شعب الفنستون",
+      "category": "natural",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Elphinstone Reef shark diving",
+        "Shaab Abu Hamra Marsa Alam"
+      ],
+      "description": "A legendary cigar-shaped reef famous for dramatic wall dives and encounters with Oceanic Whitetip and Hammerhead sharks",
+      "ticket_price": null,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Daedalus Reef (Abu Kizan)",
+      "name_arabic": "شعب ديدالوس",
+      "category": "natural",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Daedalus Reef lighthouse diving",
+        "Hammerhead shark Daedalus"
+      ],
+      "description": "Remote offshore reef 80km out at sea, featuring an 1863 lighthouse and massive schools of Hammerhead sharks",
+      "ticket_price": null,
+      "expected_rating": 5.0,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Hamada Wreck (Abu Ghusum)",
+      "name_arabic": "حطام السفينة حمادة",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Hamada Wreck Abu Ghusum diving",
+        "Red Sea shore wreck"
+      ],
+      "description": "A merchant ship that sank in 1993, now a thriving artificial reef easily accessible from the shore",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Brother Islands (Al Ikhwan)",
+      "name_arabic": "جزر الأخوين",
+      "category": "natural",
+      "importance": "World Wonder",
+      "search_queries": [
+        "Brother Islands liveaboard diving",
+        "Big Brother Small Brother Red Sea"
+      ],
+      "description": "Two volcanic pinnacles rising from the abyss, known for massive soft corals and Thresher shark sightings",
+      "ticket_price": null,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Shalateen Camel Market",
+      "name_arabic": "سوق الجمال بشلاتين",
+      "category": "cultural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Shalateen Camel Market experience",
+        "Sudanese camel trade Egypt"
+      ],
+      "description": "The largest and most authentic camel market in Egypt, where traders from Sudan and Egypt gather to barter",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Gebel Elba National Park",
+      "name_arabic": "محمية جبل علبة",
+      "category": "natural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Gebel Elba biodiversity",
+        "Mist oasis Egypt"
+      ],
+      "description": "A unique 'mist oasis' mountain range on the border, home to flora and fauna found nowhere else in Egypt",
+      "ticket_price": 300.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Qulaan Lagoon",
+      "name_arabic": "منطقة القلعان",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Qulaan Mangrove Beach Marsa Alam",
+        "Hamata Mangrove forest"
+      ],
+      "description": "A peaceful Bedouin community centered around a stunning mangrove lagoon and a famous 'lonely tree'",
+      "ticket_price": 50.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Hamata Islands",
+      "name_arabic": "جزر حماطة",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Hamata Islands snorkeling trip",
+        "Virgin islands Red Sea"
+      ],
+      "description": "A cluster of four uninhabited 'virgin' islands within a protected marine park, offering incredible bird watching",
+      "ticket_price": 400.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "El Nayzak Beach",
+      "name_arabic": "شاطئ النيزك",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "El Nayzak pool Marsa Alam",
+        "Meteorite pool Egypt"
+      ],
+      "description": "A natural pool carved into the coastline, believed by locals to have been formed by a meteorite strike",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Marsa Egla",
+      "name_arabic": "مرسى عجلة",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Marsa Egla snorkeling dugong",
+        "Marsa Egla bay guide"
+      ],
+      "description": "A long, narrow bay protected from wind, serving as a primary feeding ground for sea turtles and occasionally dugongs",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Marsa Assalaya",
+      "name_arabic": "مرسى عسلاية",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Marsa Assalaya diving",
+        "Sharm Assalaya snorkeling"
+      ],
+      "description": "A shallow, protected bay south of Marsa Alam town with pristine coral gardens ideal for beginner divers",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Hankorab Beach",
+      "name_arabic": "شاطئ حنكوراب",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Hankorab Beach Marsa Alam",
+        "Hankorab snorkeling"
+      ],
+      "description": "A 'wild' beach within Wadi El Gemal with a coral reef just meters from the shore, known for turquoise waters",
+      "ticket_price": 100.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Marsa Shouna",
+      "name_arabic": "مرسى شونة",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Marsa Shouna dive site",
+        "Marsa Shouna snorkeling"
+      ],
+      "description": "A beautiful bay with a sandy bottom and vibrant seagrass, often teeming with diverse marine life",
+      "ticket_price": null,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Gabal El Rosas (The Rose Garden)",
+      "name_arabic": "جبل الرصاص - حديقة الورد",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Gabal El Rosas dive site Marsa Alam",
+        "Rose Garden reef Egypt"
+      ],
+      "description": "Known as the 'Rose Garden' for its unique large coral formations that resemble stone roses",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Marsa Tondoba",
+      "name_arabic": "مرسى تندبة",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Marsa Tondoba bay snorkeling",
+        "Tondoba Bay beach"
+      ],
+      "description": "A wide, sandy-bottomed bay popular for shore diving and eco-friendly camping on the beach",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Berenice Troglodytica (Ancient Port)",
+      "name_arabic": "ميناء برنيس القديم",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Berenice Troglodytica archaeology",
+        "Ancient Roman port Berenice"
+      ],
+      "description": "Founded in 275 BC, this was a critical Ptolemaic-Roman hub for trade with India and Arabia",
+      "ticket_price": 100.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Temple of Semiramis (Berenice)",
+      "name_arabic": "معبد برنيس - معبد سيميراميس",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Temple of Semiramis Berenice Egypt",
+        "Temple of Serapis Berenice"
+      ],
+      "description": "Ruins of a Greco-Roman temple dedicated to the goddess Semiramis and later Serapis",
+      "ticket_price": 50.0,
+      "expected_rating": 4.3,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Wadi Sakait (Temple of Isis)",
+      "name_arabic": "وادي سكيت - معبد إيزيس",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Wadi Sakait emerald mines temple",
+        "Sikait Roman ruins"
+      ],
+      "description": "A small rock-cut temple in the emerald mining district, featuring well-preserved inscriptions and dwellings",
+      "ticket_price": 100.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Zabargad Island (Peridot Hill)",
+      "name_arabic": "جزيرة الزبرجد",
+      "category": "natural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Zabargad Island diving",
+        "Zabargad olivine mines"
+      ],
+      "description": "The largest island in the Red Sea south; famous for ancient peridot (olivine) mines and deep blue lagoons",
+      "ticket_price": null,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Rocky Island",
+      "name_arabic": "جزيرة روكي",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Rocky Island diving Red Sea",
+        "Rocky Island shark diving"
+      ],
+      "description": "A small limestone island south of Zabargad, known for sheer walls and massive shark populations",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Abraq Springs",
+      "name_arabic": "منطقة الأبرق",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Abraq springs Gebel Elba",
+        "Ancient rock art Abraq"
+      ],
+      "description": "A historic area in Gebel Elba featuring natural springs, prehistoric rock art, and Roman fort remains",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Abu Safah Pharaonic Gate",
+      "name_arabic": "بوابة أبو سفة الفرعونية",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Abu Safah Pharaonic gate Halayeb",
+        "Pharaonic ruins Halayeb"
+      ],
+      "description": "Evidence of Pharaonic presence in the far south, featuring a carved gate and rock inscriptions",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Rawabil Island (Red Maldives)",
+      "name_arabic": "جزيرة روابل",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Rawabil Island Halayeb",
+        "Red Maldives Egypt"
+      ],
+      "description": "Nicknamed the 'Red Maldives' for its untouched white sandbars and shallow turquoise reefs in the Halayeb region",
+      "ticket_price": null,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Shalateen Bazaar",
+      "name_arabic": "سوق شلاتين للحرف",
+      "category": "shopping",
+      "importance": "Major",
+      "search_queries": [
+        "Shalateen handicrafts market",
+        "Bedouin jewelry Shalateen"
+      ],
+      "description": "The best place to find authentic Bedouin handicrafts, Gabana coffee pots, and Sudanese silver jewelry",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Wadi El Quraan",
+      "name_arabic": "وادي القرآن",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Wadi El Quraan Shalateen",
+        "Wadi El Quraan nature tour"
+      ],
+      "description": "A lush valley near Shalateen known for its natural rainwater pools and vibrant mountain scenery",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Sha'ab Marsa Alam",
+      "name_arabic": "شعب مرسى علم",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Sha'ab Marsa Alam diving",
+        "Marsa Alam town reef"
+      ],
+      "description": "A large reef complex just offshore from the town, home to schools of snapper and moral eels",
+      "ticket_price": null,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Abu Ghusum (Fury Shoals)",
+      "name_arabic": "أبو غصون",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Abu Ghusum dive sites",
+        "Fury Shoals diving Egypt"
+      ],
+      "description": "The gateway to the Fury Shoals, offering some of the most complex coral architecture in the Red Sea",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Habili Nakari",
+      "name_arabic": "هبيلي نكاري",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Habili Nakari dive site",
+        "Hidden gem reefs Marsa Alam"
+      ],
+      "description": "A submerged 'habili' reef that doesn't reach the surface, attracting pelagic fish and reef sharks",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Temple Lagoon Reef",
+      "name_arabic": "تمبل لاجون ريف",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Temple Lagoon snorkeling",
+        "Marsa Alam reef systems"
+      ],
+      "description": "Named for its majestic coral 'pillars' that resemble temple columns in a shallow lagoon",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    }
+  ],
+  "Sinai": [
+    {
+      "name": "Saint Catherine's Monastery",
+      "name_arabic": "دير سانت كاترين",
+      "category": "religious",
+      "importance": "Must-See",
+      "search_queries": [
+        "St Catherine's Monastery"
+      ],
+      "description": "The world's oldest working Christian monastery.",
+      "ticket_price": null,
+      "expected_rating": 4.9,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Mount Sinai",
+      "name_arabic": "جبل موسى",
+      "category": "religious",
+      "importance": "Must-See",
+      "search_queries": [
+        "Mount Sinai hike"
+      ],
+      "description": "The peak where Moses is believed to have received the Commandments.",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Pharaoh's Island",
+      "name_arabic": "جزيرة فرعون",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Pharaoh's Island Citadel"
+      ],
+      "description": "Home to a restored medieval fortress built by Saladin near Taba.",
+      "ticket_price": 50.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Serabit el-Khadim",
+      "name_arabic": "سرابيط الخادم",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Serabit el Khadim temple"
+      ],
+      "description": "Site of ancient turquoise mines and a temple for the goddess Hathor.",
+      "ticket_price": 40.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Al-Sahaba Mosque",
+      "name_arabic": "مسجد الصحابة",
+      "category": "religious",
+      "importance": "Must-See",
+      "search_queries": [
+        "Sahaba Mosque Sharm"
+      ],
+      "description": "Architectural masterpiece in Sharm El Sheikh blending Ottoman and Fatimid styles.",
+      "ticket_price": null,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Moses Springs",
+      "name_arabic": "عيون موسى",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Oyun Musa Sinai"
+      ],
+      "description": "Oasis with several natural springs mentioned in biblical accounts.",
+      "ticket_price": 20.0,
+      "expected_rating": 4.1,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Burning Bush",
+      "name_arabic": "العليقة المقدسة",
+      "category": "religious",
+      "importance": "Must-See",
+      "search_queries": [
+        "The Burning Bush Sinai"
+      ],
+      "description": "The specific plant species mentioned in the Bible, located in the Monastery.",
+      "ticket_price": null,
+      "expected_rating": 4.9,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Wadi Feiran Oasis",
+      "name_arabic": "واحة فيران",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Wadi Feiran Sinai"
+      ],
+      "description": "The 'Pearl of Sinai,' featuring a beautiful convent and date palms.",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Monastery of the Seven Nuns",
+      "name_arabic": "دير السبع بنات",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Monastery of Seven Nuns"
+      ],
+      "description": "Historic convent in the middle of the Feiran Oasis mountains.",
+      "ticket_price": null,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Ras Mohammed",
+      "name_arabic": "رأس محمد",
+      "category": "natural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Ras Mohammed diving"
+      ],
+      "description": "World-famous national park with spectacular coral reefs.",
+      "ticket_price": 150.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Nabq Protectorate",
+      "name_arabic": "محمية نبق",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Nabq Protected Area"
+      ],
+      "description": "Features mangroves, diverse birdlife, and coastal desert beauty.",
+      "ticket_price": 80.0,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Colored Canyon",
+      "name_arabic": "الوادي الملون",
+      "category": "natural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Colored Canyon tour"
+      ],
+      "description": "Vibrant rock formations created by millions of years of erosion.",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Blue Hole",
+      "name_arabic": "البلو هول",
+      "category": "natural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Blue Hole Dahab"
+      ],
+      "description": "Legendary submarine sinkhole, a top destination for divers.",
+      "ticket_price": 100.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Wadi Wishwashi",
+      "name_arabic": "وادي الوشواشي",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Wadi Wishwashi Nuweiba"
+      ],
+      "description": "Hidden rainwater pool in a granite canyon, perfect for swimming.",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Ain Khudra",
+      "name_arabic": "عين خضرة",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Ain Khudra Oasis"
+      ],
+      "description": "Lush oasis surrounded by golden desert sands.",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Mount Catherine",
+      "name_arabic": "جبل كاترين",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Mount Catherine hike"
+      ],
+      "description": "Egypt's highest peak, offering unmatched views of the Sinai peninsula.",
+      "ticket_price": null,
+      "expected_rating": 4.9,
+      "UNESCO_site": true
+    },
+    {
+      "name": "White Canyon",
+      "name_arabic": "الوايت كانيون",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "White Canyon Sinai"
+      ],
+      "description": "Beautiful sandstone canyon known for its stark white walls.",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Blue Lagoon",
+      "name_arabic": "البلو لاجون",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Blue Lagoon Dahab"
+      ],
+      "description": "Remote turquoise lagoon near Dahab, perfect for kitesurfing.",
+      "ticket_price": null,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Ras Abu Galum",
+      "name_arabic": "رأس أبو جالوم",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Abu Galum protectorate"
+      ],
+      "description": "Pristine nature reserve accessible by camel or boat from Dahab.",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Tiran Island",
+      "name_arabic": "جزيرة تيران",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Tiran Island snorkeling"
+      ],
+      "description": "Crystal-clear waters popular for boat trips and diving.",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Wadi Gnai",
+      "name_arabic": "وادي جناي",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Wadi Gnai climbing"
+      ],
+      "description": "Famous spot for rock climbing and desert hiking.",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Naama Bay",
+      "name_arabic": "خليج نعمة",
+      "category": "entertainment",
+      "importance": "Must-See",
+      "search_queries": [
+        "Naama Bay Sharm"
+      ],
+      "description": "The social hub of Sharm with hotels, cafes, and nightlife.",
+      "ticket_price": null,
+      "expected_rating": 4.3,
+      "UNESCO_site": false
+    },
+    {
+      "name": "SOHO Square",
+      "name_arabic": "سوهو سكوير",
+      "category": "entertainment",
+      "importance": "Must-See",
+      "search_queries": [
+        "SOHO Square Sharm"
+      ],
+      "description": "Upscale entertainment area with a musical fountain and ice rink.",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Farsha Mountain Lounge",
+      "name_arabic": "فرشة",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Farsha Café Sharm"
+      ],
+      "description": "Iconic clifftop lounge with a bohemian vibe and sea views.",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Old Market",
+      "name_arabic": "السوق القديم",
+      "category": "cultural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Old Market Sharm"
+      ],
+      "description": "Traditional bazaar perfect for souvenirs and local food.",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Hollywood Sharm",
+      "name_arabic": "هوليود شرم الشيخ",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Hollywood Sharm"
+      ],
+      "description": "Entertainment park with dancing fountains and dinosaur statues.",
+      "ticket_price": 50.0,
+      "expected_rating": 4.0,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Cleo Park",
+      "name_arabic": "كليو بارك",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Cleo Park Sharm"
+      ],
+      "description": "Pharaonic-themed water park for family fun.",
+      "ticket_price": 400.0,
+      "expected_rating": 4.1,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Aqua Blue Water Park",
+      "name_arabic": "أكوا بلو",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Aqua Blue Sharm"
+      ],
+      "description": "One of the largest water parks in the Middle East.",
+      "ticket_price": 500.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Dahab Promenade",
+      "name_arabic": "ممشي دهب",
+      "category": "entertainment",
+      "importance": "Must-See",
+      "search_queries": [
+        "Dahab Promenade"
+      ],
+      "description": "Walkway along the sea lined with diverse restaurants and shops.",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Genena City",
+      "name_arabic": "جنينة سيتي",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Genena City Mall"
+      ],
+      "description": "A huge shopping and entertainment mall on top of a hill in Naama Bay.",
+      "ticket_price": null,
+      "expected_rating": 4.2,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Shark's Bay",
+      "name_arabic": "شاركس باي",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Shark's Bay Sharm"
+      ],
+      "description": "Beach area known for great shore snorkeling and dining.",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Al-Fanar Lighthouse",
+      "name_arabic": "منارة الفنار",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Al Fanar Sharm"
+      ],
+      "description": "Scenic lighthouse area with a memorial and great reefs.",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Taba Heights",
+      "name_arabic": "طابا هايتس",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Taba Heights resort"
+      ],
+      "description": "Luxury resort town featuring golf courses and salt caves.",
+      "ticket_price": null,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Lighthouse Reef",
+      "name_arabic": "اللايت هاوس",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Lighthouse Dahab"
+      ],
+      "description": "The main snorkeling and diving entry point in Dahab.",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Castle Zaman",
+      "name_arabic": "كاسل زمان",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Castle Zaman Nuweiba"
+      ],
+      "description": "Slow-food restaurant in an eco-friendly castle overlooking the Gulf.",
+      "ticket_price": 600.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Ras El Shitan",
+      "name_arabic": "رأس الشيطان",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Ras Shetan Nuweiba"
+      ],
+      "description": "Famous beach camps known for their 'Devil's Head' rock and relaxation.",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Musical Fountain",
+      "name_arabic": "النافورة الراقصة",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Sharm musical fountain"
+      ],
+      "description": "Nightly light and water show in SOHO Square.",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Wadi El-Weshwash",
+      "name_arabic": "وادي الوشواش",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Weshwash pool"
+      ],
+      "description": "High-altitude rainwater pool tucked in the Nuweiba mountains.",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Three Pools",
+      "name_arabic": "الثلاث حمامات",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Three Pools Dahab"
+      ],
+      "description": "Snorkeling spot with three natural pools and beachfront cafes.",
+      "ticket_price": null,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Straits of Tiran",
+      "name_arabic": "مضيق تيران",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Straits of Tiran diving"
+      ],
+      "description": "Deep-water channel with world-class reefs like Jackson and Gordon.",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "The Canyon (Dahab)",
+      "name_arabic": "الكانون",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "The Canyon Dahab dive"
+      ],
+      "description": "A deep fissure in the reef that creates a beautiful light effect for divers.",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Steps of Penitence",
+      "name_arabic": "سلم التوبة",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Steps of Penitence Mt Sinai"
+      ],
+      "description": "The 3,750 stone steps carved by monks leading to the summit of Mt. Sinai.",
+      "ticket_price": null,
+      "expected_rating": 4.9,
+      "UNESCO_site": true
+    }
+  ],
+  "Alexandria": [
+    {
+      "name": "Citadel of Qaitbay",
+      "name_arabic": "قلعة قايتباي",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Citadel of Qaitbay"
+      ],
+      "description": "15th-century fortress built on the ruins of the Lighthouse of Alexandria.",
+      "ticket_price": 60.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Catacombs of Kom El Shoqafa",
+      "name_arabic": "مقابر كوم الشقافة",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Catacombs Alexandria"
+      ],
+      "description": "An underground wonder blending Pharaonic and Greco-Roman styles.",
+      "ticket_price": 80.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Pompey's Pillar",
+      "name_arabic": "عمود السواري",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Pompey's Pillar"
+      ],
+      "description": "A massive Roman triumphal column, one of the largest of its kind.",
+      "ticket_price": 80.0,
+      "expected_rating": 4.3,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Roman Amphitheatre",
+      "name_arabic": "المسرح الروماني",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Kom El Deka Alexandria"
+      ],
+      "description": "Well-preserved 2nd-century theater with marble seating and mosaics.",
+      "ticket_price": 80.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Villa of the Birds",
+      "name_arabic": "فيلا الطيور",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Villa of the Birds"
+      ],
+      "description": "Ancient Roman villa famous for its intricate floor mosaics of birds.",
+      "ticket_price": 60.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Ras El Tin Palace",
+      "name_arabic": "قصر رأس التين",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Ras El Tin Palace"
+      ],
+      "description": "One of the oldest royal palaces in Egypt, overlooking the Mediterranean.",
+      "ticket_price": null,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Serapeum of Alexandria",
+      "name_arabic": "معبد السرابيوم",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Serapeum Alexandria"
+      ],
+      "description": "Ruins of the temple dedicated to Serapis, the protector of Alexandria.",
+      "ticket_price": 80.0,
+      "expected_rating": 4.2,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Taposiris Magna",
+      "name_arabic": "تابوزيريس ماجنا",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Taposiris Magna Temple"
+      ],
+      "description": "Ancient temple complex where archaeologists seek Cleopatra's tomb.",
+      "ticket_price": 50.0,
+      "expected_rating": 4.3,
+      "UNESCO_site": false
+    },
+    {
+      "name": "El-Alamein War Cemetery",
+      "name_arabic": "مقابر العلمين",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "El Alamein War Memorial"
+      ],
+      "description": "Moving WWII memorial for the soldiers who fell in the desert battles.",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Sunken City (Abukir)",
+      "name_arabic": "الآثار الغارقة",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Heracleion underwater"
+      ],
+      "description": "The lost city of Heracleion, now an underwater archaeological site.",
+      "ticket_price": 500.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Roman Baths (Kom El Deka)",
+      "name_arabic": "الحمامات الرومانية",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Roman Baths Alexandria"
+      ],
+      "description": "A complex of brick-built thermal baths from the Roman era.",
+      "ticket_price": 80.0,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Bibliotheca Alexandrina",
+      "name_arabic": "مكتبة الإسكندرية",
+      "category": "cultural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Library of Alexandria"
+      ],
+      "description": "A massive modern library and cultural center built to honor the ancient one.",
+      "ticket_price": 70.0,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Alexandria National Museum",
+      "name_arabic": "متحف الإسكندرية القومي",
+      "category": "cultural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Alexandria National Museum"
+      ],
+      "description": "Covers Alexandria's history from the Pharaohs to the modern day.",
+      "ticket_price": 100.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Royal Jewelry Museum",
+      "name_arabic": "متحف المجوهرات الملكية",
+      "category": "cultural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Royal Jewelry Museum"
+      ],
+      "description": "Houses the exquisite jewels of the Muhammad Ali dynasty.",
+      "ticket_price": 100.0,
+      "expected_rating": 4.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Greco-Roman Museum",
+      "name_arabic": "المتحف اليوناني الروماني",
+      "category": "cultural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Greco-Roman Museum"
+      ],
+      "description": "Recently renovated museum with artifacts from 300 BC to 300 AD.",
+      "ticket_price": 150.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Cavafy Museum",
+      "name_arabic": "متحف كفافيس",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Cavafy Museum"
+      ],
+      "description": "The apartment of the famous Greek poet Constantine Cavafy.",
+      "ticket_price": 30.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Museum of Fine Arts",
+      "name_arabic": "متحف الفنون الجميلة",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Alexandria Fine Arts Museum"
+      ],
+      "description": "The first museum built specifically for fine arts in the Middle East.",
+      "ticket_price": 20.0,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Planetarium Science Center",
+      "name_arabic": "مركز القبة السماوية",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Alexandria Planetarium"
+      ],
+      "description": "State-of-the-art educational facility within the Bibliotheca Alexandrina.",
+      "ticket_price": 50.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Mahmoud Said Museum",
+      "name_arabic": "متحف محمود سعيد",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Mahmoud Said Museum"
+      ],
+      "description": "The former villa of Egypt’s most famous modern painter.",
+      "ticket_price": 40.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Alexandria Aquarium",
+      "name_arabic": "متحف الأحياء المائية",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Alexandria Aquarium"
+      ],
+      "description": "Small but historic aquarium showcasing Mediterranean and Red Sea fish.",
+      "ticket_price": 20.0,
+      "expected_rating": 3.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Alexandria Opera House",
+      "name_arabic": "دار أوبرا الإسكندرية",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Sayed Darwish Theater"
+      ],
+      "description": "Also known as Sayed Darwish Theatre, a hub for performing arts.",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Manuscripts Museum",
+      "name_arabic": "متحف المخطوطات",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Manuscripts Museum BA"
+      ],
+      "description": "Displays rare ancient texts and maps inside the Library.",
+      "ticket_price": 30.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Abu al-Abbas al-Mursi Mosque",
+      "name_arabic": "جامع المرسي أبو العباس",
+      "category": "religious",
+      "importance": "Must-See",
+      "search_queries": [
+        "Abu al-Abbas al-Mursi Mosque"
+      ],
+      "description": "The city's largest and most iconic mosque, built in Andalusian style.",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Saint Mark's Coptic Cathedral",
+      "name_arabic": "كاتدرائية القديس مرقس",
+      "category": "religious",
+      "importance": "Must-See",
+      "search_queries": [
+        "St Mark's Cathedral Alexandria"
+      ],
+      "description": "The historic seat of the Coptic Pope, where St. Mark was martyred.",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Eliahu Hanavi Synagogue",
+      "name_arabic": "كنيس إلياهو النبي",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Alexandria Synagogue"
+      ],
+      "description": "A magnificent and recently restored synagogue on Nabi Daniel street.",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Saint Catherine Cathedral",
+      "name_arabic": "كاتدرائية سانت كاترين",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "St Catherine Church Alexandria"
+      ],
+      "description": "Grand Roman Catholic cathedral with an impressive Italian interior.",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Attarine Mosque",
+      "name_arabic": "جامع العطارين",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Attarine Mosque"
+      ],
+      "description": "Built on the site of a 4th-century church dedicated to St. Athanasius.",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Monastery of Abu Mina",
+      "name_arabic": "دير مارمينا",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Abu Mena Monastery"
+      ],
+      "description": "UNESCO-listed pilgrimage site with ancient ruins and a modern monastery.",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Greek Orthodox Patriarchate",
+      "name_arabic": "بطريركية الروم الأرثوذكس",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Greek Orthodox Alexandria"
+      ],
+      "description": "The spiritual center for the Greek community in Alexandria.",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Montaza Palace Gardens",
+      "name_arabic": "حدائق المنتزة",
+      "category": "natural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Montaza Gardens"
+      ],
+      "description": "Royal gardens with diverse flora, palaces, and beach access.",
+      "ticket_price": 25.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Stanley Bridge",
+      "name_arabic": "كوبري ستانلي",
+      "category": "cultural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Stanley Bridge"
+      ],
+      "description": "The most famous landmark for a walk and photo at sunset.",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Alexandria Corniche",
+      "name_arabic": "كورنيش الإسكندرية",
+      "category": "natural",
+      "importance": "Must-See",
+      "search_queries": [
+        "Alexandria Corniche walk"
+      ],
+      "description": "A 10-mile long scenic waterfront promenade along the Mediterranean.",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Antoniadis Gardens",
+      "name_arabic": "حدائق أنطونيادس",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Antoniadis Gardens"
+      ],
+      "description": "Vast botanical gardens containing Greco-Roman style statues.",
+      "ticket_price": 20.0,
+      "expected_rating": 4.2,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Shallalat Gardens",
+      "name_arabic": "حدائق الشلالات",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Shallalat Park"
+      ],
+      "description": "Features waterfalls and remains of the city’s Islamic walls.",
+      "ticket_price": null,
+      "expected_rating": 3.9,
+      "UNESCO_site": false
+    },
+    {
+      "name": "San Stefano Mall",
+      "name_arabic": "سان ستيفانو",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "San Stefano Grand Plaza"
+      ],
+      "description": "Upscale shopping and dining in the city's tallest building.",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Green Plaza Mall",
+      "name_arabic": "جرين بلازا",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Green Plaza Alexandria"
+      ],
+      "description": "Open-air shopping mall with a cinema and international brands.",
+      "ticket_price": null,
+      "expected_rating": 4.3,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Africano Park",
+      "name_arabic": "أفريكانو بارك",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Africano Safari Park"
+      ],
+      "description": "Open-forest safari park located on the Cairo-Alex desert road.",
+      "ticket_price": 400.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Gleem Bay",
+      "name_arabic": "جليم باي",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Gleem Bay restaurants"
+      ],
+      "description": "A modern hub for restaurants built directly over the sea.",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Maamoura Beach",
+      "name_arabic": "شاطئ المعمورة",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Maamoura Beach"
+      ],
+      "description": "A high-end private residential and beach area.",
+      "ticket_price": 50.0,
+      "expected_rating": 4.2,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Greek Club",
+      "name_arabic": "النادي اليوناني",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Greek Club Alexandria"
+      ],
+      "description": "Famous for its balcony with the best view of the Eastern Harbor.",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Smouha Club",
+      "name_arabic": "نادي سموحة",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Smouha Sporting Club"
+      ],
+      "description": "Massive social and sporting club in the heart of the city.",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    }
+  ]
+}

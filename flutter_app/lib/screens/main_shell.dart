@@ -32,7 +32,7 @@ class _MainShellState extends State<MainShell> {
 
   // Screens are fixed — defined once so state is preserved across tab switches.
   late final _screens = [
-    ExploreScreen(onSwitchToCleo: () => _onNavTap(3)),
+    ExploreScreen(),
     const PlannerScreen(),
     ChatScreen(onSwitchToPlanner: () => _onNavTap(1)),
     const JourneyScreen(),

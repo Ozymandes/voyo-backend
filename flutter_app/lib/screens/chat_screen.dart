@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/chat_message.dart';
+import '../models/poi.dart';
 import '../models/itinerary.dart';
 import '../services/cleo_service.dart';
 import '../services/chat_history_service.dart';
@@ -10,10 +12,37 @@ import '../services/supabase_service.dart';
 import '../theme.dart';
 import '../widgets/cleo_owl.dart';
 
+/// Opens CLEO focused on a single POI: pushes [ChatScreen] with the POI id
+/// (so the backend receives `poi_id` + `intent: "poi_explain"`) and a preset
+/// question that auto-sends on open. Shared entry point for every POI surface.
+void openCleoForPoi(BuildContext context, Poi poi) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => ChatScreen(
+        poiId: poi.id,
+        presetMessage: 'Tell me about ${poi.name}',
+      ),
+    ),
+  );
+}
+
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, this.onSwitchToPlanner});
+  const ChatScreen({
+    super.key,
+    this.onSwitchToPlanner,
+    this.poiId,
+    this.presetMessage,
+  });
 
   final VoidCallback? onSwitchToPlanner;
+
+  /// When set, every message carries `poi_id` + `intent: "poi_explain"` so
+  /// CLEO answers with place context.
+  final int? poiId;
+
+  /// Sent automatically once when the screen opens (e.g. from a POI card).
+  final String? presetMessage;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -28,6 +57,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   bool _isLoading = false;
   bool _sidebarOpen = false;
+  bool _didAutoSend = false;
 
   // Index of the last message that contained [PLANNER]
   int? _plannerPromptIndex;
@@ -54,6 +84,15 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     _loadSessions();
+    // Auto-send the preset (e.g. "Tell me about {POI}") once on open.
+    if (widget.presetMessage != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_didAutoSend && _messages.isEmpty && !_isLoading) {
+          _didAutoSend = true;
+          _send(widget.presetMessage);
+        }
+      });
+    }
   }
 
   @override
@@ -125,7 +164,12 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     try {
-      final raw = await _cleoService.sendMessage(text, userId: uid);
+      final raw = await _cleoService.sendMessage(
+        text,
+        userId: uid,
+        poiId: widget.poiId,
+        intent: widget.poiId != null ? 'poi_explain' : null,
+      );
       final hasPlanner = raw.contains('[PLANNER]');
       final reply = raw.replaceAll('[PLANNER]', '').trimRight();
       final stops = hasPlanner ? _parseItineraryStops(reply) : <_ParsedStop>[];
@@ -330,6 +374,7 @@ class _ChatScreenState extends State<ChatScreen> {
   // ── AppBar ────────────────────────────────────────────────────────────────
 
   Widget _buildAppBar() {
+    final canPop = Navigator.of(context).canPop();
     return SafeArea(
       bottom: false,
       child: Container(
@@ -340,12 +385,22 @@ class _ChatScreenState extends State<ChatScreen> {
             Expanded(
               child: Row(
                 children: [
-                  // Sidebar toggle
+                  // Sidebar toggle — or back arrow when pushed over another screen
                   GestureDetector(
-                    onTap: () => setState(() => _sidebarOpen = true),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Icon(Icons.menu, color: VoyoColors.ink, size: 22),
+                    onTap: () {
+                      if (canPop) {
+                        Navigator.of(context).maybePop();
+                      } else {
+                        setState(() => _sidebarOpen = true);
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Icon(
+                        canPop ? Icons.arrow_back : Icons.menu,
+                        color: VoyoColors.ink,
+                        size: 22,
+                      ),
                     ),
                   ),
                   const CleoOwl(size: 30),
@@ -651,7 +706,9 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
 
-    final (first, rest) = _splitFirstSentence(msg.text);
+    final (followUps, withoutJson) = _extractFollowUps(msg.text);
+    final cleanedText = _stripImages(withoutJson);
+    final (first, rest) = _splitFirstSentence(cleanedText);
     final msgIndex = _messages.indexOf(msg);
     final showPlannerButton = msgIndex != -1 && msgIndex == _plannerPromptIndex;
 
@@ -713,6 +770,10 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     ),
                   ],
+                  if (followUps.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    _buildFollowUpChips(followUps),
+                  ],
                 ],
               ),
             ),
@@ -745,6 +806,72 @@ class _ChatScreenState extends State<ChatScreen> {
       spans.add(TextSpan(text: cleaned.substring(cursor), style: base));
     }
     return RichText(text: TextSpan(children: spans));
+  }
+
+  /// Splits a trailing ```json {"follow_ups":[...]} ``` block off an assistant
+  /// message, returning the chip labels and the markdown body with it removed.
+  (List<String>, String) _extractFollowUps(String text) {
+    final re = RegExp(r'```(?:json)?\s*(\{[\s\S]*?\})\s*```\s*$');
+    final m = re.firstMatch(text);
+    if (m == null) return (<String>[], text);
+    try {
+      final obj = jsonDecode(m.group(1)!) as Map<String, dynamic>;
+      final raw = obj['follow_ups'];
+      if (raw is List) {
+        final ups = raw
+            .map((e) => e.toString().trim())
+            .where((s) => s.isNotEmpty)
+            .toList();
+        if (ups.isEmpty) return (<String>[], text);
+        return (ups, text.substring(0, m.start).trimRight());
+      }
+    } catch (_) {}
+    return (<String>[], text);
+  }
+
+  /// Strips markdown image syntax (`![alt](url)`) from a CLEO response so no
+  /// network image requests are triggered on render. Wikimedia Commons
+  /// rate-limits (HTTP 429) bulk image fetches — and CLEO's RAG responses can
+  /// reference dozens at once — so we render text only. Reference images are
+  /// out of scope until image hosting is reliable.
+  String _stripImages(String text) {
+    // Match `![…](…)` image markdown. Alt text is matched non-greedily up to
+    // the final `](` so alt text containing brackets is still stripped.
+    return text
+        .replaceAll(RegExp(r'!\[[^\]]*(?:\][^\]]*)*\]\([^)]+\)'), '')
+        .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+        .trim();
+  }
+
+  Widget _buildFollowUpChips(List<String> followUps) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final up in followUps)
+          GestureDetector(
+            onTap: _isLoading ? null : () => _send(up),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              decoration: BoxDecoration(
+                color: VoyoColors.paper,
+                borderRadius: BorderRadius.circular(20),
+                border:
+                    Border.all(color: VoyoColors.sky.withValues(alpha: 0.4)),
+              ),
+              child: Text(
+                up,
+                style: GoogleFonts.instrumentSans(
+                  fontSize: 12,
+                  color: VoyoColors.sky,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
   static final _bodyStyle = GoogleFonts.instrumentSans(
