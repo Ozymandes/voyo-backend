@@ -12,6 +12,7 @@ import '../models/itinerary_poi.dart';
 import '../services/supabase_service.dart';
 import '../services/routing_service.dart';
 import '../theme.dart';
+import '../widgets/map_isochrone_overlay.dart';
 import '../widgets/poi_detail_sheet.dart';
 import 'chat_screen.dart';
 
@@ -51,21 +52,19 @@ class _MapScreenState extends State<MapScreen> {
   bool _routeLoading = false;
   bool _routeVisible = true;
 
-  // ── Isochrone state ("Explore from here") ──────────────────────────────────
-  // Long-press the map to draw reachable-area rings + count reachable POIs.
-  List<IsochroneRing> _isochroneRings = [];
-  LatLng? _isochroneCenter;
-  bool _isochroneLoading = false;
+  // ── Isochrone ("Explore from here") ───────────────────────────────────────
+  // Owned entirely by widgets/map_isochrone_overlay.dart. Slider / profile
+  // controls live there too — not here (avoids colliding with region work).
+  final _isochrone = IsochroneController();
 
   // ── Day filter ──────────────────────────────────────────────────────────────
   int? _selectedDay; // null = show all days
 
   // ── Sorted itinerary POIs (day → sequence) ──────────────────────────────────
-  List<ItineraryPoi> get _sortedPois => [..._itineraryPois]
-    ..sort((a, b) {
-      final d = a.dayNumber.compareTo(b.dayNumber);
-      return d != 0 ? d : a.sequenceOrder.compareTo(b.sequenceOrder);
-    });
+  List<ItineraryPoi> get _sortedPois => [..._itineraryPois]..sort((a, b) {
+    final d = a.dayNumber.compareTo(b.dayNumber);
+    return d != 0 ? d : a.sequenceOrder.compareTo(b.sequenceOrder);
+  });
 
   Map<int, List<ItineraryPoi>> get _poisByDay {
     final map = <int, List<ItineraryPoi>>{};
@@ -78,13 +77,18 @@ class _MapScreenState extends State<MapScreen> {
   List<int> get _days => _poisByDay.keys.toList()..sort();
 
   // POIs and routes filtered to the selected day (or all if none selected)
-  List<ItineraryPoi> get _visiblePois => _selectedDay == null
-      ? _sortedPois
-      : _sortedPois.where((p) => p.dayNumber == _selectedDay).toList();
+  List<ItineraryPoi> get _visiblePois =>
+      _selectedDay == null
+          ? _sortedPois
+          : _sortedPois.where((p) => p.dayNumber == _selectedDay).toList();
 
-  Map<int, List<LatLng>> get _visibleRoutes => _selectedDay == null
-      ? _routesByDay
-      : {if (_routesByDay.containsKey(_selectedDay)) _selectedDay!: _routesByDay[_selectedDay]!};
+  Map<int, List<LatLng>> get _visibleRoutes =>
+      _selectedDay == null
+          ? _routesByDay
+          : {
+            if (_routesByDay.containsKey(_selectedDay))
+              _selectedDay!: _routesByDay[_selectedDay]!,
+          };
 
   // ── Lifecycle ───────────────────────────────────────────────────────────────
 
@@ -92,10 +96,9 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadPoisForBounds(LatLngBounds(
-        const LatLng(22.0, 24.0),
-        const LatLng(32.0, 37.0),
-      ));
+      _loadPoisForBounds(
+        LatLngBounds(const LatLng(22.0, 24.0), const LatLng(32.0, 37.0)),
+      );
       _loadItineraryPois();
     });
   }
@@ -104,6 +107,7 @@ class _MapScreenState extends State<MapScreen> {
   void dispose() {
     _debounceTimer?.cancel();
     _mapController.dispose();
+    _isochrone.dispose();
     super.dispose();
   }
 
@@ -126,7 +130,11 @@ class _MapScreenState extends State<MapScreen> {
         minLng: bounds.southWest.longitude,
         maxLng: bounds.northEast.longitude,
       );
-      if (mounted) setState(() { _pois = pois; _isLoading = false; });
+      if (mounted)
+        setState(() {
+          _pois = pois;
+          _isLoading = false;
+        });
     } catch (e) {
       debugPrint('Error loading POIs: $e');
       if (mounted) setState(() => _isLoading = false);
@@ -160,151 +168,15 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   // ── Isochrone ("Explore from here") ─────────────────────────────────────────
-
-  /// Long-press handler: draw reachable-area rings from the pressed point and
-  /// count how many known POIs fall inside the outer ring.
+  // All state/logic/presentation live in widgets/map_isochrone_overlay.dart.
+  // This helper just feeds the loaded POI coordinates in for the reach count.
   Future<void> _onMapLongPress(LatLng point) async {
-    setState(() {
-      _isochroneCenter = point;
-      _isochroneLoading = true;
-      _isochroneRings = [];
-    });
-    final rings = await _routingService.fetchIsochrone(
+    await _isochrone.explore(
       point,
-      ranges: const [30, 60],
-      profile: 'auto',
-    );
-    if (!mounted) return;
-    setState(() {
-      _isochroneRings = rings;
-      _isochroneLoading = false;
-    });
-    if (rings.isNotEmpty) {
-      // Fit the reachable area into view, then surface a reachable-POI summary.
-      _fitIsochroneBounds(rings);
-      final reachable = _countReachablePois(rings.last.points);
-      _showIsochroneSheet(point, rings.last.timeMinutes, reachable);
-    }
-  }
-
-  /// Counts loaded POIs whose coordinates fall inside ``polygon``
-  /// (ray-casting point-in-polygon).
-  int _countReachablePois(List<LatLng> polygon) {
-    if (polygon.length < 3) return 0;
-    var count = 0;
-    for (final poi in _pois) {
-      if (_pointInPolygon(LatLng(poi.latitude, poi.longitude), polygon)) {
-        count++;
-      }
-    }
-    return count;
-  }
-
-  static bool _pointInPolygon(LatLng p, List<LatLng> poly) {
-    var inside = false;
-    for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-      final yi = poly[i].latitude, xi = poly[i].longitude;
-      final yj = poly[j].latitude, xj = poly[j].longitude;
-      final intersect = ((yi > p.latitude) != (yj > p.latitude)) &&
-          (p.longitude <
-              (xj - xi) * (p.latitude - yi) / ((yj - yi).abs() < 1e-12 ? 1e-12 : yj - yi) + xi);
-      if (intersect) inside = !inside;
-    }
-    return inside;
-  }
-
-  void _fitIsochroneBounds(List<IsochroneRing> rings) {
-    final all = rings.expand((r) => r.points).toList();
-    if (all.isEmpty) return;
-    final lats = all.map((p) => p.latitude);
-    final lngs = all.map((p) => p.longitude);
-    final bounds = LatLngBounds(
-      LatLng(lats.reduce(min) - 0.01, lngs.reduce(min) - 0.01),
-      LatLng(lats.reduce(max) + 0.01, lngs.reduce(max) + 0.01),
-    );
-    _mapController.fitCamera(
-      CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(56)),
-    );
-  }
-
-  void _showIsochroneSheet(LatLng center, int maxMinutes, int reachableCount) {
-    showModalBottomSheet(
+      [for (final p in _pois) LatLng(p.latitude, p.longitude)],
+      mapController: _mapController,
       context: context,
-      backgroundColor: VoyoColors.paper,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.explore_rounded,
-                      color: VoyoColors.discovery, size: 22),
-                  const SizedBox(width: 10),
-                  Text('Reachable from this point',
-                      style: GoogleFonts.fraunces(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        color: VoyoColors.ink,
-                      )),
-                ],
-              ),
-              const SizedBox(height: 12),
-              RichText(
-                text: TextSpan(
-                  style: GoogleFonts.instrumentSans(
-                      fontSize: 14, color: VoyoColors.ink, height: 1.5),
-                  children: [
-                    const TextSpan(text: 'Driving within '),
-                    TextSpan(
-                        text: '$maxMinutes minutes',
-                        style: const TextStyle(fontWeight: FontWeight.w700)),
-                    const TextSpan(
-                        text: ' from here you can reach '),
-                    TextSpan(
-                        text: '$reachableCount',
-                        style: const TextStyle(fontWeight: FontWeight.w700)),
-                    TextSpan(
-                        text: ' ${reachableCount == 1 ? "place" : "places"} in the VOYO database.'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  TextButton.icon(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.check, size: 18),
-                    label: const Text('Got it'),
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _clearIsochrone();
-                    },
-                    child: Text('Clear',
-                        style: TextStyle(color: VoyoColors.stone)),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
     );
-  }
-
-  void _clearIsochrone() {
-    setState(() {
-      _isochroneRings = [];
-      _isochroneCenter = null;
-    });
   }
 
   void _fitRouteBounds(List<ItineraryPoi> pois) {
@@ -327,13 +199,14 @@ class _MapScreenState extends State<MapScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => PoiDetailSheet(
-        poi: poi,
-        onAskCleo: () {
-          Navigator.pop(context); // close the detail sheet first
-          openCleoForPoi(context, poi);
-        },
-      ),
+      builder:
+          (_) => PoiDetailSheet(
+            poi: poi,
+            onAskCleo: () {
+              Navigator.pop(context); // close the detail sheet first
+              openCleoForPoi(context, poi);
+            },
+          ),
     );
   }
 
@@ -345,22 +218,26 @@ class _MapScreenState extends State<MapScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => _RoutePanel(
-        poisByDay: _poisByDay,
-        selectedDay: _selectedDay,
-        routeLoading: _routeLoading,
-        onNavigate: (day) {
-          Navigator.pop(context);
-          final pois = day == null
-              ? _itineraryPois
-              : _itineraryPois.where((p) => p.dayNumber == day).toList();
-          _routingService.openInGoogleMaps(pois);
-        },
-        onFitBounds: () {
-          Navigator.pop(context);
-          _fitRouteBounds(_visiblePois);
-        },
-      ),
+      builder:
+          (_) => _RoutePanel(
+            poisByDay: _poisByDay,
+            selectedDay: _selectedDay,
+            routeLoading: _routeLoading,
+            onNavigate: (day) {
+              Navigator.pop(context);
+              final pois =
+                  day == null
+                      ? _itineraryPois
+                      : _itineraryPois
+                          .where((p) => p.dayNumber == day)
+                          .toList();
+              _routingService.openInGoogleMaps(pois);
+            },
+            onFitBounds: () {
+              Navigator.pop(context);
+              _fitRouteBounds(_visiblePois);
+            },
+          ),
     );
   }
 
@@ -388,39 +265,11 @@ class _MapScreenState extends State<MapScreen> {
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.voyo.app',
               ),
-              // Isochrone reachable-area rings (long-press the map to generate).
-              // Rendered outer-first so inner rings sit on top, like a heatmap.
-              if (_isochroneRings.isNotEmpty)
-                PolygonLayer(
-                  polygons: [
-                    for (final ring
-                        in [..._isochroneRings]..sort((a, b) =>
-                            b.timeMinutes.compareTo(a.timeMinutes)))
-                      Polygon(
-                        points: ring.points,
-                        color:
-                            VoyoColors.discovery.withValues(alpha: 0.10),
-                        borderColor:
-                            VoyoColors.discovery.withValues(alpha: 0.55),
-                        borderStrokeWidth: 1.5,
-                      ),
-                  ],
-                ),
-              if (_isochroneCenter != null)
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: _isochroneCenter!,
-                      width: 40,
-                      height: 40,
-                      child: const Icon(
-                        Icons.radio_button_checked_rounded,
-                        color: VoyoColors.discovery,
-                        size: 28,
-                      ),
-                    ),
-                  ],
-                ),
+              // Isochrone reachable-area rings + center marker
+              // (long-press the map to generate). Self-contained widgets:
+              // logic + future sliders live in map_isochrone_overlay.dart.
+              IsochronePolygons(controller: _isochrone),
+              IsochroneCenterMarker(controller: _isochrone),
               if (_routeVisible && _visibleRoutes.isNotEmpty)
                 PolylineLayer(
                   polylines: [
@@ -439,70 +288,108 @@ class _MapScreenState extends State<MapScreen> {
                   ],
                 ),
               MarkerLayer(
-                markers: _pois.map((poi) => Marker(
-                  point: LatLng(poi.latitude, poi.longitude),
-                  width: 28, height: 28,
-                  child: GestureDetector(
-                    onTap: () => _showPoiBottomSheet(poi),
-                    child: Container(
-                      width: 22, height: 22,
-                      decoration: BoxDecoration(
-                        color: VoyoColors.expedition,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2.5),
-                        boxShadow: [BoxShadow(
-                          color: VoyoColors.expedition.withValues(alpha: 0.35),
-                          blurRadius: 6, offset: const Offset(0, 2),
-                        )],
-                      ),
-                      child: Center(child: Container(
-                        width: 5, height: 5,
-                        decoration: const BoxDecoration(
-                            color: Colors.white, shape: BoxShape.circle),
-                      )),
-                    ),
-                  ),
-                )).toList(),
+                markers:
+                    _pois
+                        .map(
+                          (poi) => Marker(
+                            point: LatLng(poi.latitude, poi.longitude),
+                            width: 28,
+                            height: 28,
+                            child: GestureDetector(
+                              onTap: () => _showPoiBottomSheet(poi),
+                              child: Container(
+                                width: 22,
+                                height: 22,
+                                decoration: BoxDecoration(
+                                  color: VoyoColors.expedition,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: VoyoColors.expedition.withValues(
+                                        alpha: 0.35,
+                                      ),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Container(
+                                    width: 5,
+                                    height: 5,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
               ),
               if (_itineraryPois.isNotEmpty)
                 MarkerLayer(
-                  markers: _visiblePois.map((poi) {
-                    final c = _dayColor(poi.dayNumber);
-                    return Marker(
-                      point: LatLng(poi.latitude, poi.longitude),
-                      width: 48, height: 48,
-                      child: GestureDetector(
-                        onTap: () => _showStopInfo(poi),
-                        child: Stack(alignment: Alignment.center, children: [
-                          Container(
-                            width: 36, height: 36,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: c.withValues(alpha: 0.18),
+                  markers:
+                      _visiblePois.map((poi) {
+                        final c = _dayColor(poi.dayNumber);
+                        return Marker(
+                          point: LatLng(poi.latitude, poi.longitude),
+                          width: 48,
+                          height: 48,
+                          child: GestureDetector(
+                            onTap: () => _showStopInfo(poi),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: c.withValues(alpha: 0.18),
+                                  ),
+                                ),
+                                Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color: c,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: c.withValues(alpha: 0.4),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '${poi.sequenceOrder}',
+                                      style: GoogleFonts.instrumentSans(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                        height: 1,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          Container(
-                            width: 28, height: 28,
-                            decoration: BoxDecoration(
-                              color: c, shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                              boxShadow: [BoxShadow(
-                                color: c.withValues(alpha: 0.4),
-                                blurRadius: 8, offset: const Offset(0, 2),
-                              )],
-                            ),
-                            child: Center(child: Text(
-                              '${poi.sequenceOrder}',
-                              style: GoogleFonts.instrumentSans(
-                                fontSize: 11, fontWeight: FontWeight.w700,
-                                color: Colors.white, height: 1,
-                              ),
-                            )),
-                          ),
-                        ]),
-                      ),
-                    );
-                  }).toList(),
+                        );
+                      }).toList(),
                 ),
             ],
           ),
@@ -510,7 +397,8 @@ class _MapScreenState extends State<MapScreen> {
           // ── Back button ───────────────────────────────────────────────────
           if (Navigator.of(context).canPop())
             Positioned(
-              top: topPad + 12, left: 12,
+              top: topPad + 12,
+              left: 12,
               child: _MapIconButton(
                 icon: Icons.arrow_back,
                 onTap: () => Navigator.of(context).pop(),
@@ -546,9 +434,10 @@ class _MapScreenState extends State<MapScreen> {
                         color: _dayColor(day),
                         selected: _selectedDay == day,
                         onTap: () {
-                          final dayPois = _itineraryPois
-                              .where((p) => p.dayNumber == day)
-                              .toList();
+                          final dayPois =
+                              _itineraryPois
+                                  .where((p) => p.dayNumber == day)
+                                  .toList();
                           setState(() => _selectedDay = day);
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             if (mounted) _fitRouteBounds(dayPois);
@@ -564,70 +453,74 @@ class _MapScreenState extends State<MapScreen> {
 
           // ── Top-right controls ────────────────────────────────────────────
           // ── "Explore from here" hint (empty state only) ───────────────────
-          if (_isochroneRings.isEmpty &&
-              _isochroneCenter == null &&
-              _itineraryPois.isEmpty)
+          if (_isochrone.isEmpty && _itineraryPois.isEmpty)
             Positioned(
               bottom: MediaQuery.of(context).padding.bottom + 16,
               left: 0,
               right: 0,
               child: Center(
-                child: _HintPill(
+                child: IsochroneHintPill(
                   icon: Icons.touch_app_rounded,
                   text: "Long-press the map to explore what's reachable",
                 ),
               ),
             ),
 
+          // Isochrone clear button (+ future sliders). Self-positioning widget
+          // owned by map_isochrone_overlay.dart.
+          IsochroneControls(controller: _isochrone, topPad: topPad),
+
           Positioned(
-            top: topPad + 12, right: 12,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                if (_isLoading || _routeLoading || _isochroneLoading)
-                  _LoadingPill(
-                    routeLoading: _routeLoading,
-                    isochroneLoading: _isochroneLoading,
-                  ),
-                // Clear isochrone rings when an "Explore from here" result is on screen.
-                if (_isochroneRings.isNotEmpty || _isochroneLoading) ...[
-                  const SizedBox(height: 8),
-                  _MapIconButton(
-                    icon: Icons.explore_off_outlined,
-                    color: VoyoColors.discovery,
-                    onTap: _clearIsochrone,
-                  ),
-                ],
-                if (hasRoute) ...[
-                  const SizedBox(height: 8),
-                  _MapIconButton(
-                    icon: _routeVisible
-                        ? Icons.visibility
-                        : Icons.visibility_off_outlined,
-                    onTap: () =>
-                        setState(() => _routeVisible = !_routeVisible),
-                    color: _routeVisible ? VoyoColors.sky : VoyoColors.stone,
-                  ),
-                  const SizedBox(height: 8),
-                  _MapIconButton(
-                    icon: Icons.fit_screen,
-                    onTap: () => _fitRouteBounds(_itineraryPois),
-                  ),
-                  const SizedBox(height: 8),
-                  // Navigate button — opens Google Maps for the selected day (or all)
-                  _MapIconButton(
-                    icon: Icons.navigation_rounded,
-                    color: VoyoColors.sky,
-                    onTap: () => _routingService.openInGoogleMaps(_visiblePois),
-                  ),
-                  const SizedBox(height: 8),
-                  // Route details panel
-                  _MapIconButton(
-                    icon: Icons.list_alt_rounded,
-                    onTap: _showRoutePanel,
-                  ),
-                ],
-              ],
+            top: topPad + 12,
+            right: 12,
+            child: ListenableBuilder(
+              listenable: _isochrone,
+              builder: (ctx, _) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (_isLoading || _routeLoading || _isochrone.isLoading)
+                      _LoadingPill(
+                        routeLoading: _routeLoading,
+                        isochroneLoading: _isochrone.isLoading,
+                      ),
+                    if (hasRoute) ...[
+                      const SizedBox(height: 8),
+                      _MapIconButton(
+                        icon:
+                            _routeVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off_outlined,
+                        onTap:
+                            () =>
+                                setState(() => _routeVisible = !_routeVisible),
+                        color:
+                            _routeVisible ? VoyoColors.sky : VoyoColors.stone,
+                      ),
+                      const SizedBox(height: 8),
+                      _MapIconButton(
+                        icon: Icons.fit_screen,
+                        onTap: () => _fitRouteBounds(_itineraryPois),
+                      ),
+                      const SizedBox(height: 8),
+                      // Navigate button — opens Google Maps for the selected day (or all)
+                      _MapIconButton(
+                        icon: Icons.navigation_rounded,
+                        color: VoyoColors.sky,
+                        onTap:
+                            () =>
+                                _routingService.openInGoogleMaps(_visiblePois),
+                      ),
+                      const SizedBox(height: 8),
+                      // Route details panel
+                      _MapIconButton(
+                        icon: Icons.list_alt_rounded,
+                        onTap: _showRoutePanel,
+                      ),
+                    ],
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -649,42 +542,6 @@ class _MapScreenState extends State<MapScreen> {
 
 // ── Small shared widgets ────────────────────────────────────────────────────────
 
-class _HintPill extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  const _HintPill({required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: VoyoColors.paper,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08), blurRadius: 10),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: VoyoColors.discovery),
-          const SizedBox(width: 8),
-          Text(
-            text,
-            style: GoogleFonts.instrumentSans(
-              fontSize: 12,
-              color: VoyoColors.stone,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _MapIconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
@@ -701,14 +558,16 @@ class _MapIconButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 40, height: 40,
+        width: 40,
+        height: 40,
         decoration: BoxDecoration(
           color: VoyoColors.paper,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 8, offset: const Offset(0, 2),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -721,41 +580,45 @@ class _MapIconButton extends StatelessWidget {
 class _LoadingPill extends StatelessWidget {
   final bool routeLoading;
   final bool isochroneLoading;
-  const _LoadingPill({required this.routeLoading, this.isochroneLoading = false});
+  const _LoadingPill({
+    required this.routeLoading,
+    this.isochroneLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final color = isochroneLoading
-        ? VoyoColors.discovery
-        : (routeLoading ? VoyoColors.sky : VoyoColors.expedition);
-    final label = isochroneLoading
-        ? 'Exploring reach…'
-        : (routeLoading ? 'Building route…' : 'Loading places…');
+    final color =
+        isochroneLoading
+            ? VoyoColors.discovery
+            : (routeLoading ? VoyoColors.sky : VoyoColors.expedition);
+    final label =
+        isochroneLoading
+            ? 'Exploring reach…'
+            : (routeLoading ? 'Building route…' : 'Loading places…');
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: VoyoColors.paper,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08), blurRadius: 8),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 8),
         ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: 12, height: 12,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: color,
-            ),
+            width: 12,
+            height: 12,
+            child: CircularProgressIndicator(strokeWidth: 2, color: color),
           ),
           const SizedBox(width: 6),
           Text(
             label,
             style: GoogleFonts.instrumentSans(
-                fontSize: 12, color: VoyoColors.stone),
+              fontSize: 12,
+              color: VoyoColors.stone,
+            ),
           ),
         ],
       ),
@@ -798,7 +661,9 @@ class _RoutePanelState extends State<_RoutePanel> {
     final sortedDays = widget.poisByDay.keys.toList()..sort();
     final shownDays = _activeDay == null ? sortedDays : [_activeDay!];
     final shownStops = shownDays.fold(
-        0, (s, d) => s + (widget.poisByDay[d]?.length ?? 0));
+      0,
+      (s, d) => s + (widget.poisByDay[d]?.length ?? 0),
+    );
 
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
@@ -852,8 +717,9 @@ class _RoutePanelState extends State<_RoutePanel> {
                 children: [
                   for (final day in shownDays) ...[
                     _DayHeader(
-                        day: day,
-                        stopCount: widget.poisByDay[day]!.length),
+                      day: day,
+                      stopCount: widget.poisByDay[day]!.length,
+                    ),
                     for (final poi in widget.poisByDay[day]!)
                       _StopRow(poi: poi, dayColor: _dayColor(day)),
                     const SizedBox(height: 8),
@@ -866,7 +732,9 @@ class _RoutePanelState extends State<_RoutePanel> {
             // ── Navigate CTA ─────────────────────────────────────────────────
             Padding(
               padding: EdgeInsets.fromLTRB(
-                20, 8, 20,
+                20,
+                8,
+                20,
                 MediaQuery.of(context).padding.bottom + 16,
               ),
               child: SizedBox(
@@ -877,10 +745,14 @@ class _RoutePanelState extends State<_RoutePanel> {
                   style: FilledButton.styleFrom(
                     backgroundColor: VoyoColors.sky,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
-                  icon: const Icon(Icons.open_in_new,
-                      color: Colors.white, size: 16),
+                  icon: const Icon(
+                    Icons.open_in_new,
+                    color: Colors.white,
+                    size: 16,
+                  ),
                   label: Text(
                     _activeDay == null
                         ? 'Navigate Full Trip'
@@ -927,7 +799,8 @@ class _PanelHeader extends StatelessWidget {
         children: [
           Center(
             child: Container(
-              width: 36, height: 4,
+              width: 36,
+              height: 4,
               decoration: BoxDecoration(
                 color: VoyoColors.smoke,
                 borderRadius: BorderRadius.circular(2),
@@ -944,7 +817,8 @@ class _PanelHeader extends StatelessWidget {
                     Text(
                       'Your Route',
                       style: GoogleFonts.fraunces(
-                        fontSize: 22, fontStyle: FontStyle.italic,
+                        fontSize: 22,
+                        fontStyle: FontStyle.italic,
                         color: VoyoColors.ink,
                       ),
                     ),
@@ -955,7 +829,9 @@ class _PanelHeader extends StatelessWidget {
                           : '$totalStops stop${totalStops == 1 ? '' : 's'}'
                               '  ·  $totalDays day${totalDays == 1 ? '' : 's'}',
                       style: GoogleFonts.instrumentSans(
-                          fontSize: 13, color: VoyoColors.stone),
+                        fontSize: 13,
+                        color: VoyoColors.stone,
+                      ),
                     ),
                   ],
                 ),
@@ -968,8 +844,11 @@ class _PanelHeader extends StatelessWidget {
                     color: VoyoColors.vellum,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.fit_screen,
-                      size: 18, color: VoyoColors.stone),
+                  child: const Icon(
+                    Icons.fit_screen,
+                    size: 18,
+                    color: VoyoColors.stone,
+                  ),
                 ),
               ),
             ],
@@ -1005,9 +884,7 @@ class _DayChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? color : VoyoColors.vellum,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected ? color : VoyoColors.smoke,
-          ),
+          border: Border.all(color: selected ? color : VoyoColors.smoke),
         ),
         child: Text(
           label,
@@ -1034,16 +911,19 @@ class _DayHeader extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 8, height: 8,
+            width: 8,
+            height: 8,
             decoration: BoxDecoration(
-              color: _dayColor(day), shape: BoxShape.circle,
+              color: _dayColor(day),
+              shape: BoxShape.circle,
             ),
           ),
           const SizedBox(width: 8),
           Text(
             'Day $day',
             style: GoogleFonts.instrumentSans(
-              fontSize: 13, fontWeight: FontWeight.w700,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
               color: VoyoColors.ink,
             ),
           ),
@@ -1051,7 +931,9 @@ class _DayHeader extends StatelessWidget {
           Text(
             '($stopCount stop${stopCount == 1 ? '' : 's'})',
             style: GoogleFonts.instrumentSans(
-                fontSize: 12, color: VoyoColors.stone),
+              fontSize: 12,
+              color: VoyoColors.stone,
+            ),
           ),
         ],
       ),
@@ -1072,16 +954,15 @@ class _StopRow extends StatelessWidget {
         children: [
           // Numbered circle
           Container(
-            width: 26, height: 26,
-            decoration: BoxDecoration(
-              color: dayColor,
-              shape: BoxShape.circle,
-            ),
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(color: dayColor, shape: BoxShape.circle),
             child: Center(
               child: Text(
                 '${poi.sequenceOrder}',
                 style: GoogleFonts.instrumentSans(
-                  fontSize: 11, fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
               ),
@@ -1095,7 +976,8 @@ class _StopRow extends StatelessWidget {
                 Text(
                   poi.name,
                   style: GoogleFonts.instrumentSans(
-                    fontSize: 14, fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
                     color: VoyoColors.ink,
                   ),
                 ),
@@ -1103,7 +985,9 @@ class _StopRow extends StatelessWidget {
                   Text(
                     poi.category!,
                     style: GoogleFonts.instrumentSans(
-                        fontSize: 11, color: VoyoColors.stone),
+                      fontSize: 11,
+                      color: VoyoColors.stone,
+                    ),
                   ),
               ],
             ),
@@ -1135,13 +1019,17 @@ class _MapWikiService {
       try {
         final encoded = Uri.encodeComponent(name);
         final uri = Uri.parse(
-            'https://en.wikipedia.org/api/rest_v1/page/summary/$encoded');
-        final response =
-            await http.get(uri, headers: {'Accept': 'application/json'});
+          'https://en.wikipedia.org/api/rest_v1/page/summary/$encoded',
+        );
+        final response = await http.get(
+          uri,
+          headers: {'Accept': 'application/json'},
+        );
         if (response.statusCode == 200) {
           final body = jsonDecode(response.body) as Map<String, dynamic>;
           final thumb =
-              (body['thumbnail'] as Map<String, dynamic>?)?['source'] as String?;
+              (body['thumbnail'] as Map<String, dynamic>?)?['source']
+                  as String?;
           final extract = body['extract'] as String?;
           final data = _WikiData(imageUrl: thumb, extract: extract);
           _cache[name] = data;
@@ -1175,7 +1063,11 @@ class _StopInfoSheetState extends State<_StopInfoSheet> {
   void initState() {
     super.initState();
     _MapWikiService.instance.fetch(widget.poi.name).then((data) {
-      if (mounted) setState(() { _wiki = data; _loading = false; });
+      if (mounted)
+        setState(() {
+          _wiki = data;
+          _loading = false;
+        });
     });
   }
 
@@ -1195,47 +1087,50 @@ class _StopInfoSheetState extends State<_StopInfoSheet> {
           child: SizedBox(
             height: 160,
             width: double.infinity,
-            child: _loading
-                ? Container(
-                    color: VoyoColors.vellum,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: VoyoColors.stone),
-                    ),
-                  )
-                : imageUrl != null
+            child:
+                _loading
+                    ? Container(
+                      color: VoyoColors.vellum,
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: VoyoColors.stone,
+                        ),
+                      ),
+                    )
+                    : imageUrl != null
                     ? Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Image.network(
-                            imageUrl.replaceFirst(
-                                RegExp(r'/\d+px-'), '/1200px-'),
-                            fit: BoxFit.cover,
-                            filterQuality: FilterQuality.high,
-                            errorBuilder: (_, _, _) => Image.network(
-                              imageUrl,
-                              fit: BoxFit.cover,
-                              filterQuality: FilterQuality.high,
-                              errorBuilder: (_, _, _) =>
-                                  _colorFallback(poi.dayNumber),
-                            ),
-                          ),
-                          Positioned.fill(
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent,
-                                    VoyoColors.ink.withValues(alpha: 0.45),
-                                  ],
-                                ),
+                      fit: StackFit.expand,
+                      children: [
+                        Image.network(
+                          imageUrl.replaceFirst(RegExp(r'/\d+px-'), '/1200px-'),
+                          fit: BoxFit.cover,
+                          filterQuality: FilterQuality.high,
+                          errorBuilder:
+                              (_, _, _) => Image.network(
+                                imageUrl,
+                                fit: BoxFit.cover,
+                                filterQuality: FilterQuality.high,
+                                errorBuilder:
+                                    (_, _, _) => _colorFallback(poi.dayNumber),
+                              ),
+                        ),
+                        Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  VoyoColors.ink.withValues(alpha: 0.45),
+                                ],
                               ),
                             ),
                           ),
-                        ],
-                      )
+                        ),
+                      ],
+                    )
                     : _colorFallback(poi.dayNumber),
           ),
         ),
@@ -1243,15 +1138,20 @@ class _StopInfoSheetState extends State<_StopInfoSheet> {
         // ── Content ──────────────────────────────────────────────────────────
         Padding(
           padding: EdgeInsets.fromLTRB(
-              20, 16, 20,
-              MediaQuery.of(context).padding.bottom + 24),
+            20,
+            16,
+            20,
+            MediaQuery.of(context).padding.bottom + 24,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Day · Stop chip
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: c.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
@@ -1280,7 +1180,9 @@ class _StopInfoSheetState extends State<_StopInfoSheet> {
                 Text(
                   poi.category!,
                   style: GoogleFonts.instrumentSans(
-                      fontSize: 12, color: VoyoColors.stone),
+                    fontSize: 12,
+                    color: VoyoColors.stone,
+                  ),
                 ),
               ],
               if (extract != null && extract.isNotEmpty) ...[
