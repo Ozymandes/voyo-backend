@@ -6,6 +6,8 @@
 **Pull before starting:** `git pull origin main`
 
 ---
+KEY NOTE: I own the isochrone in widgets/map_isochrone_overlay.dart + src/routing/**; you own map_screen.dart for region outlines — our edits won't     
+ overlap.
 
 ## 1. What I finished since yesterday (2026-06-13 → 06-14)
 
@@ -35,7 +37,7 @@ These are committed and pushed. The app and backend build clean.
 
 ---
 
-## 2. What you (the partner) need to do
+## 2. What you  need to do
 
 Listed by priority. Each has the diagnosis done so you can start immediately. I've flagged what's Flutter vs backend.
 
@@ -102,7 +104,7 @@ Listed by priority. Each has the diagnosis done so you can start immediately. I'
 
 ### TASK E — CLEO backend optimizations *(BACKEND — I deferred this for you)*
 
-Two backend items I intentionally left for you since they need Python edits:
+Two backend items I intentionally left for you:
 
 1. **Conditional system-prompt injection.** CLEO's system prompt is ~3,300 tokens and sent on every turn (~3× per ReAct loop). The itinerary playbook alone is ~1,500 tokens but only relevant for itinerary queries. **Refactor:** gate the big itinerary/traveler-archetype sections on `ScopeDetector` — inject them only when scope = itinerary. Non-itinerary queries drop to ~1,800 tokens. This **frees budget to add richer context** (deeper history, cultural notes) as more conditional modules. Net: more context where it matters, less where it doesn't. Files: `src/cleo/prompts.py`, `src/cleo/cleo_agent.py:_build_messages`.
 2. **Batch POI/region narrative enrichment** (powers Tasks A + C). Write `enrich_narratives.py` (model `enrich_narratives.py` after `rebuild_database.py`) — calls LLM once per POI + region, writes `narrative` column. Run after a quota reset.
