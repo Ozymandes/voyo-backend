@@ -298,11 +298,20 @@ class GroqClient:
         messages: list,
         tools: Optional[list] = None,
         temperature: Optional[float] = None,
+        force_tool: Any = None,
     ) -> LLMResponse:
         """Async Groq call with retry logic.
 
         Returns an ``LLMResponse`` that may contain tool calls, plain
         text, or both.
+
+        ``force_tool`` controls tool selection (only used when ``tools``
+        is provided):
+          - ``None``  → ``"auto"`` (model decides; default)
+          - ``True``  → ``"required"`` (model MUST call some tool)
+          - a string → force that specific tool by name, e.g.
+                       ``"search_pois"`` → guarantees DB grounding on
+                       itinerary queries
         """
         max_retries = 3
         last_error: Optional[Exception] = None
@@ -317,7 +326,15 @@ class GroqClient:
                 }
                 if tools:
                     params["tools"] = tools
-                    params["tool_choice"] = "auto"
+                    if force_tool is True:
+                        params["tool_choice"] = "required"
+                    elif isinstance(force_tool, str):
+                        params["tool_choice"] = {
+                            "type": "function",
+                            "function": {"name": force_tool},
+                        }
+                    else:
+                        params["tool_choice"] = "auto"
 
                 response = await self.async_client.chat.completions.create(**params)
                 message = response.choices[0].message

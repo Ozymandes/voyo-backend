@@ -449,12 +449,27 @@ class CleoAgent:
 
         max_iters = self.config.max_agent_iterations
 
+        # Determine whether to FORCE a tool call on the FIRST iteration.
+        # Prevents the model from answering POI/itinerary queries purely
+        # from training memory (hallucinating places/prices). Greetings are
+        # classified "concise" so they are never trapped.
+        #   - detailed (itineraries) → force search_pois (guaranteed DB grounding)
+        #   - standard (POI descriptions, advice) → force SOME tool
+        #   - concise / follow-up iterations → auto (model decides)
+        first_iter_force: Any = None
+        if response_style == "detailed":
+            first_iter_force = "search_pois"
+        elif response_style == "standard":
+            first_iter_force = True
+
         for iteration in range(max_iters):
             if debug:
                 print(f"\n--- AGENT ITERATION {iteration + 1}/{max_iters} ---")
 
             llm_response: LLMResponse = await self.llm.generate_async(
-                messages, tools=tool_defs
+                messages,
+                tools=tool_defs,
+                force_tool=first_iter_force if iteration == 0 else None,
             )
 
             if debug:
@@ -526,9 +541,14 @@ class CleoAgent:
                 )
 
             elif tool_name == "get_poi_details":
+                # The model sometimes passes a POI NAME (e.g. "Karnak Temple")
+                # instead of its integer ID. Resolve names → IDs via a quick
+                # search so the tool still returns data instead of None.
+                poi_id = tool_args.get("poi_id")
+                resolved_id = await self._resolve_poi_id(poi_id)
                 return await asyncio.to_thread(
                     self.tools["supabase"].get_poi_details,
-                    poi_id=tool_args.get("poi_id"),
+                    poi_id=resolved_id,
                 )
 
             elif tool_name == "get_historical_info":
@@ -577,6 +597,35 @@ class CleoAgent:
         except Exception as e:
             logger.error(f"Error executing tool '{tool_name}': {e}")
             return {"error": str(e)}
+
+    async def _resolve_poi_id(self, poi_id: Any) -> Any:
+        """Normalize a ``poi_id`` argument to an integer DB id.
+
+        The LLM occasionally passes a POI *name* (e.g. ``"Karnak Temple"``)
+        instead of the integer id that ``get_poi_details`` expects. When the
+        value is not already an int, do a quick ``search_pois`` lookup and
+        return the best match's id. Falls back to the original value (which
+        will yield None downstream) if nothing is found.
+        """
+        # Already an int (or an int-like string) → use as-is.
+        if isinstance(poi_id, int):
+            return poi_id
+        if isinstance(poi_id, str):
+            stripped = poi_id.strip()
+            if stripped.isdigit():
+                return int(stripped)
+            # Looks like a name → resolve via search.
+            try:
+                hits = await self.tools["supabase"].search_pois_async(
+                    query=stripped, limit=1
+                )
+                if hits:
+                    first_id = hits[0].get("id")
+                    if first_id is not None:
+                        return int(first_id)
+            except Exception as e:
+                logger.warning(f"Could not resolve POI name '{stripped}': {e}")
+        return poi_id
 
     def _handle_curate_itinerary(self, args: Dict, user_id: Optional[str] = None) -> Dict:
         """Handle the ``curate_itinerary`` tool call.

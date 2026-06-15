@@ -75,7 +75,7 @@ class SupabaseTool:
             if user_profile:
                 results = self._personalize_ranking(results, user_profile)
 
-            return results[:limit]
+            return [self._slim_for_llm(p) for p in results[:limit]]
 
         except Exception as e:
             logger.error(f"Error searching POIs: {e}")
@@ -94,6 +94,30 @@ class SupabaseTool:
         return await asyncio.to_thread(
             self.search_pois, query, region, category, user_profile, limit
         )
+
+    @staticmethod
+    def _slim_for_llm(poi: Dict) -> Dict:
+        """Project a full POI record into a compact summary for the LLM.
+
+        The ReAct loop appends tool results back into the message history, so
+        returning full records (Arabic names, address, opening_hours dicts,
+        image-URL arrays) balloons the request past Groq's tokens-per-minute
+        ceiling. The LLM only needs identity + a few decision-relevant fields
+        to pick POIs; full detail is available via ``get_poi_details``.
+        """
+        desc = (poi.get("description") or "")
+        if len(desc) > 140:
+            desc = desc[:137].rstrip() + "…"
+        return {
+            "id": poi.get("id"),
+            "name": poi.get("name", ""),
+            "category": poi.get("category", ""),
+            "city": poi.get("city") or poi.get("region_id"),
+            "ticket_price": poi.get("ticket_price"),
+            "currency": poi.get("currency"),
+            "average_rating": poi.get("average_rating"),
+            "description": desc,
+        }
 
     def get_poi_details(self, poi_id: int) -> Optional[Dict]:
         """Get full POI record by ID."""
