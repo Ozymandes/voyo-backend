@@ -1,0 +1,181 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "cairo",
+        "name": "Cairo",
+        "center_lng": 31.24,
+        "center_lat": 30.06,
+        "zoom": 11.0
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [31.10, 29.90],
+            [31.65, 29.90],
+            [31.65, 30.30],
+            [31.10, 30.30],
+            [31.10, 29.90]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "giza",
+        "name": "Giza",
+        "center_lng": 31.13,
+        "center_lat": 29.97,
+        "zoom": 11.5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [30.75, 29.70],
+            [31.10, 29.70],
+            [31.10, 30.05],
+            [30.75, 30.05],
+            [30.75, 29.70]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "alexandria",
+        "name": "Alexandria",
+        "center_lng": 29.93,
+        "center_lat": 31.20,
+        "zoom": 11.0
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [29.50, 30.85],
+            [30.25, 30.85],
+            [30.25, 31.40],
+            [29.50, 31.40],
+            [29.50, 30.85]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "luxor",
+        "name": "Luxor",
+        "center_lng": 32.64,
+        "center_lat": 25.69,
+        "zoom": 12.0
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [32.35, 25.55],
+            [32.95, 25.55],
+            [32.95, 25.90],
+            [32.35, 25.90],
+            [32.35, 25.55]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "aswan",
+        "name": "Aswan",
+        "center_lng": 32.90,
+        "center_lat": 24.09,
+        "zoom": 12.0
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [32.65, 23.85],
+            [33.10, 23.85],
+            [33.10, 24.30],
+            [32.65, 24.30],
+            [32.65, 23.85]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "sinai",
+        "name": "Sinai",
+        "center_lng": 33.80,
+        "center_lat": 28.75,
+        "zoom": 8.5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [32.40, 27.60],
+            [35.00, 27.60],
+            [35.00, 30.10],
+            [32.40, 30.10],
+            [32.40, 27.60]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "red_sea",
+        "name": "Red Sea",
+        "center_lng": 33.81,
+        "center_lat": 27.26,
+        "zoom": 9.0
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [32.50, 26.50],
+            [34.50, 26.50],
+            [34.50, 27.60],
+            [32.50, 27.60],
+            [32.50, 26.50]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "marsa_alam",
+        "name": "Marsa Alam",
+        "center_lng": 34.88,
+        "center_lat": 25.06,
+        "zoom": 9.5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [33.50, 24.00],
+            [35.50, 24.00],
+            [35.50, 26.50],
+            [33.50, 26.50],
+            [33.50, 24.00]
+          ]
+        ]
+      }
+    }
+  ]
+}

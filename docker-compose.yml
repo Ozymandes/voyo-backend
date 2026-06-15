@@ -1,17 +1,28 @@
 version: "3.8"
 
-# VOYO Routing Stack — Valhalla + VROOM
+# VOYO Routing Stack — Valhalla + OSRM + VROOM
+#
+# Services:
+#   valhalla  :8002  — routing + isochrones (used by CLEO and the app directly)
+#   osrm      :5000  — OSRM-protocol routing backend (used by VROOM only)
+#   vroom     :8081  — vehicle route optimization (POST /api/v1/itinerary/optimize)
 #
 # Usage:
-#   docker-compose up -d          # Start both services
-#   docker-compose logs -f        # Watch logs
-#   docker-compose down           # Stop
+#   docker-compose up -d          # start all services
+#   docker-compose logs -f osrm   # watch OSRM first-run progress (~5-10 min)
+#   docker-compose down           # stop
 #
-# First run: Valhalla downloads and processes the Egypt OSM extract (~50 MB PBF).
-# This takes ~5-10 minutes.  Tile data is cached in config/valhalla/custom_files/
-# so subsequent starts are fast.
+# First run:
+#   Valhalla downloads Egypt OSM (~50 MB) and builds tiles → config/valhalla/custom_files/
+#   OSRM    downloads Egypt OSM (~400 MB), extracts + partitions routes → osrm_data volume
+#   Both cache their processed data; subsequent starts are fast (seconds).
 
 services:
+
+  # ── Valhalla ────────────────────────────────────────────────────────────────
+  # Used for: turn-by-turn routing, isochrones, CLEO trip optimization.
+  # Protocol: Valhalla HTTP API (POST /route, POST /isochrone, etc.)
+
   valhalla:
     image: ghcr.io/gis-ops/docker-valhalla/valhalla:latest
     container_name: voyo-valhalla
@@ -20,9 +31,7 @@ services:
     volumes:
       - ./config/valhalla/custom_files:/custom_files
     environment:
-      # Egypt extract from Geofabrik — downloaded and processed on first run
       - tile_urls=https://download.geofabrik.de/africa/egypt-latest.osm.pbf
-      # Use 4 threads for tile building (reasonable on most dev machines)
       - build_tar=false
       - min_x=24.0
       - min_y=21.0
@@ -36,6 +45,58 @@ services:
       start_period: 120s
     restart: unless-stopped
 
+  # ── OSRM ────────────────────────────────────────────────────────────────────
+  # Used for: VROOM distance-matrix queries (OSRM HTTP protocol).
+  # NOT used directly by the app — only by VROOM.
+  #
+  # First run: downloads Egypt PBF (~400 MB) and runs extract + partition +
+  # customize (MLD algorithm). Takes ~5-10 min. Data is cached in osrm_data
+  # volume and reused on every subsequent start.
+
+  osrm:
+    image: osrm/osrm-backend
+    container_name: voyo-osrm
+    volumes:
+      - osrm_data:/data
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        if [ ! -f /data/egypt-latest.osrm ]; then
+          echo '=== OSRM first run: downloading Egypt OSM data (~400 MB) ==='
+          wget -q --show-progress \
+            -O /data/egypt-latest.osm.pbf \
+            https://download.geofabrik.de/africa/egypt-latest.osm.pbf
+          echo '=== Extracting routes (car profile)... ==='
+          osrm-extract -p /opt/car.lua /data/egypt-latest.osm.pbf
+          echo '=== Partitioning (MLD algorithm)... ==='
+          osrm-partition /data/egypt-latest.osrm
+          echo '=== Customising... ==='
+          osrm-customize /data/egypt-latest.osrm
+          rm -f /data/egypt-latest.osm.pbf
+          echo '=== OSRM data ready. ==='
+        fi
+        exec osrm-routed \
+          --algorithm mld \
+          --max-table-size 2000 \
+          --port 5000 \
+          --host 0.0.0.0 \
+          /data/egypt-latest.osrm
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- 'http://localhost:5000/nearest/v1/driving/31.13,30.06' | grep -q 'waypoints' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 600s
+    restart: unless-stopped
+
+  # ── VROOM ───────────────────────────────────────────────────────────────────
+  # Vehicle Route Optimization — orders POIs into an optimal multi-stop itinerary.
+  # Requires OSRM (not Valhalla) for its distance-matrix queries.
+  # Config: config/vroom/conf/config.yml
+
   vroom:
     image: vroomvrp/vroom-docker:v1.13.0
     container_name: voyo-vroom
@@ -46,6 +107,10 @@ services:
     environment:
       - VROOM_ROUTER=osrm
     depends_on:
-      valhalla:
+      osrm:
         condition: service_healthy
     restart: unless-stopped
+
+volumes:
+  osrm_data:
+    name: voyo_osrm_data

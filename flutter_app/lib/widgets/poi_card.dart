@@ -86,14 +86,19 @@ class PoiCard extends StatelessWidget {
                   left: 10,
                   right: 10,
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _CategoryChip(
-                        accent: style.accent,
-                        label: style.label,
-                        icon: style.icon,
+                      Flexible(
+                        fit: FlexFit.loose,
+                        child: _CategoryChip(
+                          accent: style.accent,
+                          label: style.label,
+                          icon: style.icon,
+                        ),
                       ),
-                      const Spacer(),
-                      if (poi.isHiddenGem) const _GemBadge(),
+                      if (poi.isHiddenGem) const _GemBadge()
+                      else const SizedBox.shrink(),
                     ],
                   ),
                 ),
@@ -203,12 +208,16 @@ class _CategoryChip extends StatelessWidget {
         children: [
           Icon(icon, size: 11, color: Colors.white),
           const SizedBox(width: 4),
-          Text(
-            label,
-            style: GoogleFonts.instrumentSans(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.instrumentSans(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
             ),
           ),
         ],

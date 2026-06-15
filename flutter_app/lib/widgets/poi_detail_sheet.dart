@@ -90,8 +90,12 @@ class PoiDetailSheet extends StatelessWidget {
       children.add(Row(children: facts));
     }
 
-    if (poi.description != null && poi.description!.trim().isNotEmpty) {
-      children.addAll(_section('About', poi.description!));
+    // Prefer LLM-enriched narrative; fall back to raw description.
+    final aboutText = (poi.narrative?.trim().isNotEmpty == true)
+        ? poi.narrative!
+        : poi.description;
+    if (aboutText != null && aboutText.trim().isNotEmpty) {
+      children.addAll(_section('About', aboutText));
     }
 
     if (poi.historicalSignificance != null &&

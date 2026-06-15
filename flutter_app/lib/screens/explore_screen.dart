@@ -3,15 +3,16 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter/foundation.dart';
 import '../models/poi.dart';
+import '../services/recommendation_service.dart';
 import '../services/supabase_service.dart';
 import '../theme.dart';
+import '../widgets/add_to_itinerary_sheet.dart';
 import '../widgets/poi_card.dart';
 import '../widgets/poi_detail_sheet.dart';
-import '../widgets/poi_image.dart';
 import 'map_screen.dart';
 import 'chat_screen.dart';
+import 'recommendations_screen.dart';
 import 'settings_sheets.dart';
 
 const _categories = [
@@ -41,7 +42,9 @@ final _fallbackPois = [
 // ---------------------------------------------------------------------------
 
 class ExploreScreen extends StatefulWidget {
-  const ExploreScreen({super.key});
+  final VoidCallback? onSwitchToCleo;
+
+  const ExploreScreen({super.key, this.onSwitchToCleo});
 
   @override
   State<ExploreScreen> createState() => _ExploreScreenState();
@@ -60,6 +63,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
   bool _usingFallback = false;
   String? _poisError;
 
+  final _recService = RecommendationService();
+  List<Poi> _recommendations = [];
+
   @override
   void initState() {
     super.initState();
@@ -71,7 +77,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
     // Load POIs — fall back to sample data if DB is empty or unavailable
     try {
-      final pois = await _supabaseService.getFeaturedPois();
+      final pois = await _supabaseService.getFeaturedPois(limit: 500);
       if (mounted) {
         setState(() {
           _pois = pois.isNotEmpty ? pois : _fallbackPois;
@@ -90,6 +96,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
         });
       }
     }
+
+    if (userId != null) _loadRecommendations();
 
     if (userId == null) return;
 
@@ -122,16 +130,28 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return '🌙';
   }
 
+  static const _categoryEnum = {
+    'Historical': 'historical',
+    'Religious': 'religious',
+    'Nature': 'natural',
+    'Dining': 'dining',
+    'Shopping': 'shopping',
+  };
+
   List<Poi> get _filteredPois {
     if (_selectedCategory == 'All') return _pois;
     if (_selectedCategory == 'Hidden Gems') {
       return _pois.where((p) => p.isHiddenGem).toList();
     }
-    final cat = _selectedCategory.toLowerCase();
+    final cat = _categoryEnum[_selectedCategory] ?? _selectedCategory.toLowerCase();
     return _pois.where((p) => p.category?.toLowerCase() == cat).toList();
   }
 
-  List<Poi> get _hiddenGems => _pois.where((p) => p.isHiddenGem).toList();
+  Future<void> _loadRecommendations() async {
+    if (!mounted) return;
+    final recs = await _recService.getRecommendations(limit: 24);
+    if (mounted) setState(() => _recommendations = recs);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -146,8 +166,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               SliverToBoxAdapter(child: _buildMapZone()),
               SliverToBoxAdapter(child: _buildCategoryRow()),
               SliverToBoxAdapter(child: _buildDiscoverSection()),
-              if (_hiddenGems.isNotEmpty)
-                SliverToBoxAdapter(child: _buildHiddenGemsStrip()),
+              SliverToBoxAdapter(child: _buildYourDestinations()),
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
           ),
@@ -574,92 +593,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
   }
 
-  // ── Hidden gems strip ─────────────────────────────────────────────────────
-
-  Widget _buildHiddenGemsStrip() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-          child: Row(
-            children: [
-              Container(
-                width: 8, height: 8,
-                decoration: const BoxDecoration(
-                    color: VoyoColors.discovery, shape: BoxShape.circle),
-              ),
-              const SizedBox(width: 8),
-              Text('Hidden Gems',
-                  style: GoogleFonts.fraunces(
-                      fontSize: 20,
-                      fontStyle: FontStyle.italic,
-                      color: VoyoColors.discoveryAccessible)),
-            ],
-          ),
-        ),
-        ..._hiddenGems.map(_buildGemRow),
-      ],
-    );
-  }
-
-  Widget _buildGemRow(Poi poi) {
-    return GestureDetector(
-      onTap: () => _showPoiSheet(poi),
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: VoyoColors.paper,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0x288860D4)),
-        ),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 42,
-              child: PoiImage(
-                poi: poi,
-                height: 42,
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(poi.name,
-                      style: GoogleFonts.fraunces(
-                          fontSize: 15, color: VoyoColors.ink)),
-                  Text(_poiSubtitle(poi),
-                      style: GoogleFonts.instrumentSans(
-                          fontSize: 11, color: VoyoColors.stone)),
-                ],
-              ),
-            ),
-            if (poi.averageRating != null)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    poi.averageRating!.toStringAsFixed(1),
-                    style: GoogleFonts.jetBrainsMono(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: VoyoColors.terra),
-                  ),
-                  Text('/ 5.0',
-                      style: GoogleFonts.instrumentSans(
-                          fontSize: 9, color: VoyoColors.stone)),
-                ],
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // ── POI Sheet ─────────────────────────────────────────────────────────────
 
   void _showPoiSheet(Poi poi) {
@@ -670,10 +603,134 @@ class _ExploreScreenState extends State<ExploreScreen> {
       builder: (_) => PoiDetailSheet(
         poi: poi,
         onAskCleo: () {
-          Navigator.pop(context); // close the detail sheet first
+          Navigator.pop(context);
           openCleoForPoi(context, poi);
         },
+        onAddToTrip: () {
+          Navigator.pop(context);
+          _addPoiToItinerary(poi);
+        },
       ),
+    );
+  }
+
+  Future<void> _addPoiToItinerary(Poi poi) async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sign in to save places to your trip.')),
+      );
+      return;
+    }
+    final added = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => AddToItineraryFlow(
+        poi: poi,
+        service: _supabaseService,
+        userId: userId,
+      ),
+    );
+    if (added == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('${poi.name} added to your itinerary!'),
+        backgroundColor: VoyoColors.terra,
+        duration: const Duration(seconds: 2),
+      ));
+    }
+  }
+
+  // ── Your Destinations ─────────────────────────────────────────────────────
+
+  Widget _buildYourDestinations() {
+    if (_loadingPois) return const SizedBox.shrink();
+
+    // Prefer personalised recs from the API; fall back to loaded POIs.
+    final source = _recommendations.isNotEmpty ? _recommendations : _pois;
+    if (source.isEmpty) return const SizedBox.shrink();
+
+    final topPicks = source.take(8).toList();
+    final historyPicks = source
+        .where((p) =>
+            p.category == 'historical' ||
+            p.category == 'religious' ||
+            p.category == 'cultural')
+        .take(6)
+        .toList();
+    final gemPicks = source.where((p) => p.isHiddenGem).take(6).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 4),
+          child: Text('Your Destinations',
+              style: GoogleFonts.fraunces(fontSize: 24, color: VoyoColors.ink)),
+        ),
+        _buildRecPanel('Top picks for you', topPicks,
+            accent: VoyoColors.expedition),
+        if (historyPicks.isNotEmpty)
+          _buildRecPanel('Because you love history', historyPicks,
+              accent: VoyoColors.terra),
+        if (gemPicks.isNotEmpty)
+          _buildRecPanel('Hidden gems for you', gemPicks,
+              accent: VoyoColors.discovery),
+      ],
+    );
+  }
+
+  Widget _buildRecPanel(String title, List<Poi> pois,
+      {Color accent = VoyoColors.expedition}) {
+    if (pois.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: Row(children: [
+            Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(color: accent, shape: BoxShape.circle)),
+            const SizedBox(width: 8),
+            Text(title,
+                style:
+                    GoogleFonts.fraunces(fontSize: 16, color: VoyoColors.ink)),
+            const Spacer(),
+            GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => RecommendationsScreen(
+                    title: title,
+                    pois: pois,
+                    onSwitchToCleo: widget.onSwitchToCleo,
+                  ),
+                ),
+              ),
+              child: Text('See more',
+                  style: GoogleFonts.instrumentSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: VoyoColors.stone)),
+            ),
+          ]),
+        ),
+        SizedBox(
+          height: 224,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: pois.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (_, i) => PoiCard(
+              poi: pois[i],
+              onTap: () => _showPoiSheet(pois[i]),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -899,31 +956,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
         ),
       ),
     );
-  }
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
-  String _poiSubtitle(Poi poi) {
-    final parts = <String>[];
-    if (poi.category != null) {
-      parts.add(_categoryLabel(poi.category!));
-    }
-    if (poi.city != null) parts.add(poi.city!);
-    return parts.join(' · ');
-  }
-
-  String _categoryLabel(String cat) {
-    return switch (cat) {
-      'historical' => 'Historical Site',
-      'cultural' => 'Cultural',
-      'natural' => 'Nature',
-      'entertainment' => 'Entertainment',
-      'religious' => 'Religious Site',
-      'shopping' => 'Shopping',
-      'dining' => 'Dining',
-      'accommodation' => 'Accommodation',
-      _ => cat[0].toUpperCase() + cat.substring(1),
-    };
   }
 
 }

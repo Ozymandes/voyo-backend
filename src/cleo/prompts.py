@@ -1,6 +1,13 @@
 """
 CLEO System Prompts and Templates
 Cairo Local Expert & Operator - Personality and Instructions
+
+The system prompt is split into three parts so that the ~1,500-token
+Itinerary Generation module is only injected for itinerary queries,
+cutting non-itinerary token cost from ~3,300 → ~1,800 tokens.
+
+Use ``build_system_prompt(include_itinerary=...)`` in _build_messages.
+``CLEO_SYSTEM_PROMPT`` (the full prompt) is kept for backward compat.
 """
 
 RESPONSE_STYLE_INSTRUCTIONS = {
@@ -22,7 +29,12 @@ RESPONSE_STYLE_INSTRUCTIONS = {
     ),
 }
 
-CLEO_SYSTEM_PROMPT = """
+# ---------------------------------------------------------------------------
+# Part 1 — Base personality, tools, and profile learning (~1,800 tokens)
+# Always injected, regardless of query type.
+# ---------------------------------------------------------------------------
+
+_CLEO_HEADER = """
 You are CLEO (Cairo Local Expert & Operator), an AI travel guide specializing in Egyptian tourism.
 
 ## Your Identity
@@ -168,7 +180,15 @@ Include the acknowledgment string naturally woven into your response — not as 
 
 GOOD: "Ya salaam, the Karnak Temple complex is breathtaking! I've noted your love for historical sites — your future recommendations will lean that way. Now, let me tell you about..."
 BAD: "UPDATE CONFIRMED: interest_scores.historical_sites set to 0.9. Now, about Karnak..."
+"""
 
+# ---------------------------------------------------------------------------
+# Part 2 — Itinerary Generation module (~1,500 tokens)
+# Injected ONLY when the query is classified as "detailed" (itinerary/planning).
+# Gated in _build_messages via build_system_prompt(include_itinerary=...).
+# ---------------------------------------------------------------------------
+
+CLEO_ITINERARY_MODULE = """
 ## Itinerary Generation
 
 ### Context rule — CRITICAL
@@ -307,7 +327,14 @@ Then, on the very last line of every itinerary response, output exactly this tok
 This signals the app to show a navigation button. Do not include it in any other type of response.
 
 Only mention which profile preferences shaped the plan if you made a **non-obvious choice** the user might be surprised by (e.g., skipping the Pyramids because their history score was low, or building a slow day because their pace is set to relaxed). Don't narrate routine profile usage.
+"""
 
+# ---------------------------------------------------------------------------
+# Part 3 — Response length + closing goal (~200 tokens)
+# Always injected after whichever middle section is active.
+# ---------------------------------------------------------------------------
+
+_CLEO_FOOTER = """
 ## Response Length
 
 Every message has an injected `RESPONSE LENGTH` instruction. Follow it exactly — it is determined by the complexity of the user's request:
@@ -326,6 +353,26 @@ Help every traveler have the most amazing, authentic Egyptian experience possibl
 
 **Remember:** You're not just providing information - you're creating memorable experiences through your knowledge, enthusiasm, and genuine love for Egypt.
 """
+
+# ---------------------------------------------------------------------------
+# Assembled prompts
+# ---------------------------------------------------------------------------
+
+# Non-itinerary queries: ~1,800 tokens (saves ~1,500 vs full prompt)
+CLEO_BASE_PROMPT = _CLEO_HEADER + _CLEO_FOOTER
+
+# Full prompt — same content as before, backward compat for any direct imports
+CLEO_SYSTEM_PROMPT = _CLEO_HEADER + CLEO_ITINERARY_MODULE + _CLEO_FOOTER
+
+
+def build_system_prompt(include_itinerary: bool = True) -> str:
+    """Return the system prompt, conditionally including the itinerary module.
+
+    Pass ``include_itinerary=False`` for simple queries (POI lookup, weather,
+    general questions) to cut the prompt from ~3,300 → ~1,800 tokens.
+    Pass ``include_itinerary=True`` (default) for trip-planning queries.
+    """
+    return CLEO_SYSTEM_PROMPT if include_itinerary else CLEO_BASE_PROMPT
 
 
 def format_cleo_response(response: str) -> str:

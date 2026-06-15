@@ -15,7 +15,7 @@ class SupabaseService {
   }) async {
     final response = await _client
         .from('pois')
-        .select(_poiColumns)
+        .select('id, name, latitude, longitude, category, average_rating, description')
         .gte('latitude', minLat)
         .lte('latitude', maxLat)
         .gte('longitude', minLng)
@@ -65,14 +65,14 @@ class SupabaseService {
   // Optional columns (opening_hours, phone_number, etc.) are fetched
   // separately when viewing POI details.
   static const _poiColumns =
-      'id, name, latitude, longitude, category, average_rating, '
-      'total_reviews, description, ticket_price, currency, '
+      'id, name, latitude, longitude, category, city, average_rating, '
+      'total_reviews, description, narrative, ticket_price, currency, '
       'is_active, is_verified, popularity_score, '
       'historical_significance, average_visit_duration, '
-      'image_urls, tags, address, opening_hours, website_url';
+      'image_urls, address, opening_hours, website_url';
 
   /// Featured POIs ordered by rating. Throws on error so caller can handle.
-  Future<List<Poi>> getFeaturedPois({int limit = 500}) async {
+  Future<List<Poi>> getFeaturedPois({int limit = 30}) async {
     final response = await _client
         .from('pois')
         .select(_poiColumns)
@@ -104,7 +104,7 @@ class SupabaseService {
     try {
       final response = await _client
           .from('itinerary_items')
-          .select('*, pois(name, category)')
+          .select('*, pois(name, category, city)')
           .eq('itinerary_id', itineraryId)
           .order('day_number')
           .order('sequence_order');
@@ -170,7 +170,7 @@ class SupabaseService {
     }
 
     return trips.map((t) {
-      final m = t as Map<String, dynamic>;
+      final m = t;
       return {...m, 'stop_count': counts[m['id'] as int] ?? 0};
     }).toList();
   }
@@ -198,7 +198,7 @@ class SupabaseService {
     }
 
     return trips.map((t) {
-      final m = t as Map<String, dynamic>;
+      final m = t;
       return {...m, 'stop_count': counts[m['id'] as int] ?? 0};
     }).toList();
   }
@@ -262,7 +262,7 @@ class SupabaseService {
           })
           .select()
           .single();
-      return Itinerary.fromJson(response as Map<String, dynamic>);
+      return Itinerary.fromJson(response);
     } catch (e) {
       debugPrint('Error creating itinerary: $e');
       rethrow;

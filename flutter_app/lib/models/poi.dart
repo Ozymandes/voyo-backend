@@ -7,6 +7,7 @@ class Poi {
   final double? averageRating;
   final int? totalReviews;
   final String? description;
+  final String? narrative;
   final double? ticketPrice;
   final String? currency;
   final Map<String, dynamic>? openingHours;
@@ -30,6 +31,7 @@ class Poi {
     this.averageRating,
     this.totalReviews,
     this.description,
+    this.narrative,
     this.ticketPrice,
     this.currency,
     this.openingHours,
@@ -61,6 +63,7 @@ class Poi {
           : null,
       totalReviews: json['total_reviews'] as int?,
       description: json['description'] as String?,
+      narrative: json['narrative'] as String?,
       ticketPrice: json['ticket_price'] != null
           ? (json['ticket_price'] as num).toDouble()
           : null,

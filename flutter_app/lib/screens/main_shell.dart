@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme.dart';
-import '../widgets/cleo_owl.dart';
 import 'explore_screen.dart';
 import 'chat_screen.dart';
 import 'journey_screen.dart';
@@ -32,7 +31,7 @@ class _MainShellState extends State<MainShell> {
 
   // Screens are fixed — defined once so state is preserved across tab switches.
   late final _screens = [
-    ExploreScreen(),
+    ExploreScreen(onSwitchToCleo: () => _onNavTap(3)),
     const PlannerScreen(),
     ChatScreen(onSwitchToPlanner: () => _onNavTap(1)),
     const JourneyScreen(),

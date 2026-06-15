@@ -1,0 +1,34 @@
+{
+  "cairo": {
+    "tagline": "The City of a Thousand Minarets",
+    "blurb": "Egypt's sprawling capital is one of humanity's oldest living cities — a teeming metropolis where Islamic minarets pierce the skyline above Coptic churches and pharaonic ruins. Home to the world's largest collection of ancient artifacts at the Egyptian Museum, Cairo pulses with 20 million inhabitants, world-class cuisine, and a cultural energy that never sleeps. The medieval labyrinth of Khan el-Khalili bazaar dates to 1382, while the Citadel of Saladin has watched over the city for eight centuries. Cairo is where ancient Egypt meets the modern Arab world in one magnificent, chaotic symphony."
+  },
+  "giza": {
+    "tagline": "Where the Pyramids Touch the Sky",
+    "blurb": "Just southwest of Cairo lies one of humanity's greatest achievements — the only surviving monument of the Seven Wonders of the Ancient World. The Great Pyramid of Khufu, built around 2560 BCE, stands as humanity's oldest large-scale stone construction, flanked by the Pyramids of Khafre and Menkaure. The enigmatic Great Sphinx gazes eternally east, and the Solar Boat Museum houses a 4,600-year-old cedar vessel buried to carry a pharaoh into the afterlife. At dawn, when the desert is quiet and the pyramids glow gold, the sheer scale of ancient ambition becomes almost incomprehensible."
+  },
+  "alexandria": {
+    "tagline": "The Mediterranean Pearl of the Ancient World",
+    "blurb": "Founded by Alexander the Great in 331 BCE, Alexandria was once the intellectual capital of the ancient world — home to the legendary Library of Alexandria, the great Pharos lighthouse, and the mathematician Euclid. Today Egypt's second city retains its cosmopolitan Mediterranean character: art deco promenades along the Corniche, the extraordinary Bibliotheca Alexandrina — a stunning modern homage to the ancient library — and the catacombs of Kom el-Shoqafa, a fascinating Greco-Roman underground necropolis. The sea is always present here, the air salt-fresh, and the pace of life markedly gentler than Cairo."
+  },
+  "luxor": {
+    "tagline": "The World's Greatest Open-Air Museum",
+    "blurb": "No city on Earth has a greater concentration of ancient monuments than Luxor — ancient Thebes, Egypt's capital for much of the New Kingdom (1550–1070 BCE). The East Bank holds the magnificent Karnak Temple complex, the largest ancient religious site in the world, built over 2,000 years by successive pharaohs, and Luxor Temple, linked by a sphinx-lined processional avenue. Across the Nile, the West Bank conceals the Valley of the Kings, where 63 royal tombs are carved into limestone hills, including Tutankhamun's treasure-filled chamber. Luxor is simply unmissable."
+  },
+  "aswan": {
+    "tagline": "Nubian Serenity on the Nile",
+    "blurb": "Egypt's southernmost major city is its most serene — a languid Nile-side town where Nubian culture takes center stage and the desert meets the river in vivid amber and blue. Aswan's granite quarries supplied the obelisks and colossal statues found across Egypt; the unfinished obelisk still lies here, abandoned 3,500 years ago with a crack in its side. The island temple of Philae, dedicated to the goddess Isis, was relocated stone by stone to save it from Lake Nasser's rising waters. A felucca ride among the river islands at sunset is one of Egypt's most peaceful experiences."
+  },
+  "sinai": {
+    "tagline": "Where Biblical History Meets World-Class Diving",
+    "blurb": "The Sinai Peninsula is Egypt's great geographic crossroads — where Africa meets Asia, and where Biblical history meets extraordinary natural beauty. Mount Sinai, tradition says, is where Moses received the Ten Commandments; St. Catherine's Monastery at its foot, founded in 527 CE, is one of the world's oldest continuously operating Christian monasteries. But Sinai is also a playground: the Red Sea at Sharm el-Sheikh and Dahab offers some of the planet's finest coral reef diving, with the Blue Hole at Dahab drawing divers from across the globe to its vertiginous underwater arch."
+  },
+  "red_sea": {
+    "tagline": "Crystal Waters and Coral Reefs",
+    "blurb": "Hurghada has transformed from a small fishing village into Egypt's premier beach resort, with crystal-clear Red Sea waters offering world-class scuba diving and snorkeling among extraordinary coral ecosystems. The warm, sheltered waters support vibrant marine life: reef sharks, sea turtles, dugongs, and hundreds of reef fish species thrive in reefs largely untouched by the sediment and temperature swings that have damaged reefs elsewhere. Beyond the resorts of El Gouna and Ain Sokhna, the Eastern Desert hides dramatic wadis and ancient ruins. Consistent winds have also made the region one of the world's top destinations for kitesurfing."
+  },
+  "marsa_alam": {
+    "tagline": "Egypt's Undiscovered Coastline",
+    "blurb": "South of Hurghada, the Red Sea coast grows wilder and more pristine as Marsa Alam reveals one of Africa's most extraordinary stretches of undeveloped coastline. The reefs here are considered even more spectacular than those further north — deeper, less trafficked, and home to rare megafauna including the endangered dugong and the world's largest documented gathering of spinner dolphins at Sataya Reef. Inland, the Eastern Desert hides ancient pharaonic gold mines, Roman quarries that supplied the imperial palace at Rome, and Neolithic rock art. This is Egypt for the explorer, not the package tourist."
+  }
+}

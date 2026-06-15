@@ -20,6 +20,7 @@ from src.cleo.conversation_memory import ConversationMemory
 from src.cleo.prompts import (
     CLEO_SYSTEM_PROMPT,
     RESPONSE_STYLE_INSTRUCTIONS,
+    build_system_prompt,
     format_cleo_response,
 )
 from src.cleo.tools import SupabaseTool, WeatherTool, WebSearchTool, WikimediaImageTool
@@ -107,7 +108,7 @@ class CleoAgent:
         # Fetch conversation context (Supabase-backed, survives restarts)
         conversation_context = ""
         if user_id:
-            conversation_context = self.memory.get_context(user_id, last_n=10)
+            conversation_context = self.memory.get_context(user_id, last_n=4)
             if debug and conversation_context:
                 print("CONVERSATION CONTEXT:\n" + conversation_context + "\n")
 
@@ -537,7 +538,7 @@ class CleoAgent:
                     query=tool_args.get("query", ""),
                     region=tool_args.get("region"),
                     category=tool_args.get("category"),
-                    limit=tool_args.get("limit", 10),
+                    limit=min(tool_args.get("limit", 5), 5),
                 )
 
             elif tool_name == "get_poi_details":
@@ -696,8 +697,9 @@ class CleoAgent:
         extra_system_context: str = "",
     ) -> List[Dict[str, Any]]:
         """Build the full message list for the LLM."""
+        system_prompt = build_system_prompt(include_itinerary=(response_style == "detailed"))
         messages: List[Dict[str, Any]] = [
-            {"role": "system", "content": CLEO_SYSTEM_PROMPT}
+            {"role": "system", "content": system_prompt}
         ]
 
         if profile_context:

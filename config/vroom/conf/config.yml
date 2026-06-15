@@ -1,8 +1,21 @@
-{
-  "routers": [
-    {
-      "profile": "auto",
-      "osrm_url": "http://valhalla:8002"
-    }
-  ]
-}
+# VROOM configuration for voyo-vroom container (vroomvrp/vroom-docker:v1.13.0)
+#
+# VROOM uses the OSRM HTTP API protocol for routing — NOT Valhalla.
+# The osrm service below provides that endpoint at http://osrm:5000.
+
+access:
+  host: "0.0.0.0"
+  port: 8081
+  timeout: 60
+
+# cliArgs.baseurl is required by the vroom-docker server.js — missing this
+# field causes the container to crash with "Cannot read property 'baseurl'".
+cliArgs:
+  baseurl: "http://osrm:5000/"
+  router: "osrm"
+
+routers:
+  - name: osrm
+    baseurl: "http://osrm:5000/"
+    profiles:
+      - name: driving
