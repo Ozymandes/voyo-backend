@@ -1,167 +1,156 @@
 # VOYO Handoff — Partner Task Brief
 
-**From:** Yaseen
-**Date:** 2026-06-14
-**Repo:** `github.com/Ozymandes/voyo-backend` (branch `main`, latest commit `7cd9a3b`)
+**From:** Youssef
+**Date:** 2026-06-15
+**Repo:** `github.com/Ozymandes/voyo-backend` (branch `main`, latest commit `29f571a`)
 **Pull before starting:** `git pull origin main`
 
 ---
-KEY NOTE: I own the isochrone in widgets/map_isochrone_overlay.dart + src/routing/**; you own map_screen.dart for region outlines — our edits won't     
- overlap.
 
-## 1. What I finished since yesterday (2026-06-13 → 06-14)
+## What's done since the last handoff (2026-06-14 → 06-15)
 
-These are committed and pushed. The app and backend build clean.
+All items below are committed and pushed. The app and backend build clean.
 
-### Backend — CLEO agent (the big one)
-- **Fixed the Llama-3 tool-call crash permanently.** `llama-3.3-70b-versatile` intermittently emits tool calls as raw XML (`<function=NAME>{ARGS}</function>`) which Groq rejects with HTTP 400 — this was breaking ~60–100% of any query that needs tools (search_pois, get_poi_details, curate_itinerary). Built a **recovery parser** in `src/cleo/config.py` that catches the 400, extracts Groq's `failed_generation` field, and rebuilds proper structured `tool_calls`. **No model downgrade — 70B stays.** Verified live end-to-end.
-- See `src/cleo/config.py`: `_recover_tool_call_response`, `_parse_native_tool_calls`.
+### Task B — Nature category fix ✅
+- Added `_categoryEnum` map in `explore_screen.dart` translating display labels → DB enum values (`'Nature' → 'natural'`, etc.)
+- Category filter now correctly matches POIs for every tab including Nature, Dining, Shopping
+- `getFeaturedPois` limit raised to 500 so client-side filtering has the full POI set to work with
 
-### Flutter — UI (sprint items 4, 5, 9 ✅)
-- **New POI card system** (`flutter_app/lib/widgets/`): `poi_card.dart`, `poi_detail_sheet.dart`, `poi_image.dart`. Image-forward cards, immersive detail sheets, single source of truth for category visuals.
-- **POI images now load from the DB** (`Poi.imageUrls`) instead of per-POI Wikipedia lookups.
-- **"Ask CLEO about this place"** deep-link: tap any POI card/marker → opens CLEO with the place pre-loaded (`intent: poi_explain`).
-- Removed ~580 lines of duplicated/dead code in `explore_screen.dart`.
-- `flutter analyze` clean on all changed files.
+### Task D — "Your Destinations" panels ✅
+- Explore screen now shows three horizontal scroll panels below "Discover Egypt": **Top picks for you**, **Because you love [category]**, **Hidden gems for you**
+- Panels use the recommendations API when available; fall back to `_pois` (already loaded) when the backend isn't reachable — panels always visible
+- Each panel has a **"See more"** button that pushes `RecommendationsScreen` — a full-page POI grid
+- `AddToItineraryFlow` extracted to `flutter_app/lib/widgets/add_to_itinerary_sheet.dart` (shared widget used by both explore and recommendations screens)
+- `RecommendationsScreen` fully wired: tapping a card opens `PoiDetailSheet` with working "Add to trip" and "Ask CLEO" buttons
 
-### Flutter — Routing (sprint items 2, 7 ✅)
-- **Routing now uses OUR Valhalla** (`routing_service.dart` → `GET /api/v1/routing/route`) instead of the public OSRM server. Egypt-accurate road polylines.
-- **NEW "Explore from here" (isochrone):** long-press the map → draws reachable-area rings (30/60 min) + counts how many of our 255 POIs are reachable. Uses the same Valhalla engine CLEO uses for optimization.
-- Both verified live: route Cairo→Pyramids = 19.7 km/21 min; isochrone returns real polygons.
+### Task E — CLEO token optimisation ✅
+- System prompt split into base (~1,800 tokens) + itinerary module (~1,500 tokens) in `src/cleo/prompts.py`
+- Non-itinerary queries now inject only the base prompt — saves 1,500 tokens per turn
+- `search_pois` hard-capped at 5 results (was 10)
+- Conversation history window reduced from 10 → 4 exchanges
+- `LLM_MAX_TOKENS=2500` added to `.env` (bounds Groq output size — **each teammate needs this in their own `.env`**)
+- These combined fixes keep CLEO under the 12,000 TPM Groq free-tier limit
 
-### Database (rebuilt earlier this week)
-- 255 active POIs, 0 duplicates, 82% image coverage. The "200+ POIs" claim is now true. See `rebuild_database.py`, `validate_database.py`, `data/master_attractions.json`.
+### Task F — VROOM / OSRM fix ✅
+- `config/vroom/conf/config.yml` rewritten as valid YAML with the required `cliArgs.baseurl` field pointing to `http://osrm:5000/`
+- OSRM service added to `docker-compose.yml` — downloads Egypt OSM data (~400 MB) on first start, pre-processes routes, and serves the OSRM HTTP API that VROOM needs
+- **First `docker-compose up -d` will take 5–10 minutes** while OSRM downloads and extracts Egypt road data. Subsequent starts are instant (data cached in `voyo_osrm_data` Docker volume)
+- After this is running, `POST /api/v1/itinerary/optimize` will work end-to-end
 
-### Sprint status
-**Closed:** items 2, 4, 5, 7, 9. **Remaining:** item 8 (full CLEO→optimize pipeline) + item 12 (thesis).
-
----
-
-## 2. What you  need to do
-
-Listed by priority. Each has the diagnosis done so you can start immediately. I've flagged what's Flutter vs backend.
-
----
-
-### TASK A — Map explorer: clickable region outlines + LLM info card *(HIGH IMPACT, demo centerpiece)*
-
-**What:** On the Map screen, draw colored-border geographic outlines for each Egyptian region (Cairo, Giza, Alexandria, Luxor, Aswan, Sinai, Red Sea, Hurghada/Marsa Alam). Tap a region → camera animates/zooms into it → an animated info card slides in on the **right side** (like the `github.com/yorkeccak/history` project) showing:
-- Region history & cultural significance (rich, LLM-written prose)
-- POI count for that region
-- Top highlights (3–5 must-see POIs)
-
-**Files:** `flutter_app/lib/screens/map_screen.dart` (frontend) + a small backend addition.
-
-**Key decisions I made for you (please follow these — they save the token budget):**
-1. **Source the region GeoJSON polygons.** You need admin-boundary polygons. Best free source: **GADM** (`gadm.org`) or Egypt's Natural Earth admin-1 shapefiles → convert to GeoJSON. Store as `flutter_app/assets/geojson/egypt_regions.geojson`. ~8 polygons. *(Don't try to derive them from POI coordinates — the outlines will look wrong.)*
-2. **Render with `PolygonLayer`** (already in use in `map_screen.dart` for isochrones — copy that pattern). Each region gets a distinct `VoyoColors` tint at low alpha with a solid colored border.
-3. **Pre-generate the region blurbs ONCE — do NOT call the LLM on every tap.** The free Groq tier has a 100k token/DAY cap and a single live LLM call per tap would exhaust it in minutes. Instead: write a one-time script (see Task E) that uses CLEO/LLM to generate a rich ~200-word blurb per region (history, cultural significance, what makes it special), and store them — either in a `regions` Supabase table or as a JSON asset. The info card then reads from storage → **instant, animated, free.**
-4. **Top highlights:** query `pois` where `region = X`, order by `popularity_score` desc, limit 5. Pure DB, no LLM.
-
-**Why pre-generate:** the info card should feel instant and always work — even offline, even with the API quota exhausted. Live LLM per-tap is a trap on the free tier.
+### Other fixes
+- **POI card overflow** — `Row + Spacer` on the chip overlay replaced with `mainAxisAlignment: spaceBetween + Flexible`; "Entertainment" label no longer overflows on cards that also show a Gem badge
+- **`enrich_narratives.py`** — one-time batch script to generate 120-word LLM narratives for all 255 POIs and write them to the `narrative` column. Run it once after a Groq quota reset (see below)
+- **Task A assets committed** — `flutter_app/assets/geojson/egypt_regions.geojson` (8 region polygons) and `flutter_app/assets/data/egypt_region_blurbs.json` (pre-generated rich blurbs for each region) are ready in the repo. The **map UI is not built yet** — that's your Task A
 
 ---
 
-### TASK B — Fix the "Nature" category showing no sites *(QUICK WIN — do this first, 30 min)*
+## What you need to do
 
-**Diagnosis (already done):** Two problems, both in `flutter_app/lib/screens/explore_screen.dart`:
-1. **Label/enum mismatch.** The category list (line 17) uses display labels — `'Nature'`, `'Historical'`, `'Religious'` — but the DB stores enum values: `natural`, `historical`, `religious`. If the filter compares the label to `poi.category` directly, **nothing matches** for Nature/Dining/Shopping. Fix: add a label→enum map and compare on the enum.
-2. **`_fallbackPois` is hardcoded** (lines ~29+): a handful of POIs, **all `historical`** (`Egyptian Museum`, `Karnak Temple`, etc.) with short hand-written strings. When the live DB load fails or returns empty, the app shows these → Nature/Dining/Shopping appear empty AND cards look "hardcoded without engaging text" (because they literally are).
-3. **"Hidden Gems" is a flag, not a category** (`is_hidden_gem` boolean). Filter on that flag, not on `category`.
+### ⚠️ First: two manual steps before anything else
 
-**Fix:** ensure the home screen loads **live DB data** as primary (it should — `getPoisInView` / `getFeaturedPois` exist), and keep `_fallbackPois` as the true last-resort only. Map the category labels → enums. Verify with a logged-in + DB-up run.
+**Step 1 — Run the conversation memory migration in Supabase**
 
----
+Open Supabase dashboard → SQL Editor → paste and run `config/sql/003_conversation_messages.sql` (it's in the repo). This creates the `conversation_messages` table. Without it CLEO logs a `PGRST205` error on every message and has no memory between sessions.
 
-### TASK C — Enrich POI card text (LLM-written, engaging) *(pairs with Task E)*
+**Step 2 — Add `LLM_MAX_TOKENS=2500` to your `.env`**
 
-**What:** Right now POI descriptions are the raw, terse DB strings. Cards should feel like the `history` project — rich, narrative, culturally engaging. You mentioned this is "all hardcoded without comprehensive engaging text."
-
-**Root cause:** same as Task B — the `_fallbackPois` are hardcoded short strings, and even the live DB `historical_significance` / `description` fields are factual one-liners, not narrative.
-
-**Recommended fix (do NOT do live LLM per card — token budget):**
-- Write a **one-time backend batch enrichment job** (this is Task E) that calls the LLM for each of the 255 POIs and writes a rich ~120-word narrative into a **new column** `narrative` (or `enriched_description`). Keep the factual `description` for search/sorting.
-- Flutter cards read `narrative` if present, else fall back to `description`.
-- Add the column via `config/sql/002_add_narrative.sql` (follow the pattern of `config/sql/001_add_missing_columns.sql`).
-- **Cost check:** 255 POIs × ~150 tokens output + ~300 tokens input each ≈ 115k tokens total — that's ~1 day of quota for the whole DB, done once, forever. Run it overnight or after a quota reset.
+The backend reads this on startup. Without it Groq will get oversized requests and return the "I'm having trouble connecting" error.
 
 ---
 
-### TASK D — "Your Destinations" panels replace Hidden Gems *(MEDIUM)*
+### TASK A — Map explorer: clickable region outlines + info card *(the demo centrepiece — HIGH PRIORITY)*
 
-**What:** On the home screen (`explore_screen.dart`), replace the "Hidden Gems" list below the "Discover Egypt" panel with **horizontal scrolling panels titled "Your Destinations"**, driven by the **recommendation agent** + the user's profile. Each panel = a row of POI cards. A **"See more"** button on each panel navigates to a **new full page** listing all recommended POIs as cards with brief descriptions.
+**Assets are ready — you just need to build the UI.**
 
-**The recommendation agent already exists** — `GET /api/v1/recommendations` (Phase 1C, 0.66ms scoring, 99 passing tests). It scores against the user's `interest_scores` profile. You're wiring it into the UI, not building the engine.
+- `flutter_app/assets/geojson/egypt_regions.geojson` — 8 GeoJSON polygon features (Cairo, Giza, Alexandria, Luxor, Aswan, Sinai, Red Sea, Marsa Alam), each with a `region` property matching the keys in the blurbs file
+- `flutter_app/assets/data/egypt_region_blurbs.json` — pre-written tagline + ~150-word cultural blurb per region. Read this asset at startup — **do NOT call the LLM on every tap** (Groq free tier = 100k tokens/day)
 
-**Files:**
-- `flutter_app/lib/screens/explore_screen.dart` — replace the Hidden Gems section.
-- `flutter_app/lib/services/supabase_service.dart` or a new `recommendation_service.dart` — call `GET /api/v1/recommendations?user_id=...`.
-- **New screen** `flutter_app/lib/screens/recommendations_screen.dart` — full-page POI grid, pushed by "See more". Register a route in `main.dart`/`main_shell.dart`.
+**What to build in `flutter_app/lib/screens/map_screen.dart`:**
 
-**Suggested panels:** "Top picks for you" (overall recs), "Because you love history" (filtered by top interest), "Hidden gems matched to you" (recs ∩ is_hidden_gem). Each pulls from the same endpoint with different params.
+1. Load the GeoJSON at `initState`, parse into `PolygonLayer` polygons — use the same pattern as the existing `IsochroneController` in `widgets/map_isochrone_overlay.dart` (already a working `PolygonLayer` example)
+2. Give each region a `VoyoColors` tint at low alpha (0.12) with a solid 2px border — pick distinct colours per region
+3. Tap a region polygon → animate the map camera to zoom into it → slide in an info card from the right or bottom (use `AnimatedPositioned` or a `DraggableScrollableSheet`) showing:
+   - Region name + tagline (from blurbs JSON)
+   - Rich blurb text (from blurbs JSON)
+   - POI count for that region — query `pois` where `city` matches region, `is_active = true`
+   - Top 3–5 POI names ordered by `popularity_score` desc (same query, limit 5)
+4. Dismiss card on map tap or back button
 
----
-
-### TASK E — CLEO backend optimizations *(BACKEND — I deferred this for you)*
-
-Two backend items I intentionally left for you:
-
-1. **Conditional system-prompt injection.** CLEO's system prompt is ~3,300 tokens and sent on every turn (~3× per ReAct loop). The itinerary playbook alone is ~1,500 tokens but only relevant for itinerary queries. **Refactor:** gate the big itinerary/traveler-archetype sections on `ScopeDetector` — inject them only when scope = itinerary. Non-itinerary queries drop to ~1,800 tokens. This **frees budget to add richer context** (deeper history, cultural notes) as more conditional modules. Net: more context where it matters, less where it doesn't. Files: `src/cleo/prompts.py`, `src/cleo/cleo_agent.py:_build_messages`.
-2. **Batch POI/region narrative enrichment** (powers Tasks A + C). Write `enrich_narratives.py` (model `enrich_narratives.py` after `rebuild_database.py`) — calls LLM once per POI + region, writes `narrative` column. Run after a quota reset.
-
-Also worth checking: does Groq now support **prompt caching**? If yes, the static system-prompt cost drops to ~0 after the first call — that's the silver bullet.
+**Key constraint:** The isochrone overlay (`map_isochrone_overlay.dart`) and the day-filter strip at the bottom are already in `map_screen.dart`. Your region outline layer goes between the tile layer and the marker layer. The file has comments marking where to insert — don't touch the isochrone or routing logic.
 
 ---
 
-### TASK F — VROOM optimize (unblocks full CLEO→planner pipeline — item 8) *(BACKEND/INFRA)*
+### Run `enrich_narratives.py` *(one-time, any time — powers richer POI cards)*
 
-**Problem:** The `voyo-vroom` container is **crash-looping** (exit 1). It only affects the **optimize step** (CLEO curates POIs → VROOM orders them optimally). Routing + isochrone are unaffected (they use Valhalla directly).
+```bash
+# From repo root, after a Groq quota reset (100k tokens/day)
+python enrich_narratives.py --dry-run   # preview first
+python enrich_narratives.py             # write to Supabase (~2 min, ~115k tokens total)
+```
 
-**Root cause (already diagnosed):** `config/vroom/conf/config.yml` is malformed:
-- It's JSON content in a `.yml` file.
-- Missing the `cliArgs.baseurl` field that the `vroomvrp/vroom-docker:v1.13.0` image requires (crash: `Cannot read property 'baseurl' of undefined`).
-- **It points `osrm_url` at `http://valhalla:8002`, but VROOM speaks the OSRM protocol — Valhalla is a different API.** VROOM needs a real OSRM instance.
+This populates the `narrative` column on all 255 POIs with 120-word culturally rich travel copy. Flutter `PoiDetailSheet` and `PoiCard` already prefer `poi.narrative` over `poi.description` when it's non-null — you don't need any Flutter changes after running this.
 
-**Fix:** Rewrite `config/vroom/conf/config.yml` as valid YAML with `cliArgs.baseurl`, AND add an OSRM service (with Egypt `.osm.pbf`) to `docker-compose.yml` for VROOM to query. This is the one item with real infra setup (downloading Egypt OSM data for OSRM). Until fixed, `POST /api/v1/itinerary/optimize` returns 503.
+Run it in two sittings if you hit the daily quota (script skips already-enriched POIs automatically).
 
 ---
 
-## 3. Quick reference — what's where
+### Start the full Docker stack *(first run takes 5–10 min)*
 
-| Thing | Location |
-|---|---|
-| CLEO agent + tools | `src/cleo/**` |
-| CLEO recovery parser | `src/cleo/config.py` (`_recover_tool_call_response`) |
-| Recommendation agent | `src/api/routes/recommendations.py`, `src/recommendations/**` |
-| Routing endpoints | `src/api/routes/routing.py`, `src/routing/valhalla_client.py` |
-| POI DB (255 POIs) | Supabase `pois` table; rebuild scripts at repo root |
-| Flutter home screen | `flutter_app/lib/screens/explore_screen.dart` |
-| Flutter map | `flutter_app/lib/screens/map_screen.dart` |
-| POI widgets | `flutter_app/lib/widgets/poi_card.dart`, `poi_detail_sheet.dart`, `poi_image.dart` |
-| Theme/colors | `flutter_app/lib/theme.dart` (`VoyoColors`) |
-| Design docs | `design-system/` (brand, components, tokens, animation) |
+```bash
+docker-compose up -d
+# Watch OSRM download + process Egypt road data:
+docker-compose logs -f osrm
+# Healthy when you see: "running and waiting for requests"
+```
 
-## 4. How to run things
+After that `POST /api/v1/itinerary/optimize` works end-to-end and CLEO can return optimally ordered itineraries.
+
+---
+
+## How to run things
 
 ```bash
 # Backend
 cd voyo-backend
-venv/Scripts/python.exe -m uvicorn src.api.main:app --reload --port 8000
+source venv/Scripts/activate       # Windows: venv\Scripts\activate
+uvicorn src.api.main:app --reload --port 8000
 
-# Docker (routing)
-docker-compose up -d        # Valhalla :8002 (healthy); VROOM :8081 (see Task F)
+# Docker (Valhalla routing + OSRM + VROOM)
+docker-compose up -d
 
 # Flutter
 cd flutter_app && flutter run
-# .env needs CLEO_API_URL=http://10.0.2.2:8000 (Android emulator) or localhost:8000 (web/desktop)
+# .env: CLEO_API_URL=http://10.0.2.2:8000 (Android emulator)
+#        CLEO_API_URL=http://localhost:8000  (web / desktop)
 ```
-
-## 5. Honesty notes for the thesis
-
-- Free-tier Groq = **100k tokens/day**. Live-LLM-per-interaction features will hit this fast. That's why Tasks A & C use **pre-generated, cached** LLM content. Mention this as a deliberate architectural decision in the thesis, not a limitation.
-- VROOM (Task F) is the only broken infra right now.
-- Redis Cloud is down (DNS) — degrades gracefully, don't chase it.
 
 ---
 
-**Start with Task B** (30 min, unblocks the home screen) → then Task A (the demo centerpiece). Ping me on anything ambiguous.
+## Quick reference — what's where
+
+| Thing | Location |
+|---|---|
+| CLEO agent + tools | `src/cleo/**` |
+| CLEO prompt (split) | `src/cleo/prompts.py` → `build_system_prompt()` |
+| Recommendation engine | `src/api/routes/recommendations.py`, `src/recommendations/**` |
+| Routing endpoints | `src/api/routes/routing.py`, `src/routing/valhalla_client.py` |
+| VROOM optimize | `POST /api/v1/itinerary/optimize` → `src/routing/vroom_client.py` |
+| Flutter explore screen | `flutter_app/lib/screens/explore_screen.dart` |
+| Flutter map screen | `flutter_app/lib/screens/map_screen.dart` ← **your task** |
+| Add-to-itinerary flow | `flutter_app/lib/widgets/add_to_itinerary_sheet.dart` |
+| Recommendations screen | `flutter_app/lib/screens/recommendations_screen.dart` |
+| POI widgets | `flutter_app/lib/widgets/poi_card.dart`, `poi_detail_sheet.dart`, `poi_image.dart` |
+| Theme / colours | `flutter_app/lib/theme.dart` (`VoyoColors`) |
+| Region GeoJSON | `flutter_app/assets/geojson/egypt_regions.geojson` |
+| Region blurbs | `flutter_app/assets/data/egypt_region_blurbs.json` |
+| SQL migrations | `config/sql/001_*.sql` → `003_*.sql` (run in order in Supabase SQL Editor) |
+| Design docs | `design-system/` (brand, components, tokens, animation) |
+
+---
+
+## Honesty notes for the thesis
+
+- **Groq free tier = 100k tokens/day.** CLEO's token cuts (prompt split, shorter history, capped search) keep a typical chat session well under this. Itinerary generation is the heaviest — 1 full itinerary ≈ 3–4k tokens. Mention the prompt-splitting architecture as a deliberate engineering decision in the thesis.
+- **POI images:** ~80% of POIs have no `image_urls` in the DB (sourced from OSM which has no photos). The gradient fallback is intentional and looks clean — the thesis can frame this as graceful degradation. A future improvement would be a Wikimedia or Google Places backfill.
+- **Redis Cloud is down (DNS)** — CLEO degrades gracefully without it (no semantic caching). Don't chase this.
+- **OSRM first-run is slow** (~5–10 min download + processing) but only happens once per machine. After that it's instant.
