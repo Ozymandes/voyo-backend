@@ -38,3 +38,6 @@ __pycache__/
 # not shared via the repo)
 THESIS_PIPELINE_PROMPT.md
 design-system/FULL_UI_GENERATION_PROMPT.md
+
+# Local pi-agent orchestration config (agents, chains) — keep on this machine only
+.pi/
