@@ -37,3 +37,4 @@ __pycache__/
 # Local-only prompt documents (intended to stay untracked — pasted into fresh pi sessions,
 # not shared via the repo)
 THESIS_PIPELINE_PROMPT.md
+design-system/FULL_UI_GENERATION_PROMPT.md
