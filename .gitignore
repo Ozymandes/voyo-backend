@@ -5,10 +5,10 @@ __pycache__/
 *.log
 
 # Pi Agent Tasks
-TASKS
 docs/devlog
 docs/phase-reports
 LAUNCH.sh
+TASKS
 
 # Flutter
 flutter_app/.env
