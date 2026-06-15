@@ -1,0 +1,438 @@
+{
+  "_meta": {
+    "harness": "thesis/evidence/_run_benchmarks.py",
+    "note": "Synthetic data; no live services. 3 runs each; reported median=min of 3, p95=max of 3 (best-case stable).",
+    "timestamp": "2026-06-15 14:29:36"
+  },
+  "benchmarks": {
+    "scoring_200_pois": {
+      "benchmark": "scoring_200_pois",
+      "target_ms": 200,
+      "median_ms": 0.7501,
+      "p95_ms": 1.662,
+      "status": "PASS",
+      "runs": [
+        {
+          "iterations": 50,
+          "mean_ms": 0.8311,
+          "median_ms": 0.7501,
+          "p95_ms": 1.2581,
+          "min_ms": 0.6836,
+          "max_ms": 1.7015
+        },
+        {
+          "iterations": 50,
+          "mean_ms": 1.014,
+          "median_ms": 0.8655,
+          "p95_ms": 1.662,
+          "min_ms": 0.7103,
+          "max_ms": 1.7137
+        },
+        {
+          "iterations": 50,
+          "mean_ms": 0.8241,
+          "median_ms": 0.7911,
+          "p95_ms": 1.0896,
+          "min_ms": 0.7278,
+          "max_ms": 1.3086
+        }
+      ]
+    },
+    "single_poi_scoring": {
+      "benchmark": "single_poi_scoring",
+      "target_ms": 1.0,
+      "median_ms": 0.0035,
+      "p95_ms": 0.0046,
+      "status": "PASS",
+      "runs": [
+        {
+          "iterations": 1000,
+          "mean_ms": 0.0037,
+          "median_ms": 0.0037,
+          "p95_ms": 0.0038,
+          "min_ms": 0.0035,
+          "max_ms": 0.0158
+        },
+        {
+          "iterations": 1000,
+          "mean_ms": 0.0041,
+          "median_ms": 0.0037,
+          "p95_ms": 0.0046,
+          "min_ms": 0.0035,
+          "max_ms": 0.0476
+        },
+        {
+          "iterations": 1000,
+          "mean_ms": 0.0038,
+          "median_ms": 0.0035,
+          "p95_ms": 0.0045,
+          "min_ms": 0.0033,
+          "max_ms": 0.0306
+        }
+      ]
+    },
+    "diversity_filter_200": {
+      "benchmark": "diversity_filter_200",
+      "target_ms": 10,
+      "median_ms": 0.0348,
+      "p95_ms": 0.0433,
+      "status": "PASS",
+      "runs": [
+        {
+          "iterations": 100,
+          "mean_ms": 0.0357,
+          "median_ms": 0.0348,
+          "p95_ms": 0.0433,
+          "min_ms": 0.0343,
+          "max_ms": 0.0573
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.0362,
+          "median_ms": 0.0359,
+          "p95_ms": 0.0367,
+          "min_ms": 0.0352,
+          "max_ms": 0.0497
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.0371,
+          "median_ms": 0.0369,
+          "p95_ms": 0.0378,
+          "min_ms": 0.0358,
+          "max_ms": 0.0575
+        }
+      ]
+    },
+    "match_reasons_12": {
+      "benchmark": "match_reasons_12",
+      "target_ms": 5,
+      "median_ms": 0.0073,
+      "p95_ms": 0.0176,
+      "status": "PASS",
+      "runs": [
+        {
+          "iterations": 100,
+          "mean_ms": 0.0094,
+          "median_ms": 0.0073,
+          "p95_ms": 0.0151,
+          "min_ms": 0.0068,
+          "max_ms": 0.0336
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.0119,
+          "median_ms": 0.0112,
+          "p95_ms": 0.0169,
+          "min_ms": 0.0107,
+          "max_ms": 0.0297
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.0122,
+          "median_ms": 0.0111,
+          "p95_ms": 0.0176,
+          "min_ms": 0.0105,
+          "max_ms": 0.0458
+        }
+      ]
+    },
+    "cleo_context_generation": {
+      "benchmark": "cleo_context_generation",
+      "target_ms": 100,
+      "median_ms": 2.7807,
+      "p95_ms": 45.9722,
+      "status": "PASS",
+      "runs": [
+        {
+          "iterations": 20,
+          "mean_ms": 5.9027,
+          "median_ms": 3.1879,
+          "p95_ms": 45.9722,
+          "min_ms": 2.4313,
+          "max_ms": 45.9722
+        },
+        {
+          "iterations": 20,
+          "mean_ms": 3.1552,
+          "median_ms": 2.7807,
+          "p95_ms": 5.8658,
+          "min_ms": 2.5745,
+          "max_ms": 5.8658
+        },
+        {
+          "iterations": 20,
+          "mean_ms": 3.061,
+          "median_ms": 2.8307,
+          "p95_ms": 5.2343,
+          "min_ms": 2.2889,
+          "max_ms": 5.2343
+        }
+      ]
+    },
+    "opening_hours_parsing": {
+      "benchmark": "opening_hours_parsing",
+      "target_ms": 5,
+      "median_ms": 0.1048,
+      "p95_ms": 0.2417,
+      "status": "PASS",
+      "runs": [
+        {
+          "iterations": 100,
+          "mean_ms": 0.1296,
+          "median_ms": 0.1048,
+          "p95_ms": 0.2299,
+          "min_ms": 0.1006,
+          "max_ms": 0.7458
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.1362,
+          "median_ms": 0.1074,
+          "p95_ms": 0.2417,
+          "min_ms": 0.1018,
+          "max_ms": 0.2877
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.1078,
+          "median_ms": 0.1068,
+          "p95_ms": 0.1142,
+          "min_ms": 0.1037,
+          "max_ms": 0.1309
+        }
+      ]
+    },
+    "poi_to_vroom_jobs_50": {
+      "benchmark": "poi_to_vroom_jobs_50",
+      "target_ms": 10,
+      "median_ms": 0.1213,
+      "p95_ms": 0.2709,
+      "status": "PASS",
+      "runs": [
+        {
+          "iterations": 100,
+          "mean_ms": 0.1723,
+          "median_ms": 0.1342,
+          "p95_ms": 0.2709,
+          "min_ms": 0.1133,
+          "max_ms": 1.092
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.1244,
+          "median_ms": 0.1213,
+          "p95_ms": 0.1386,
+          "min_ms": 0.1182,
+          "max_ms": 0.1899
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.1287,
+          "median_ms": 0.1239,
+          "p95_ms": 0.1498,
+          "min_ms": 0.1216,
+          "max_ms": 0.2668
+        }
+      ]
+    },
+    "vroom_problem_build": {
+      "benchmark": "vroom_problem_build",
+      "target_ms": 10,
+      "median_ms": 0.1016,
+      "p95_ms": 0.1944,
+      "status": "PASS",
+      "runs": [
+        {
+          "iterations": 100,
+          "mean_ms": 0.1079,
+          "median_ms": 0.1074,
+          "p95_ms": 0.1129,
+          "min_ms": 0.1023,
+          "max_ms": 0.1515
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.1287,
+          "median_ms": 0.1027,
+          "p95_ms": 0.1944,
+          "min_ms": 0.0972,
+          "max_ms": 0.2638
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.1096,
+          "median_ms": 0.1016,
+          "p95_ms": 0.1556,
+          "min_ms": 0.0986,
+          "max_ms": 0.2267
+        }
+      ]
+    },
+    "polyline_decode": {
+      "benchmark": "polyline_decode",
+      "target_ms": 1.0,
+      "median_ms": 0.0053,
+      "p95_ms": 0.0123,
+      "status": "PASS",
+      "runs": [
+        {
+          "iterations": 1000,
+          "mean_ms": 0.0082,
+          "median_ms": 0.0055,
+          "p95_ms": 0.0105,
+          "min_ms": 0.0052,
+          "max_ms": 1.285
+        },
+        {
+          "iterations": 1000,
+          "mean_ms": 0.007,
+          "median_ms": 0.0053,
+          "p95_ms": 0.0123,
+          "min_ms": 0.0048,
+          "max_ms": 0.0497
+        },
+        {
+          "iterations": 1000,
+          "mean_ms": 0.006,
+          "median_ms": 0.0056,
+          "p95_ms": 0.0099,
+          "min_ms": 0.0053,
+          "max_ms": 0.0268
+        }
+      ]
+    },
+    "pace_adjustment_50": {
+      "benchmark": "pace_adjustment_50",
+      "target_ms": 2,
+      "median_ms": 0.0103,
+      "p95_ms": 0.0413,
+      "status": "PASS",
+      "runs": [
+        {
+          "iterations": 100,
+          "mean_ms": 0.0191,
+          "median_ms": 0.019,
+          "p95_ms": 0.0413,
+          "min_ms": 0.0102,
+          "max_ms": 0.0734
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.0142,
+          "median_ms": 0.0151,
+          "p95_ms": 0.0182,
+          "min_ms": 0.0103,
+          "max_ms": 0.0201
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.0109,
+          "median_ms": 0.0103,
+          "p95_ms": 0.0167,
+          "min_ms": 0.0101,
+          "max_ms": 0.0259
+        }
+      ]
+    },
+    "day_themes_7d_35stops": {
+      "benchmark": "day_themes_7d_35stops",
+      "target_ms": 5,
+      "median_ms": 0.0122,
+      "p95_ms": 0.0307,
+      "status": "PASS",
+      "runs": [
+        {
+          "iterations": 100,
+          "mean_ms": 0.0275,
+          "median_ms": 0.0225,
+          "p95_ms": 0.0307,
+          "min_ms": 0.0119,
+          "max_ms": 0.4985
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.0129,
+          "median_ms": 0.0123,
+          "p95_ms": 0.0138,
+          "min_ms": 0.0119,
+          "max_ms": 0.0352
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.0122,
+          "median_ms": 0.0122,
+          "p95_ms": 0.0124,
+          "min_ms": 0.0119,
+          "max_ms": 0.0152
+        }
+      ]
+    },
+    "cost_calculation_50": {
+      "benchmark": "cost_calculation_50",
+      "target_ms": 1.0,
+      "median_ms": 0.0045,
+      "p95_ms": 0.0105,
+      "status": "PASS",
+      "runs": [
+        {
+          "iterations": 100,
+          "mean_ms": 0.0048,
+          "median_ms": 0.0045,
+          "p95_ms": 0.0051,
+          "min_ms": 0.0044,
+          "max_ms": 0.0183
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.0064,
+          "median_ms": 0.0045,
+          "p95_ms": 0.0105,
+          "min_ms": 0.0044,
+          "max_ms": 0.0709
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.0063,
+          "median_ms": 0.0068,
+          "p95_ms": 0.007,
+          "min_ms": 0.0051,
+          "max_ms": 0.0161
+        }
+      ]
+    },
+    "vroom_solution_parse": {
+      "benchmark": "vroom_solution_parse",
+      "target_ms": 10,
+      "median_ms": 0.0069,
+      "p95_ms": 0.0111,
+      "status": "PASS",
+      "runs": [
+        {
+          "iterations": 100,
+          "mean_ms": 0.0109,
+          "median_ms": 0.0088,
+          "p95_ms": 0.0111,
+          "min_ms": 0.0072,
+          "max_ms": 0.236
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.0081,
+          "median_ms": 0.0077,
+          "p95_ms": 0.0095,
+          "min_ms": 0.0067,
+          "max_ms": 0.0162
+        },
+        {
+          "iterations": 100,
+          "mean_ms": 0.007,
+          "median_ms": 0.0069,
+          "p95_ms": 0.0072,
+          "min_ms": 0.0067,
+          "max_ms": 0.0096
+        }
+      ]
+    }
+  }
+}

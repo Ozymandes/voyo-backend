@@ -18,24 +18,28 @@ files into the thesis project.
 - `Voyo_First_Thesis_Draft.pdf` — first draft (structure/voice reference)
 - `CSAI 490- PRD (1).pdf` — project requirements (scope reference)
 
-## Structure (agent maintains this)
+## Structure (matches `Voyo_First_Thesis_Draft.pdf` — 5 chapters; the PDF is the frozen structure)
 ```
 thesis/
   MANIFEST.md              ← this file
   CHANGELOG.md             ← running log: implemented / challenges / reasoning (append-only)
-  00-overview.md           abstract, contributions, reading guide
-  01-introduction.md
-  02-background-related-work.md
-  03-system-architecture.md
-  04-methodology.md        neuro-symbolic, curation↔optimization split, why pure-LLM fails
-  05-implementation.md     component by component, real file paths + function names
-  06-data-pipeline.md      the rebuild (STRONGEST contribution — keep honest + detailed)
-  07-evaluation.md         benchmarks, A/B tests, figures referenced
-  08-discussion.md         limitations, comparison, future work
-  09-appendices.md         schema, API surface, test inventory
-  figures/                 300 DPI PNGs (matplotlib from real data)
-  tables/                  extracted markdown/LaTeX tables
+  evidence/_GROUNDING_MAP.md  ← orchestrator's VERIFIED facts (every agent reads this)
+  evidence/                ← GROUND TRUTH from real test/benchmark runs (evidence-engineer)
+  references.bib           ← researcher-verified 15+ works
+  lit-review-evidence.md   ← researcher's per-reference verification + URLs
+  00-overview.md           abstract + reading guide          → PDF Abstract
+  01-introduction.md                                          → PDF Ch 1 Introduction
+  02-background.md         lit review 2.2.1–2.2.16 + Tables 2.1–2.3 → PDF Ch 2 Background
+  03-methodology.md        corrected to REAL implementation   → PDF Ch 3 Methodology
+  04-results-discussion.md benchmark tables + figures + limits → PDF Ch 4 Results & Discussion
+  05-conclusion.md         contributions recap, limits, future → PDF Ch 5 Conclusion
+  06-data-pipeline.md      the 255-POI rebuild (STRONGEST contribution; already drafted)
+  tables/                  markdown + LaTeX tables (benchmarks + literature comparisons)
+  figures/                 300 DPI PNGs (matplotlib/graphviz from real data) + .py generators
+  HANDOFF_TO_REFINEMENT.md ← what's done, what the human must capture/provide, [UNVERIFIED] list
 ```
+> Do not invent chapters outside the PDF's 5-chapter structure. `06-data-pipeline.md` is a
+> standalone contribution chapter that folds into the methodology/evaluation discussion.
 
 ## Honesty rules (non-negotiable)
 - "255 curated POIs" — TRUE. Never write "200+".
@@ -44,19 +48,30 @@ thesis/
 - Numbers come from `BENCHMARK_REPORT.md` or live re-runs — never invented.
 - If something isn't implemented yet, mark it `[PENDING: <item>]` rather than claiming it works.
 
-## Chapter status
-| Ch. | Title | Status |
+## Chapter status (2026-06-15 orchestration run — COMPLETE)
+| File | Maps to PDF | Status |
 |---|---|:---:|
-| 00 | Overview | 🔲 |
-| 01 | Introduction | 🔲 |
-| 02 | Background / Related Work | 🔲 |
-| 03 | System Architecture | 🔲 |
-| 04 | Methodology | 🔲 |
-| 05 | Implementation | 🔲 |
-| 06 | Data Pipeline | 🟢 |
-| 07 | Evaluation | 🔲 |
-| 08 | Discussion | 🔲 |
-| 09 | Appendices | 🔲 |
+| evidence/** | — (ground truth) | 🟢 done (real runs) |
+| references.bib | References [1]–[15] | 🟢 verified (3 corrections applied) |
+| lit-review-evidence.md | — (verification) | 🟢 done |
+| 00-overview.md | Abstract | 🟢 drafted |
+| 01-introduction.md | Ch 1 Introduction | 🟢 drafted |
+| 02-background.md | Ch 2 Background | 🟢 enhancement + Tables 2.1–2.3 populated |
+| 03-methodology.md | Ch 3 Methodology | 🟢 drafted (PDF inaccuracies corrected) |
+| 04-results-discussion.md | Ch 4 Results & Discussion | 🟢 drafted (real benchmark numbers) |
+| 05-conclusion.md | Ch 5 Conclusion | 🟢 drafted |
+| 06-data-pipeline.md | contribution chapter | 🟢 drafted (pre-existing) |
+| tables/** | Tables 2.1–2.3, 4.1–4.4 | 🟢 done (md + LaTeX) |
+| figures/** | Figs 3.1, 4.x | 🟢 6 reproducible PNGs |
+| HANDOFF_TO_REFINEMENT.md | — | 🟢 last |
+
+> **Execution note:** the async subagent runner failed systemically on this Windows/mingw install
+> (6 of 6 async runs died with "process exited/disappeared"). The orchestrator executed the
+> entire pipeline directly with read/bash/write/web_search — running the real tests, benchmarks,
+> and DB validation itself and writing every evidence/chapter/table/figure file. Model-routing
+> deviation: only `glm-5.1` is configured in this install, so all agents were created on
+> `glm-5.1`; integrity was guaranteed by the evidence-first pipeline (real runs → real JSON →
+> cited by chapters), not by model brand. See CHANGELOG + HANDOFF for details.
 
 ## Status legend
 - 🔲 not started · 🟡 draft · 🟢 reviewed-final · 🔴 blocked

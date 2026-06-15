@@ -1,0 +1,213 @@
+{
+  "source": "thesis/evidence/_ab_driver.py \u2014 reproduces tests/benchmarks/test_benchmarks.py::TestABScenarios and captures actual top-ranked POIs per profile",
+  "data_is_synthetic": true,
+  "profiles": [
+    {
+      "name": "history_lover",
+      "top_pois": [
+        {
+          "id": 11,
+          "name": "Benchmark POI 11",
+          "category": "historical",
+          "score": 0.64
+        },
+        {
+          "id": 6,
+          "name": "Benchmark POI 6",
+          "category": "historical",
+          "score": 0.575
+        },
+        {
+          "id": 16,
+          "name": "Benchmark POI 16",
+          "category": "historical",
+          "score": 0.565
+        },
+        {
+          "id": 1,
+          "name": "Benchmark POI 1",
+          "category": "historical",
+          "score": 0.56
+        },
+        {
+          "id": 12,
+          "name": "Benchmark POI 12",
+          "category": "cultural",
+          "score": 0.384
+        }
+      ]
+    },
+    {
+      "name": "nature_lover",
+      "top_pois": [
+        {
+          "id": 19,
+          "name": "Benchmark POI 19",
+          "category": "natural",
+          "score": 0.627
+        },
+        {
+          "id": 4,
+          "name": "Benchmark POI 4",
+          "category": "natural",
+          "score": 0.612
+        },
+        {
+          "id": 14,
+          "name": "Benchmark POI 14",
+          "category": "natural",
+          "score": 0.602
+        },
+        {
+          "id": 9,
+          "name": "Benchmark POI 9",
+          "category": "natural",
+          "score": 0.587
+        },
+        {
+          "id": 11,
+          "name": "Benchmark POI 11",
+          "category": "historical",
+          "score": 0.34
+        }
+      ]
+    }
+  ],
+  "per_test": {
+    "history_vs_nature": {
+      "history_lover": [
+        {
+          "id": 11,
+          "name": "Benchmark POI 11",
+          "category": "historical",
+          "score": 0.64
+        },
+        {
+          "id": 6,
+          "name": "Benchmark POI 6",
+          "category": "historical",
+          "score": 0.575
+        },
+        {
+          "id": 16,
+          "name": "Benchmark POI 16",
+          "category": "historical",
+          "score": 0.565
+        },
+        {
+          "id": 1,
+          "name": "Benchmark POI 1",
+          "category": "historical",
+          "score": 0.56
+        },
+        {
+          "id": 12,
+          "name": "Benchmark POI 12",
+          "category": "cultural",
+          "score": 0.384
+        }
+      ],
+      "nature_lover": [
+        {
+          "id": 19,
+          "name": "Benchmark POI 19",
+          "category": "natural",
+          "score": 0.627
+        },
+        {
+          "id": 4,
+          "name": "Benchmark POI 4",
+          "category": "natural",
+          "score": 0.612
+        },
+        {
+          "id": 14,
+          "name": "Benchmark POI 14",
+          "category": "natural",
+          "score": 0.602
+        },
+        {
+          "id": 9,
+          "name": "Benchmark POI 9",
+          "category": "natural",
+          "score": 0.587
+        },
+        {
+          "id": 11,
+          "name": "Benchmark POI 11",
+          "category": "historical",
+          "score": 0.34
+        }
+      ]
+    },
+    "budget_vs_luxury": {
+      "budget_user": [
+        {
+          "id": 1,
+          "name": "Free POI",
+          "category": "cultural",
+          "score": 0.51
+        },
+        {
+          "id": 2,
+          "name": "Expensive POI",
+          "category": "cultural",
+          "score": 0.375
+        }
+      ],
+      "luxury_user": [
+        {
+          "id": 1,
+          "name": "Free POI",
+          "category": "cultural",
+          "score": 0.48
+        },
+        {
+          "id": 2,
+          "name": "Expensive POI",
+          "category": "cultural",
+          "score": 0.48
+        }
+      ],
+      "delta_budget_free_minus_expensive": 0.135,
+      "delta_luxury_free_minus_expensive": 0.0
+    },
+    "packed_vs_slow": {
+      "packed_pace_id": "packed_schedule",
+      "slow_pace_id": "slow_flexible",
+      "sample_pois": [
+        {
+          "poi_id": 1,
+          "name": "Benchmark POI 1",
+          "category": "historical",
+          "base_visit_duration_min": 30,
+          "packed_adjusted_min": 22,
+          "slow_adjusted_min": 45
+        },
+        {
+          "poi_id": 2,
+          "name": "Benchmark POI 2",
+          "category": "cultural",
+          "base_visit_duration_min": 45,
+          "packed_adjusted_min": 33,
+          "slow_adjusted_min": 67
+        },
+        {
+          "poi_id": 3,
+          "name": "Benchmark POI 3",
+          "category": "religious",
+          "base_visit_duration_min": 60,
+          "packed_adjusted_min": 45,
+          "slow_adjusted_min": 90
+        }
+      ],
+      "all_packed_lt_slow": true
+    },
+    "vroom_2d_vs_14d": {
+      "vehicles_2_day": 2,
+      "vehicles_14_day": 14,
+      "jobs_2_day": 20,
+      "jobs_14_day": 20
+    }
+  }
+}

@@ -1,0 +1,16 @@
+\begin{table}[h]\centering\small
+\caption{Database field completeness across 255 verified POIs (live validation, 2026-06-15).}
+\label{tab:db}\begin{tabular}{lrrl}
+\toprule Field & Filled & \% & Note \\ \midrule
+description & 255 & 100.0 &  \\
+latitude & 255 & 100.0 &  \\
+longitude & 255 & 100.0 &  \\
+total_reviews & 255 & 100.0 & min=6, max=74497; the old len(reviews) c... \\
+historical_significance & 254 & 99.2 &  \\
+tags & 253 & 99.2 &  \\
+average_rating & 250 & 98.0 &  \\
+image_urls & 210 & 82.4 & the 45 image-less POIs are obscure remot... \\
+opening_hours & 172 & 67.5 & outdoor/natural sites have no operating ... \\
+ticket_price & 149 & 58.4 & 107 of 255 POIs are genuinely FREE (beac... \\
+website_url & 102 & 40.0 & natural sites rarely have websites — nul... \\
+\bottomrule\end{tabular}\end{table}

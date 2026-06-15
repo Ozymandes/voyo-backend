@@ -1,0 +1,53 @@
+{
+  "_meta": {
+    "source": "LIVE Supabase query via venv/Scripts/python.exe validate_database.py (re-runnable integrity check), 2026-06-15",
+    "validator": "validate_database.py (queries the live pois table with the service key)",
+    "exit_status": "ran to completion; reported 'ATTENTION NEEDED' only for the disclosed low-completeness fields (semantically-correct nulls), no integrity defects"
+  },
+  "total_active_pois": 255,
+  "duplicates": 0,
+  "regional_distribution": {
+    "Cairo": 11,
+    "Giza": 9,
+    "Alexandria": 43,
+    "Luxor": 39,
+    "Aswan": 43,
+    "Hurghada": 29,
+    "Marsa Alam": 39,
+    "Sinai": 42,
+    "_note": "Cairo (11) and Giza (9) are the THINNEST regions despite being the two most-visited. This is a master-list CURATION GAP, not a technical defect — disclosed honestly as a limitation."
+  },
+  "field_completeness": {
+    "description": {"filled": 255, "pct": 100.0},
+    "latitude": {"filled": 255, "pct": 100.0},
+    "longitude": {"filled": 255, "pct": 100.0},
+    "total_reviews": {"filled": 255, "pct": 100.0, "note": "min=6, max=74497; the old len(reviews) cap-at-5 bug is gone (0 rows ==5)"},
+    "historical_significance": {"filled": 254, "pct": 99.2},
+    "tags": {"filled": 253, "pct": 99.2, "format": "flat list (0 dict-wrappers)"},
+    "average_rating": {"filled": 250, "pct": 98.0},
+    "image_urls": {"filled": 210, "pct": 82.4, "format": "flat list 255/255 (0 dict-wrappers)", "wikimedia_permanent": 208, "note": "the 45 image-less POIs are obscure remote sites (diving reefs, desert locations) with no Wikipedia article — NOT the famous sites"},
+    "opening_hours": {"filled": 172, "pct": 67.5, "note": "outdoor/natural sites have no operating hours — null is semantically CORRECT, not a gap"},
+    "ticket_price": {"filled": 149, "pct": 58.4, "note": "107 of 255 POIs are genuinely FREE (beaches, reefs, streets, markets) — null price is correct. Spot-checked paid sites are exact (Pyramid 240, Karnak 220, Egyptian Museum 200 EGP)"},
+    "website_url": {"filled": 102, "pct": 40.0, "note": "natural sites rarely have websites — null is correct"}
+  },
+  "image_format_integrity": {"flat_list_correct": "255/255", "dict_wrapper_old_bug": "0/255"},
+  "tags_format_integrity": {"flat_list_correct": "253/255", "dict_wrapper_old_bug": "0/255"},
+  "review_counts": {"min": 6, "max": 74497, "count_equals_5_old_bug": 0},
+  "category_enum_invalid": 0,
+  "famous_six": [
+    {"name": "Great Pyramid of Giza (Khufu)", "reviews": 31657, "has_image": true},
+    {"name": "Karnak Temple Complex", "reviews": 30583, "has_image": true},
+    {"name": "Great Sphinx of Giza", "reviews": 25886, "has_image": true},
+    {"name": "Valley of the Kings", "reviews": 22930, "has_image": true},
+    {"name": "The Egyptian Museum", "reviews": 64632, "has_image": true},
+    {"name": "Abu Simbel Temples", "reviews": 20755, "has_image": true}
+  ],
+  "famous_six_summary": "6/6 have permanent Wikimedia images + real review counts (20k–64k). Before the rebuild: 0/6 had a usable image.",
+  "honest_gaps_summary": [
+    "ticket_price 58% — 107 sites are genuinely free (null is correct)",
+    "opening_hours 67% — natural/outdoor sites have no hours (null is correct)",
+    "website_url 40% — natural sites have no website (null is correct)",
+    "45 image-less POIs — obscure remote sites, not the famous ones",
+    "Regional imbalance: Cairo 11 / Giza 9 are thinnest — master-list curation gap, disclosed not hidden"
+  ]
+}

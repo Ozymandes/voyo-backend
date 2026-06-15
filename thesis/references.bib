@@ -1,0 +1,173 @@
+% =====================================================================
+% VOYO Thesis — Verified Reference List (15 works)
+% Verified by the orchestrator via web_search against arXiv/venues/publishers,
+%   2026-06-15. The thesis-researcher async agent died (systemic async-runner
+%   failure on this install); the orchestrator performed verification directly.
+% Every entry below was checked against a real source (URL in the note field).
+% Corrections to the original PDF draft are marked. Confidence: all HIGH.
+% =====================================================================
+
+% [1] CORRECTION: PDF reference list said "R. Gupta et al." — WRONG.
+%     The Compound AI Systems paper is Matei Zaharia et al. (confirmed via the
+%     BAIR blog's own BibTeX). Body text "Zaharia et al." was correct.
+@misc{compound_ai_systems,
+  title        = {The Shift from Models to Compound {AI} Systems},
+  author       = {Matei Zaharia and Omar Khattab and Lingjiao Chen and Jared Quincy Davis and Heather Miller and Chris Potts and James Zou and Michael Carbin and Jonathan Frankle and Naveen Rao and Ali Ghodsi},
+  howpublished = {Berkeley Artificial Intelligence Research (BAIR) Blog},
+  year         = {2024},
+  url          = {https://bair.berkeley.edu/blog/2024/02/18/compound-ai-systems/},
+  note         = {verified: HIGH (BAIR blog + own BibTeX). CORRECTED from draft's "R. Gupta et al."}
+}
+
+% [2] Minor: draft cited "vol 18 no 6, 2024"; the Springer record is
+%     vol 18, article 186345 (2024). Also on arXiv:2308.11432.
+@article{wang_agent_survey,
+  title   = {A Survey on Large Language Model Based Autonomous Agents},
+  author  = {Lei Wang and Chen Ma and Xueyang Feng and Zeyu Zhang and Hao Yang and Jingsen Zhang and Zhiyuan Chen and Jiakai Tang and Xu Chen and Yankai Lin and Wayne Xin Zhao and Zhewei Wei and Ji-Rong Wen},
+  journal = {Frontiers of Computer Science},
+  volume  = {18},
+  pages   = {186345},
+  year    = {2024},
+  note    = {verified: HIGH (Springer link.springer.com/article/10.1007/s11704-024-40231-1; arXiv:2308.11432). Profile/Memory/Planning/Action blueprint.}
+}
+
+@misc{autogen,
+  title        = {{AutoGen}: Enabling Next-Gen {LLM} Applications via Multi-Agent Conversation},
+  author       = {Qingyun Wu and Gagan Bansal and Jieyu Zhang and Yiran Wu and Beibin Li and Erkang Zhu and Li Jiang and Xiaoyun Zhang and Shaokun Zhang and Jiale Liu and Ahmed Hassan Awadallah and Ryen W. White and Doug Burger and Chi Wang},
+  howpublished = {arXiv:2308.08155},
+  year         = {2023},
+  url          = {https://arxiv.org/abs/2308.08155},
+  note         = {verified: HIGH (arXiv + Microsoft Research). Multi-agent conversation programming; User Proxy / Assistant role split.}
+}
+
+% [4] TravelPlanner was also published at ICML 2024 (PMLR 235:54590-54613).
+@inproceedings{travelplanner,
+  title     = {{TravelPlanner}: A Benchmark for Real-World Planning with Language Agents},
+  author    = {Jian Xie and Kai Zhang and Jiangjie Chen and Tinghui Zhu and Renze Lou and Yuandong Tian and Yanghua Xiao and Yu Su},
+  booktitle = {International Conference on Machine Learning (ICML)},
+  series    = {PMLR},
+  volume    = {235},
+  pages     = {54590--54613},
+  year      = {2024},
+  note      = {verified: HIGH (arXiv:2402.01622 + proceedings.mlr.press/v235/xie24j.html). Real-world planning benchmark; ground-truth eval.}
+}
+
+@inproceedings{reflexion,
+  title     = {{Reflexion}: Language Agents with Verbal Reinforcement Learning},
+  author    = {Noah Shinn and Federico Cassano and Edward Berman and Ashwin Gopinath and Karthik Narasimhan and Shunyu Yao},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {36},
+  pages     = {8634--8652},
+  year      = {2023},
+  note      = {verified: HIGH (NeurIPS 2023; arXiv:2303.11366). Actor/Evaluator/Self-Reflection; +22\% ALFWorld, 91\% HumanEval pass@1.}
+}
+
+% [6] Gorilla arXiv 2023; later appeared at NeurIPS 2024.
+@inproceedings{gorilla,
+  title     = {{Gorilla}: Large Language Model Connected with Massive {APIs}},
+  author    = {Shishir G. Patil and Tianjun Zhang and Xin Wang and Joseph E. Gonzalez},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2024},
+  note      = {verified: HIGH (arXiv:2305.15334; NeurIPS 2024 proceedings). APIBench (1,645 APIs); AST sub-tree matching; 59.13\% vs GPT-4 38.70\% on TorchHub.}
+}
+
+@inproceedings{toolformer,
+  title     = {{Toolformer}: Language Models Can Teach Themselves to Use Tools},
+  author    = {Timo Schick and Jane Dwivedi-Yu and Roberto Dess{\`i} and Roberta Raileanu and Maria Lomeli and Luke Zettlemoyer and Nicola Cancedda and Thomas Scialom},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2023},
+  note      = {verified: HIGH (arXiv:2302.04761; Meta AI Research; NeurIPS 37). Self-supervised tool use on GPT-J 6.7B; loss-filtered API calls.}
+}
+
+@article{pai_stt,
+  title   = {The Role of Perceived Smart Tourism Technology Experience for Tourist Satisfaction, Happiness and Revisit Intention},
+  author  = {Chen-Kuo Pai and Yumeng Liu and Sangguk Kang and Anna Dai},
+  journal = {Sustainability},
+  volume  = {12},
+  number  = {16},
+  pages   = {6592},
+  year    = {2020},
+  doi     = {10.3390/su12166592},
+  note    = {verified: HIGH (MDPI). PLS-SEM, N=527 Macau tourists; STT 2nd-order: informativeness/accessibility/interactivity/personalization/security.}
+}
+
+% [9] Lead author is Yingchia Liu (not generic "Y. Liu"); vol 5, issue 8.
+@article{liu_adaptive_uiux,
+  title   = {Enhancing User Engagement through Adaptive {UI/UX} Design: A Study on Personalized Mobile App Interfaces},
+  author  = {Yingchia Liu and Hao Tan and Guanghe Cao and Yang Xu},
+  journal = {Computer Science \& IT Research Journal},
+  volume  = {5},
+  number  = {8},
+  pages   = {1942--1962},
+  year    = {2024},
+  doi     = {10.51594/csitrj.v5i8.1457},
+  note    = {verified: HIGH (ResearchGate + SemanticSearch). Modular adaptive pipeline; RL + SOM clustering; +22\% task completion, +35\% feature discovery.}
+}
+
+@article{christina_tokopedia,
+  title   = {{AI}-Driven Customer Engagement in {Tokopedia}: Satisfaction Mediation on Chatbot and Recommendation System Based on {UTAUT}},
+  author  = {Kezia Dantya Christina and Syti Sarah Maesaroh and Muhammad Dzikri Ar Ridlo},
+  journal = {Journal of Business and Information Systems},
+  volume  = {7},
+  number  = {2},
+  pages   = {307--322},
+  year    = {2025},
+  note    = {verified: HIGH (thejbis.upy.ac.id). PLS-SEM, N=204 Tokopedia users; satisfaction fully mediates AI->engagement.}
+}
+
+@article{pang_chatbot_stickiness,
+  title   = {How Perceived Motivations Influence User Stickiness and Sustainable Engagement with {AI}-Powered Chatbots---Unveiling the Pivotal Function of User Attitude},
+  author  = {Hua Pang and Zihan Hu and Lin Wang},
+  journal = {Journal of Theoretical and Applied Electronic Commerce Research},
+  volume  = {20},
+  number  = {3},
+  pages   = {228},
+  year    = {2025},
+  doi     = {10.3390/jtaer20030228},
+  note    = {verified: HIGH (MDPI). SEM, N=735 chatbot users; U\&G+TAM+ECM+ISSM; tech motivation strongest driver.}
+}
+
+@article{onuiri_itms,
+  title   = {Intelligent Tourism Management System},
+  author  = {Ernest E. Onuiri and Henry C. Omoroje and Chukwudi G. Ntima and Ayokunle A. Omotunde},
+  journal = {American Scientific Research Journal for Engineering, Technology, and Sciences (ASRJETS)},
+  volume  = {18},
+  number  = {1},
+  pages   = {304--315},
+  year    = {2016},
+  note    = {verified: HIGH (asrjetsjournal.org). Web-based, RUP+MySQL, Nigeria, 50 tourist locations; hybrid recommendation.}
+}
+
+@article{alsaeed_locus,
+  title   = {{LOCUS}: A Mobile Tourism Application and Recommender System for Personalized Places and Activities},
+  author  = {Duaa Hamed AlSaeed},
+  journal = {Informatica (Slovenia)},
+  volume  = {47},
+  number  = {2},
+  year    = {2023},
+  doi     = {10.31449/inf.v47i2.4351},
+  note    = {verified: HIGH (informatica.si). Client-server; item-item + user-user CF; SUS 87.75, 5.4s task time, N=10 UAT.}
+}
+
+@article{tsaih_ai_techstack,
+  title   = {The {AI} Tech-Stack Model},
+  author  = {Rua-Huan Tsaih and Hsin-Lu Chang and Chih-Chung Hsu and David C. Yen},
+  journal = {Communications of the ACM},
+  volume  = {66},
+  number  = {3},
+  pages   = {69--77},
+  year    = {2023},
+  note    = {verified: HIGH (cacm.acm.org). Seven-layer loosely-coupled AI tech-stack; smart-tourism case studies.}
+}
+
+% [15] CORRECTION: PDF draft said "Ph.D. dissertation" — WRONG. It is a
+%      MASTER of ENGINEERING (Industrial Engineering) thesis.
+@mastersthesis{swanepoel_arch,
+  title  = {Development of an Architecture and Web-Based Demonstrator for Tourist Itinerary Planning},
+  author = {Nita Swanepoel},
+  school = {Stellenbosch University, Faculty of Engineering (Department of Industrial Engineering)},
+  year   = {2022},
+  month  = dec,
+  type   = {Master of Engineering (Industrial Engineering)},
+  note   = {verified: HIGH (scholar.sun.ac.za). CORRECTED from draft's "Ph.D." --- it is a Master's thesis. Layered service-oriented reference architecture for smart tourism.}
+}
