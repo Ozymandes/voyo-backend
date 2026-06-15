@@ -136,6 +136,429 @@
       "ticket_price": 40.0,
       "expected_rating": 4.5,
       "UNESCO_site": false
+    },
+    {
+      "name": "National Museum of Egyptian Civilization (NMEC)",
+      "name_arabic": "المتحف القومي للحضارة المصرية",
+      "category": "cultural",
+      "importance": "Must-See",
+      "search_queries": [
+        "National Museum of Egyptian Civilization",
+        "NMEC Cairo",
+        "NMEC Fustat"
+      ],
+      "description": "Modern museum in Fustat housing the Royal Mummies Hall and 50,000 artifacts tracing Egyptian civilization",
+      "ticket_price": 200.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Museum of Islamic Art",
+      "name_arabic": "متحف الفن الإسلامي",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Museum of Islamic Art Cairo",
+        "Museum of Islamic Art Bab El Khalq"
+      ],
+      "description": "One of the world's greatest collections of Islamic art, with calligraphy, ceramics, metalwork, and woodwork",
+      "ticket_price": 80.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Abdeen Palace Museum",
+      "name_arabic": "قصر عابدين",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Abdeen Palace Cairo",
+        "Abdeen Palace Museum"
+      ],
+      "description": "19th-century royal palace and seat of government, now a museum of arms, silver, and royal gifts",
+      "ticket_price": 100.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Manial Palace Museum",
+      "name_arabic": "قصر المنيل",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Manial Palace Cairo",
+        "Prince Mohamed Ali Palace Rhoda"
+      ],
+      "description": "Early 20th-century royal palace on Rhoda Island blending Ottoman, Moorish, and Persian styles",
+      "ticket_price": 80.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Gayer-Anderson Museum",
+      "name_arabic": "متحف جاير أندرسون",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Gayer-Anderson Museum Cairo",
+        "Bayt al-Kiridliya"
+      ],
+      "description": "Two adjoining 16th-century houses beside Ibn Tulun Mosque, filled with a British officer's Orientalist collection",
+      "ticket_price": 100.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Royal Carriages Museum",
+      "name_arabic": "متحف العربات الملكية",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Royal Carriages Museum Cairo",
+        "Royal Carriages Museum Bulaq"
+      ],
+      "description": "Museum displaying the opulent horse-drawn carriages of Egypt's royal family, in a restored Bulaq building",
+      "ticket_price": 60.0,
+      "expected_rating": 4.3,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Baron Empain Palace",
+      "name_arabic": "قصر البارون إمبان",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Baron Empain Palace Heliopolis",
+        "Hindu Palace Cairo"
+      ],
+      "description": "Eccentric Hindu-style palace in Heliopolis built by Belgian baron Edouard Empain, recently restored",
+      "ticket_price": 200.0,
+      "expected_rating": 4.3,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Cairo Opera House",
+      "name_arabic": "دار الأوبرا المصرية",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Cairo Opera House",
+        "Egyptian Opera House Gezira"
+      ],
+      "description": "National performing-arts center on Gezira Island hosting opera, ballet, and symphony in its seven theatres",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Qasr El Nil Bridge",
+      "name_arabic": "كوبري قصر النيل",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Qasr El Nil Bridge",
+        "Kasr El Nil Bridge Cairo"
+      ],
+      "description": "Iconic early 20th-century bridge over the Nile flanked by four bronze lions, connecting Tahrir to Gezira",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Tahrir Square",
+      "name_arabic": "ميدان التحرير",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Tahrir Square Cairo",
+        "Liberation Square Cairo"
+      ],
+      "description": "Cairo's central public square and focal point of modern Egyptian political history",
+      "ticket_price": null,
+      "expected_rating": 4.2,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Khedivial Cairo",
+      "name_arabic": "القاهرة الخديوية",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Khedivial Cairo",
+        "Downtown Cairo",
+        "Wist El Balad"
+      ],
+      "description": "Late 19th-century downtown district of belle époque buildings, European-style boulevards, and cafes",
+      "ticket_price": null,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Nile Corniche",
+      "name_arabic": "كورنيش النيل",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Nile Corniche Cairo",
+        "Cairo Nile Corniche"
+      ],
+      "description": "Tree-lined waterfront promenade along the Nile with cafes, boats, and city skyline views",
+      "ticket_price": null,
+      "expected_rating": 4.3,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Al-Hussein Mosque",
+      "name_arabic": "مسجد الحسين",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Al-Hussein Mosque Cairo",
+        "Imam Hussein Mosque"
+      ],
+      "description": "Holy 19th-century mosque in Khan el-Khalili, reputed burial place of Imam Hussein's head",
+      "ticket_price": null,
+      "expected_rating": 4.7,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Al-Hakim bi-Amr Allah Mosque",
+      "name_arabic": "مسجد الحاكم بأمر الله",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Al-Hakim Mosque Cairo",
+        "Mosque of al-Hakim bi-Amr Allah"
+      ],
+      "description": "10th-11th century Fatimid mosque with massive projecting stone gateways, second-largest in Old Cairo",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Bab al-Futuh",
+      "name_arabic": "باب الفتوح",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Bab al-Futuh Cairo",
+        "Gate of Conquests Cairo"
+      ],
+      "description": "Northern gateway of the Fatimid city walls, flanked by two massive semi-circular towers",
+      "ticket_price": null,
+      "expected_rating": 4.4,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Bab al-Nasr",
+      "name_arabic": "باب النصر",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Bab al-Nasr Cairo",
+        "Gate of Victory Cairo"
+      ],
+      "description": "Northern fortified gateway of the Fatimid walls, decorated with shields and battle emblems",
+      "ticket_price": null,
+      "expected_rating": 4.4,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Bab Zuweila",
+      "name_arabic": "باب زويلة",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Bab Zuweila Cairo",
+        "Bab Zuwayla"
+      ],
+      "description": "Southern gate of the Fatimid city, topped by the Mamluk Mosque of al-Mu'ayyad's twin minarets",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Qalawun Complex",
+      "name_arabic": "مجموعة قلاوون",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Qalawun Complex Cairo",
+        "Complex of Sultan al-Mansur Qalawun"
+      ],
+      "description": "Mamluk complex on Al-Mu'izz Street with a stunning mausoleum, madrasa, and maristan (hospital)",
+      "ticket_price": 40.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Sultan Barquq Complex",
+      "name_arabic": "مدرسة وخرجة السلطان برقوق",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Sultan Barquq Complex Cairo",
+        "Mosque-Madrasa of Sultan Barquq"
+      ],
+      "description": "1380s Circassian Mamluk mosque-madrasa-khanqah on Al-Mu'izz Street with fine marble inlay",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Wekalet El Ghouri",
+      "name_arabic": "وكالة الغوري",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Wekalet El Ghouri Cairo",
+        "Wikala of al-Ghuri"
+      ],
+      "description": "16th-century caravanserai (wikala) restored as a cultural center hosting Sufi tanoura dance shows",
+      "ticket_price": 40.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Al-Ghuri Complex",
+      "name_arabic": "مجموعة الغوري",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Al-Ghuri Complex Cairo",
+        "Sultan al-Ghuri Complex"
+      ],
+      "description": "Mamluk sultan Qansuh al-Ghuri's mosque-madrasa-mausoleum and sabil-kuttab ensemble on Al-Mu'izz Street",
+      "ticket_price": null,
+      "expected_rating": 4.4,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tentmakers' Street",
+      "name_arabic": "شارع الخيامية",
+      "category": "shopping",
+      "importance": "Major",
+      "search_queries": [
+        "Tentmakers Street Cairo",
+        "Sharia al-Khayamiya",
+        "Khayamiya Market"
+      ],
+      "description": "Street of the tentmakers selling vibrant hand-stitched appliqué (khayamiya) textiles and crafts",
+      "ticket_price": null,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Mosque of Muhammad Ali",
+      "name_arabic": "مسجد محمد علي",
+      "category": "religious",
+      "importance": "Must-See",
+      "search_queries": [
+        "Muhammad Ali Mosque Cairo",
+        "Alabaster Mosque Citadel"
+      ],
+      "description": "Ottoman alabaster mosque dominating the Citadel skyline, built by Muhammad Ali Pasha in the 19th century",
+      "ticket_price": null,
+      "expected_rating": 4.8,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Al-Nasir Muhammad Mosque",
+      "name_arabic": "مسجد الناصر محمد",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Al-Nasir Muhammad Mosque Citadel",
+        "Mosque of al-Nasir Muhammad"
+      ],
+      "description": "Early 14th-century Mamluk royal mosque inside the Citadel, with a glazed-tile minaret",
+      "ticket_price": null,
+      "expected_rating": 4.4,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Al-Rifa'i Mosque",
+      "name_arabic": "مسجد الرفاعي",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Al-Rifa'i Mosque Cairo",
+        "Al-Rifai Mosque"
+      ],
+      "description": "Grand 19th-century mosque beside Sultan Hassan, burial place of Egypt's last royal family",
+      "ticket_price": 80.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Al-Azhar Park",
+      "name_arabic": "حديقة الأزهر",
+      "category": "natural",
+      "importance": "Major",
+      "search_queries": [
+        "Al-Azhar Park Cairo",
+        "Azhar Park"
+      ],
+      "description": "30-hectare landscaped park on a historic rubbish dump, with gardens, restaurants, and city views",
+      "ticket_price": 40.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Saints Sergius and Bacchus Church (Abu Serga)",
+      "name_arabic": "كنيسة أبو سرجة",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Abu Serga Church Cairo",
+        "Church of Saints Sergius and Bacchus"
+      ],
+      "description": "4th-century Coptic church built over a cave where the Holy Family is said to have rested in Cairo",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Ben Ezra Synagogue",
+      "name_arabic": "معبد بن عزرا",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Ben Ezra Synagogue Cairo",
+        "Synagogue of Ben Ezra Old Cairo"
+      ],
+      "description": "Medieval synagogue in Coptic Cairo, site of the famous Cairo Geniza manuscript discovery",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Mosque of Amr ibn al-As",
+      "name_arabic": "مسجد عمرو بن العاص",
+      "category": "religious",
+      "importance": "Major",
+      "search_queries": [
+        "Mosque of Amr ibn al-As Cairo",
+        "Amr Ibn Al-Aas Mosque Fustat"
+      ],
+      "description": "First mosque built in Egypt and Africa (642 AD), the heart of early Islamic Fustat",
+      "ticket_price": null,
+      "expected_rating": 4.5,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Nilometer (Rhoda Island)",
+      "name_arabic": "مقياس النيل بالروضة",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Nilometer Rhoda Island",
+        "Al-Roda Nilometer Cairo"
+      ],
+      "description": "8th-century stone structure on Rhoda Island used to measure the Nile flood and set taxes",
+      "ticket_price": 60.0,
+      "expected_rating": 4.3,
+      "UNESCO_site": false
     }
   ],
   "Giza": [
@@ -261,6 +684,426 @@
       "description": "Red Pyramid and Bent Pyramid, early smooth-sided pyramids",
       "ticket_price": 80.0,
       "expected_rating": 4.6,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Valley Temple of Khafre",
+      "name_arabic": "معبد الوادي لخفرع",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Valley Temple of Khafre",
+        "Khafre Valley Temple Giza"
+      ],
+      "description": "Well-preserved granite-lined temple where Khafre's body was mummified, part of the Giza pyramid complex",
+      "ticket_price": 240.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Khufu Mortuary Temple",
+      "name_arabic": "المعبد الجنائزي لخوفو",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Khufu Mortuary Temple",
+        "Khufu Funerary Temple Giza"
+      ],
+      "description": "Ruin of the mortuary temple on the east side of the Great Pyramid, used for Khufu's funerary cult",
+      "ticket_price": null,
+      "expected_rating": 4.2,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Khafre Mortuary Temple",
+      "name_arabic": "المعبد الجنائزي لخفرع",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Khafre Mortuary Temple",
+        "Khafre Funerary Temple Giza"
+      ],
+      "description": "Granite-block ruins of the temple adjoining the Pyramid of Khafre on its eastern side",
+      "ticket_price": null,
+      "expected_rating": 4.2,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Menkaure Mortuary Temple",
+      "name_arabic": "المعبد الجنائزي لمنكاورع",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Menkaure Mortuary Temple",
+        "Menkaure Funerary Temple Giza"
+      ],
+      "description": "Ruin of the mudbrick-and-limestone temple east of the Pyramid of Menkaure",
+      "ticket_price": null,
+      "expected_rating": 4.1,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Eastern Cemetery of Giza",
+      "name_arabic": "المقبرة الشرقية بهضبة الجيزة",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Eastern Cemetery Giza",
+        "East Cemetery of the Great Pyramid"
+      ],
+      "description": "Royal cemetery east of the Great Pyramid holding mastaba tombs of Khufu's family and high officials",
+      "ticket_price": null,
+      "expected_rating": 4.3,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Western Cemetery of Giza",
+      "name_arabic": "المقبرة الغربية بهضبة الجيزة",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Western Cemetery Giza",
+        "West Cemetery of the Great Pyramid"
+      ],
+      "description": "Field of mastaba tombs west of the Great Pyramid belonging to Khufu's officials and nobles",
+      "ticket_price": null,
+      "expected_rating": 4.3,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tomb of Meresankh III",
+      "name_arabic": "مقبرة مرس عنخ الثالثة",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Tomb of Meresankh III Giza",
+        "Mastaba of Queen Meresankh III"
+      ],
+      "description": "Beautifully decorated mastaba of Khufu's granddaughter, with painted reliefs and reserve heads",
+      "ticket_price": 100.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tomb of Qar",
+      "name_arabic": "مقبرة قار",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Tomb of Qar Giza",
+        "Mastaba of Qar Eastern Cemetery"
+      ],
+      "description": "Well-preserved mastaba of the overseer of Khufu's funerary priests, with detailed offering scenes",
+      "ticket_price": 100.0,
+      "expected_rating": 4.2,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tomb of Idu",
+      "name_arabic": "مقبرة إيدو",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Tomb of Idu Giza",
+        "Mastaba of Idu"
+      ],
+      "description": "Old Kingdom mastaba tomb near the Great Pyramid of an official in Khufu's funerary administration",
+      "ticket_price": 100.0,
+      "expected_rating": 4.1,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tomb of Queen Hetepheres I",
+      "name_arabic": "مقبرة الملكة حتب حرس",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Tomb of Queen Hetepheres I",
+        "Hetepheres Giza tomb"
+      ],
+      "description": "Sealed shaft tomb of Khufu's mother, found with a remarkably intact set of royal funerary furniture",
+      "ticket_price": 100.0,
+      "expected_rating": 4.4,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Queen's Pyramids of Khufu",
+      "name_arabic": "أهرامات الملكات لخوفو",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Queens Pyramids of Khufu",
+        "Giza Queen's Pyramids Khufu"
+      ],
+      "description": "Three small pyramids east of the Great Pyramid, the tombs of Khufu's wives and mother",
+      "ticket_price": null,
+      "expected_rating": 4.3,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Queen's Pyramids of Menkaure",
+      "name_arabic": "أهرامات الملكات لمنكاورع",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Queens Pyramids of Menkaure",
+        "Giza Queen's Pyramids Menkaure"
+      ],
+      "description": "Three satellite pyramids south of the Pyramid of Menkaure, tombs of his queens",
+      "ticket_price": null,
+      "expected_rating": 4.2,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Giza Plateau Panorama Point",
+      "name_arabic": "نقطة بانوراما هضبة الأهرامات",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Giza Plateau Panorama Point",
+        "Pyramids Panoramic Viewpoint Giza"
+      ],
+      "description": "Desert vantage point offering the classic panoramic view of all three pyramids in a row",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Pyramids Sound and Light Show",
+      "name_arabic": "عرض الصوت والضوء بالأهرامات",
+      "category": "entertainment",
+      "importance": "Major",
+      "search_queries": [
+        "Pyramids Sound and Light Show",
+        "Giza Sound and Light Show"
+      ],
+      "description": "Evening narrated light show at the Giza pyramids recounting Egyptian history in multiple languages",
+      "ticket_price": 300.0,
+      "expected_rating": 4.4,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Mena House Hotel",
+      "name_arabic": "فندق مينا هاوس",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Mena House Hotel Giza",
+        "Mena House Marriott Pyramids"
+      ],
+      "description": "Historic 1869 royal hunting lodge turned luxury hotel with direct views of the Great Pyramid",
+      "ticket_price": null,
+      "expected_rating": 4.6,
+      "UNESCO_site": false
+    },
+    {
+      "name": "Djoser Funerary Complex",
+      "name_arabic": "المجمع الجنائزي لزوسر",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Djoser Funerary Complex Saqqara",
+        "Step Pyramid Complex Djoser"
+      ],
+      "description": "Vast enclosure around the Step Pyramid designed by Imhotep, with courts, temples, and the House of the North",
+      "ticket_price": 120.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Pyramid of Unas",
+      "name_arabic": "هرم أوناس",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Pyramid of Unas Saqqara",
+        "Unas Pyramid"
+      ],
+      "description": "Late 5th-Dynasty pyramid bearing the oldest known Pyramid Texts carved inside its burial chamber",
+      "ticket_price": 120.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Pyramid of Teti",
+      "name_arabic": "هرم تيتي",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Pyramid of Teti Saqqara",
+        "Teti Pyramid Saqqara"
+      ],
+      "description": "6th-Dynasty pyramid with extensive Pyramid Texts and the surrounding mastabas of his officials",
+      "ticket_price": 120.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Serapeum of Saqqara",
+      "name_arabic": "السيرابيوم بسقارة",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Serapeum of Saqqara",
+        "Serapeum Apis Bulls Saqqara"
+      ],
+      "description": "Underground gallery of massive granite sarcophagi that held the mummified sacred Apis bulls",
+      "ticket_price": 120.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Mastaba of Mereruka",
+      "name_arabic": "مصطبة ميريروكا",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Mastaba of Mereruka Saqqara",
+        "Tomb of Mereruka"
+      ],
+      "description": "Largest and most richly decorated noble tomb at Saqqara, with 33 rooms of vivid daily-life scenes",
+      "ticket_price": 120.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tomb of Kagemni",
+      "name_arabic": "مقبرة كاجمني",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Tomb of Kagemni Saqqara",
+        "Mastaba of Kagemni"
+      ],
+      "description": "finely decorated Old Kingdom mastaba of the vizier Kagemni, with scenes of fishing, farming, and dance",
+      "ticket_price": 120.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tomb of Ti",
+      "name_arabic": "مقبرة تي",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Tomb of Ti Saqqara",
+        "Mastaba of Ti"
+      ],
+      "description": "Exquisitely detailed 5th-Dynasty mastaba of the overseer of pyramids, renowned for its low-relief carvings",
+      "ticket_price": 120.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Tomb of Mehu",
+      "name_arabic": "مقبرة محو",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Tomb of Mehu Saqqara",
+        "Mastaba of Mehu"
+      ],
+      "description": "Colorfully restored 6th-Dynasty mastaba of the vizier Mehu, opened to the public after 80 years",
+      "ticket_price": 120.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Imhotep Museum",
+      "name_arabic": "متحف إمحوتب",
+      "category": "cultural",
+      "importance": "Major",
+      "search_queries": [
+        "Imhotep Museum Saqqara",
+        "Imhotep Museum Egypt"
+      ],
+      "description": "Museum at the Saqqara entrance showcasing finds from the necropolis, including statues and architectural elements",
+      "ticket_price": 80.0,
+      "expected_rating": 4.5,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Colossus of Ramesses II (Memphis)",
+      "name_arabic": "تمثال رمسيس الثاني بممفيس",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Colossus of Ramesses II Memphis",
+        "Memphis Colossus Ramesses"
+      ],
+      "description": "10-meter limestone colossus of Ramesses II lying in a purpose-built museum at Mit Rahina (Memphis)",
+      "ticket_price": 80.0,
+      "expected_rating": 4.6,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Alabaster Sphinx of Memphis",
+      "name_arabic": "أبو الهول الألبستر بممفيس",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Alabaster Sphinx Memphis",
+        "Memphis Alabaster Sphinx"
+      ],
+      "description": "8-ton calcite sphinx of an unidentified New Kingdom pharaoh, now displayed at the Mit Rahina open-air museum",
+      "ticket_price": 80.0,
+      "expected_rating": 4.4,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Bent Pyramid",
+      "name_arabic": "الهرم المنحرف",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Bent Pyramid Dahshur",
+        "Rhomboidal Pyramid Sneferu"
+      ],
+      "description": "Sneferu's pyramid with a dramatic change in angle, the earliest attempt at a smooth-sided pyramid",
+      "ticket_price": 80.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Red Pyramid",
+      "name_arabic": "الهرم الأحمر",
+      "category": "historical",
+      "importance": "Must-See",
+      "search_queries": [
+        "Red Pyramid Dahshur",
+        "North Pyramid Sneferu"
+      ],
+      "description": "First successful smooth-sided true pyramid, built by Sneferu and open for visitors to enter",
+      "ticket_price": 80.0,
+      "expected_rating": 4.7,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Abusir Pyramid Field",
+      "name_arabic": "منطقة أهرامات أبو صير",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Abusir Pyramid Field",
+        "Abusir Pyramids Egypt"
+      ],
+      "description": "5th-Dynasty pyramid necropolis between Giza and Saqqara, including pyramids of Sahure, Neferirkare, and Niuserre",
+      "ticket_price": 80.0,
+      "expected_rating": 4.3,
+      "UNESCO_site": true
+    },
+    {
+      "name": "Abu Rawash (Pyramid of Djedefre)",
+      "name_arabic": "أبو رواش",
+      "category": "historical",
+      "importance": "Major",
+      "search_queries": [
+        "Abu Rawash Pyramid",
+        "Pyramid of Djedefre Abu Rawash"
+      ],
+      "description": "Northernmost pyramid of Egypt, the mostly-ruined pyramid of Khufu's son Djedefre at Abu Rawash",
+      "ticket_price": 80.0,
+      "expected_rating": 4.0,
       "UNESCO_site": true
     }
   ],

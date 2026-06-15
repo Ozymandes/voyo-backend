@@ -14,7 +14,7 @@ import re
 from datetime import datetime
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
-from src.cleo.config import CleoConfig, GroqClient, LLMResponse, config
+from src.cleo.config import CleoConfig, GroqClient, LLMResponse, config, CLEO_FALLBACK_MESSAGE
 from src.cleo.semantic_cache import SemanticCache
 from src.cleo.conversation_memory import ConversationMemory
 from src.cleo.prompts import (
@@ -481,7 +481,20 @@ class CleoAgent:
 
             # ── LLM is done — return the text ───────────────────────
             if not llm_response.has_tool_calls:
-                return llm_response.content or ""
+                content = llm_response.content
+                # Hardened empty-content path: the model sometimes returns an
+                # empty/None string (truncated to nothing, content-filtered, or a
+                # near-quota 200 with no body). Returning "" here used to make
+                # CLEO go completely silent in the app. Substitute the shared
+                # fallback message instead so the user always sees something.
+                if not content or not content.strip():
+                    logger.warning(
+                        "CLEO: model returned empty content (finish_reason=%s); "
+                        "substituting fallback message.",
+                        llm_response.finish_reason,
+                    )
+                    return CLEO_FALLBACK_MESSAGE
+                return content
 
             # ── LLM wants to call tools → execute them ──────────────
             # Append the assistant's tool-call message to history

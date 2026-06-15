@@ -13,6 +13,7 @@ import '../services/supabase_service.dart';
 import '../services/routing_service.dart';
 import '../theme.dart';
 import '../widgets/map_isochrone_overlay.dart';
+import '../widgets/map_region_overlay.dart';
 import '../widgets/poi_detail_sheet.dart';
 import 'chat_screen.dart';
 
@@ -57,6 +58,10 @@ class _MapScreenState extends State<MapScreen> {
   // controls live there too — not here (avoids colliding with region work).
   final _isochrone = IsochroneController();
 
+  // ── Region outlines ("Explore Egypt by region") ──────────────────────────
+  // Owned entirely by widgets/map_region_overlay.dart.
+  final _regions = RegionController();
+
   // ── Day filter ──────────────────────────────────────────────────────────────
   int? _selectedDay; // null = show all days
 
@@ -95,6 +100,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
+    _regions.load();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadPoisForBounds(
         LatLngBounds(const LatLng(22.0, 24.0), const LatLng(32.0, 37.0)),
@@ -108,6 +114,7 @@ class _MapScreenState extends State<MapScreen> {
     _debounceTimer?.cancel();
     _mapController.dispose();
     _isochrone.dispose();
+    _regions.dispose();
     super.dispose();
   }
 
@@ -179,6 +186,29 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
+  // ── Region tap ───────────────────────────────────────────────────────────
+  // flutter_map writes the tapped polygon(s) into the region layer's hit
+  // notifier during the gesture; we read it here to resolve which region was
+  // tapped (if any), then focus it. A tap on empty map area dismisses the
+  // card. (POI markers consume their own taps, so they still open normally.)
+  void _onMapTap(TapPosition tapPosition, LatLng point) {
+    final hits = _regions.hitNotifier.value?.hitValues;
+    if (hits != null && hits.isNotEmpty) {
+      final f = _regions.byId(hits.first);
+      if (f != null) {
+        _regions.select(f.id);
+        _mapController.move(
+          LatLng(f.centerLat, f.centerLng),
+          f.zoom,
+          // Lift the center up so it clears the bottom info card.
+          offset: const Offset(0, -120),
+        );
+        return;
+      }
+    }
+    _regions.dismiss();
+  }
+
   void _fitRouteBounds(List<ItineraryPoi> pois) {
     if (pois.isEmpty) return;
     final lats = pois.map((p) => p.latitude);
@@ -248,282 +278,307 @@ class _MapScreenState extends State<MapScreen> {
     final topPad = MediaQuery.of(context).padding.top;
     final hasRoute = _itineraryPois.isNotEmpty;
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          // ── Map ──────────────────────────────────────────────────────────
-          FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
-              initialCenter: const LatLng(30.0444, 31.2357),
-              initialZoom: 7.0,
-              onPositionChanged: _onPositionChanged,
-              onLongPress: (tapPosition, point) => _onMapLongPress(point),
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.voyo.app',
+    return PopScope(
+      canPop: _regions.selectedId == null && Navigator.of(context).canPop(),
+      onPopInvokedWithResult: (didPop, _) {
+        // System/back gesture dismisses an open region card before popping.
+        if (!didPop && _regions.selectedId != null) _regions.dismiss();
+      },
+      child: Scaffold(
+        body: Stack(
+          children: [
+            // ── Map ──────────────────────────────────────────────────────────
+            FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                initialCenter: const LatLng(30.0444, 31.2357),
+                initialZoom: 7.0,
+                onPositionChanged: _onPositionChanged,
+                onTap: _onMapTap,
+                onLongPress: (tapPosition, point) => _onMapLongPress(point),
               ),
-              // Isochrone reachable-area rings + center marker
-              // (long-press the map to generate). Self-contained widgets:
-              // logic + future sliders live in map_isochrone_overlay.dart.
-              IsochronePolygons(controller: _isochrone),
-              IsochroneCenterMarker(controller: _isochrone),
-              if (_routeVisible && _visibleRoutes.isNotEmpty)
-                PolylineLayer(
-                  polylines: [
-                    for (final e in _visibleRoutes.entries)
-                      Polyline(
-                        points: e.value,
-                        color: Colors.white.withValues(alpha: 0.7),
-                        strokeWidth: 6,
-                      ),
-                    for (final e in _visibleRoutes.entries)
-                      Polyline(
-                        points: e.value,
-                        color: _dayColor(e.key),
-                        strokeWidth: 3.5,
-                      ),
-                  ],
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.voyo.app',
                 ),
-              MarkerLayer(
-                markers:
-                    _pois
-                        .map(
-                          (poi) => Marker(
-                            point: LatLng(poi.latitude, poi.longitude),
-                            width: 28,
-                            height: 28,
-                            child: GestureDetector(
-                              onTap: () => _showPoiBottomSheet(poi),
-                              child: Container(
-                                width: 22,
-                                height: 22,
-                                decoration: BoxDecoration(
-                                  color: VoyoColors.expedition,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.white,
-                                    width: 2.5,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: VoyoColors.expedition.withValues(
-                                        alpha: 0.35,
-                                      ),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Center(
-                                  child: Container(
-                                    width: 5,
-                                    height: 5,
-                                    decoration: const BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
-              ),
-              if (_itineraryPois.isNotEmpty)
+                // Isochrone reachable-area rings + center marker
+                // (long-press the map to generate). Self-contained widgets:
+                // logic + future sliders live in map_isochrone_overlay.dart.
+                IsochronePolygons(controller: _isochrone),
+                IsochroneCenterMarker(controller: _isochrone),
+                // Region outlines — tap to focus a region + slide in its info
+                // card. Sits above isochrone rings, below routes & markers.
+                RegionPolygons(controller: _regions),
+                if (_routeVisible && _visibleRoutes.isNotEmpty)
+                  PolylineLayer(
+                    polylines: [
+                      for (final e in _visibleRoutes.entries)
+                        Polyline(
+                          points: e.value,
+                          color: Colors.white.withValues(alpha: 0.7),
+                          strokeWidth: 6,
+                        ),
+                      for (final e in _visibleRoutes.entries)
+                        Polyline(
+                          points: e.value,
+                          color: _dayColor(e.key),
+                          strokeWidth: 3.5,
+                        ),
+                    ],
+                  ),
                 MarkerLayer(
                   markers:
-                      _visiblePois.map((poi) {
-                        final c = _dayColor(poi.dayNumber);
-                        return Marker(
-                          point: LatLng(poi.latitude, poi.longitude),
-                          width: 48,
-                          height: 48,
-                          child: GestureDetector(
-                            onTap: () => _showStopInfo(poi),
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Container(
-                                  width: 36,
-                                  height: 36,
+                      _pois
+                          .map(
+                            (poi) => Marker(
+                              point: LatLng(poi.latitude, poi.longitude),
+                              width: 28,
+                              height: 28,
+                              child: GestureDetector(
+                                onTap: () => _showPoiBottomSheet(poi),
+                                child: Container(
+                                  width: 22,
+                                  height: 22,
                                   decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: c.withValues(alpha: 0.18),
-                                  ),
-                                ),
-                                Container(
-                                  width: 28,
-                                  height: 28,
-                                  decoration: BoxDecoration(
-                                    color: c,
+                                    color: VoyoColors.expedition,
                                     shape: BoxShape.circle,
                                     border: Border.all(
                                       color: Colors.white,
-                                      width: 2,
+                                      width: 2.5,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: c.withValues(alpha: 0.4),
-                                        blurRadius: 8,
+                                        color: VoyoColors.expedition.withValues(
+                                          alpha: 0.35,
+                                        ),
+                                        blurRadius: 6,
                                         offset: const Offset(0, 2),
                                       ),
                                     ],
                                   ),
                                   child: Center(
-                                    child: Text(
-                                      '${poi.sequenceOrder}',
-                                      style: GoogleFonts.instrumentSans(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700,
+                                    child: Container(
+                                      width: 5,
+                                      height: 5,
+                                      decoration: const BoxDecoration(
                                         color: Colors.white,
-                                        height: 1,
+                                        shape: BoxShape.circle,
                                       ),
                                     ),
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
-                        );
-                      }).toList(),
+                          )
+                          .toList(),
                 ),
-            ],
-          ),
-
-          // ── Back button ───────────────────────────────────────────────────
-          if (Navigator.of(context).canPop())
-            Positioned(
-              top: topPad + 12,
-              left: 12,
-              child: _MapIconButton(
-                icon: Icons.arrow_back,
-                onTap: () => Navigator.of(context).pop(),
-              ),
+                if (_itineraryPois.isNotEmpty)
+                  MarkerLayer(
+                    markers:
+                        _visiblePois.map((poi) {
+                          final c = _dayColor(poi.dayNumber);
+                          return Marker(
+                            point: LatLng(poi.latitude, poi.longitude),
+                            width: 48,
+                            height: 48,
+                            child: GestureDetector(
+                              onTap: () => _showStopInfo(poi),
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: c.withValues(alpha: 0.18),
+                                    ),
+                                  ),
+                                  Container(
+                                    width: 28,
+                                    height: 28,
+                                    decoration: BoxDecoration(
+                                      color: c,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 2,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: c.withValues(alpha: 0.4),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        '${poi.sequenceOrder}',
+                                        style: GoogleFonts.instrumentSans(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                          height: 1,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                  ),
+              ],
             ),
 
-          // ── Day filter chips (bottom of map) ─────────────────────────────
-          if (_days.length > 1)
-            Positioned(
-              bottom: MediaQuery.of(context).padding.bottom + 16,
-              left: 0,
-              right: 0,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    _DayChip(
-                      label: 'All',
-                      color: VoyoColors.stone,
-                      selected: _selectedDay == null,
-                      onTap: () {
-                        setState(() => _selectedDay = null);
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (mounted) _fitRouteBounds(_itineraryPois);
-                        });
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    for (final day in _days) ...[
+            // ── Back button ───────────────────────────────────────────────────
+            if (Navigator.of(context).canPop())
+              Positioned(
+                top: topPad + 12,
+                left: 12,
+                child: _MapIconButton(
+                  icon: Icons.arrow_back,
+                  onTap: () {
+                    // Dismiss the region card first if one is open.
+                    if (_regions.selectedId != null) {
+                      _regions.dismiss();
+                    } else {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                ),
+              ),
+
+            // ── Day filter chips (bottom of map) ─────────────────────────────
+            if (_days.length > 1)
+              Positioned(
+                bottom: MediaQuery.of(context).padding.bottom + 16,
+                left: 0,
+                right: 0,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
                       _DayChip(
-                        label: 'Day $day',
-                        color: _dayColor(day),
-                        selected: _selectedDay == day,
+                        label: 'All',
+                        color: VoyoColors.stone,
+                        selected: _selectedDay == null,
                         onTap: () {
-                          final dayPois =
-                              _itineraryPois
-                                  .where((p) => p.dayNumber == day)
-                                  .toList();
-                          setState(() => _selectedDay = day);
+                          setState(() => _selectedDay = null);
                           WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (mounted) _fitRouteBounds(dayPois);
+                            if (mounted) _fitRouteBounds(_itineraryPois);
                           });
                         },
                       ),
                       const SizedBox(width: 8),
+                      for (final day in _days) ...[
+                        _DayChip(
+                          label: 'Day $day',
+                          color: _dayColor(day),
+                          selected: _selectedDay == day,
+                          onTap: () {
+                            final dayPois =
+                                _itineraryPois
+                                    .where((p) => p.dayNumber == day)
+                                    .toList();
+                            setState(() => _selectedDay = day);
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (mounted) _fitRouteBounds(dayPois);
+                            });
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
-            ),
 
-          // ── Top-right controls ────────────────────────────────────────────
-          // ── "Explore from here" hint (empty state only) ───────────────────
-          if (_isochrone.isEmpty && _itineraryPois.isEmpty)
+            // ── Top-right controls ────────────────────────────────────────────
+            // ── "Explore from here" hint (empty state only) ───────────────────
+            if (_isochrone.isEmpty && _itineraryPois.isEmpty)
+              Positioned(
+                bottom: MediaQuery.of(context).padding.bottom + 16,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: IsochroneHintPill(
+                    icon: Icons.touch_app_rounded,
+                    text: "Long-press the map to explore what's reachable",
+                  ),
+                ),
+              ),
+
+            // Isochrone clear button (+ future sliders). Self-positioning widget
+            // owned by map_isochrone_overlay.dart.
+            // Region info card — slides up when a region is tapped.
+            RegionInfoCard(
+              controller: _regions,
+              bottomInset: _days.length > 1 ? 60 : 0,
+            ),
+            IsochroneControls(controller: _isochrone, topPad: topPad),
+
             Positioned(
-              bottom: MediaQuery.of(context).padding.bottom + 16,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: IsochroneHintPill(
-                  icon: Icons.touch_app_rounded,
-                  text: "Long-press the map to explore what's reachable",
-                ),
+              top: topPad + 12,
+              right: 12,
+              child: ListenableBuilder(
+                listenable: _isochrone,
+                builder: (ctx, _) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      if (_isLoading || _routeLoading || _isochrone.isLoading)
+                        _LoadingPill(
+                          routeLoading: _routeLoading,
+                          isochroneLoading: _isochrone.isLoading,
+                        ),
+                      if (hasRoute) ...[
+                        const SizedBox(height: 8),
+                        _MapIconButton(
+                          icon:
+                              _routeVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off_outlined,
+                          onTap:
+                              () => setState(
+                                () => _routeVisible = !_routeVisible,
+                              ),
+                          color:
+                              _routeVisible ? VoyoColors.sky : VoyoColors.stone,
+                        ),
+                        const SizedBox(height: 8),
+                        _MapIconButton(
+                          icon: Icons.fit_screen,
+                          onTap: () => _fitRouteBounds(_itineraryPois),
+                        ),
+                        const SizedBox(height: 8),
+                        // Navigate button — opens Google Maps for the selected day (or all)
+                        _MapIconButton(
+                          icon: Icons.navigation_rounded,
+                          color: VoyoColors.sky,
+                          onTap:
+                              () => _routingService.openInGoogleMaps(
+                                _visiblePois,
+                              ),
+                        ),
+                        const SizedBox(height: 8),
+                        // Route details panel
+                        _MapIconButton(
+                          icon: Icons.list_alt_rounded,
+                          onTap: _showRoutePanel,
+                        ),
+                      ],
+                    ],
+                  );
+                },
               ),
             ),
-
-          // Isochrone clear button (+ future sliders). Self-positioning widget
-          // owned by map_isochrone_overlay.dart.
-          IsochroneControls(controller: _isochrone, topPad: topPad),
-
-          Positioned(
-            top: topPad + 12,
-            right: 12,
-            child: ListenableBuilder(
-              listenable: _isochrone,
-              builder: (ctx, _) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    if (_isLoading || _routeLoading || _isochrone.isLoading)
-                      _LoadingPill(
-                        routeLoading: _routeLoading,
-                        isochroneLoading: _isochrone.isLoading,
-                      ),
-                    if (hasRoute) ...[
-                      const SizedBox(height: 8),
-                      _MapIconButton(
-                        icon:
-                            _routeVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off_outlined,
-                        onTap:
-                            () =>
-                                setState(() => _routeVisible = !_routeVisible),
-                        color:
-                            _routeVisible ? VoyoColors.sky : VoyoColors.stone,
-                      ),
-                      const SizedBox(height: 8),
-                      _MapIconButton(
-                        icon: Icons.fit_screen,
-                        onTap: () => _fitRouteBounds(_itineraryPois),
-                      ),
-                      const SizedBox(height: 8),
-                      // Navigate button — opens Google Maps for the selected day (or all)
-                      _MapIconButton(
-                        icon: Icons.navigation_rounded,
-                        color: VoyoColors.sky,
-                        onTap:
-                            () =>
-                                _routingService.openInGoogleMaps(_visiblePois),
-                      ),
-                      const SizedBox(height: 8),
-                      // Route details panel
-                      _MapIconButton(
-                        icon: Icons.list_alt_rounded,
-                        onTap: _showRoutePanel,
-                      ),
-                    ],
-                  ],
-                );
-              },
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1220,4 +1275,3 @@ class _StopInfoSheetState extends State<_StopInfoSheet> {
     );
   }
 }
-

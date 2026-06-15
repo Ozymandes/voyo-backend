@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/poi.dart';
 import '../theme.dart';
 import 'poi_image.dart';
@@ -119,6 +120,15 @@ class PoiDetailSheet extends StatelessWidget {
       children.add(_TagWrap(tags: poi.tags!));
     }
 
+    // Contact information (website and phone) - only show when present
+    final contactRows = _contactRows(context);
+    if (contactRows.isNotEmpty) {
+      children.add(const SizedBox(height: 20));
+      children.add(_label('Contact'));
+      children.add(const SizedBox(height: 10));
+      children.addAll(contactRows);
+    }
+
     children.add(const SizedBox(height: 8));
     return children;
   }
@@ -216,6 +226,57 @@ class PoiDetailSheet extends StatelessWidget {
     );
   }
 
+  /// Builds contact information rows (website and phone).
+  /// Returns a list of widgets, only for fields that have non-null values.
+  List<Widget> _contactRows(BuildContext context) {
+    final rows = <Widget>[];
+    
+    if (poi.websiteUrl != null) {
+      rows.add(_ContactRow(
+        icon: Icons.language_outlined,
+        label: 'Website',
+        value: _shortUrl(poi.websiteUrl!),
+        onTap: () async {
+          final uri = Uri.parse(poi.websiteUrl!);
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
+        },
+      ));
+      rows.add(const SizedBox(height: 8));
+    }
+    
+    if (poi.phoneNumber != null) {
+      rows.add(_ContactRow(
+        icon: Icons.phone_outlined,
+        label: 'Phone',
+        value: poi.phoneNumber!,
+        onTap: () async {
+          final uri = Uri.parse('tel:${poi.phoneNumber!}');
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri);
+          }
+        },
+      ));
+      rows.add(const SizedBox(height: 8));
+    }
+    
+    return rows;
+  }
+
+  /// Shortens a URL for display by removing protocol and common prefixes.
+  static String _shortUrl(String url) {
+    // Remove protocol
+    var short = url.replaceFirst(RegExp(r'^https?://'), '');
+    // Remove www.
+    short = short.replaceFirst(RegExp(r'^www\.'), '');
+    // Truncate if still too long
+    if (short.length > 28) {
+      short = '${short.substring(0, 25)}...';
+    }
+    return short;
+  }
+
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   static String _formatDuration(int minutes) {
@@ -235,6 +296,36 @@ class PoiDetailSheet extends StatelessWidget {
 
   static String? _todayHours(Map<String, dynamic>? hours) {
     if (hours == null || hours.isEmpty) return null;
+    
+    // Handle legacy weekday_text format: {"weekday_text": ["Monday: 8:00 AM – 6:00 PM", ...]}
+    // Google's weekday_text has index 0 = Sunday
+    final weekdayText = hours['weekday_text'];
+    if (weekdayText is List && weekdayText.isNotEmpty) {
+      // Map DateTime weekday (1=Monday, 7=Sunday) to weekday_text index (0=Sunday, 1=Monday, ...)
+      final weekday = DateTime.now().weekday;
+      final index = weekday == 7 ? 0 : weekday; // Sunday -> 0, Monday -> 1, etc.
+      
+      if (index >= 0 && index < weekdayText.length) {
+        final entry = weekdayText[index];
+        if (entry is String && entry.isNotEmpty) {
+          // Parse "Day: Hours" format to extract just the hours
+          final colonIndex = entry.indexOf(':');
+          if (colonIndex != -1 && colonIndex < entry.length - 2) {
+            // Check if there's a space after the colon (day name separator)
+            if (entry.length > colonIndex + 1 && entry[colonIndex + 1] == ' ') {
+              return entry.substring(colonIndex + 2).trim();
+            } else {
+              // No space, might be hours format like "8:00 AM" (unlikely in this context)
+              return entry;
+            }
+          }
+          return entry;
+        }
+      }
+      return null;
+    }
+    
+    // Handle new day-keyed format: {"monday": "8:00 AM – 6:00 PM", ...}
     const days = [
       'monday',
       'tuesday',
@@ -560,6 +651,76 @@ class _TagWrap extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Contact row widget
+// ---------------------------------------------------------------------------
+
+class _ContactRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final VoidCallback onTap;
+
+  const _ContactRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: VoyoColors.vellum,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: VoyoColors.smoke),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: VoyoColors.sky),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: GoogleFonts.instrumentSans(
+                      fontSize: 11,
+                      color: VoyoColors.stone,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    value,
+                    style: GoogleFonts.instrumentSans(
+                      fontSize: 14,
+                      color: VoyoColors.ink,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: VoyoColors.stone.withValues(alpha: 0.6),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

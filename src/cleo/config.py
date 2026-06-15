@@ -66,6 +66,57 @@ config = CleoConfig()
 
 
 # ---------------------------------------------------------------------------
+# User-facing fallback messages
+# ---------------------------------------------------------------------------
+#
+# Shown whenever the model cannot produce a usable reply. Kept in one place
+# so the fallback the user sees is identical whether the failure originates in
+# ``GroqClient`` (rate-limit / quota / network) or in the agent loop (empty /
+# truncated model output).  Importing this in ``cleo_agent.py`` is what stops
+# the agent from ever returning an empty string (the "CLEO says nothing" bug).
+
+CLEO_FALLBACK_MESSAGE = (
+    "I apologize, but I'm having trouble connecting right now. "
+    "Please try again in a moment."
+)
+
+# Distinct message for the hard daily-token cap: retrying won't help within a
+# single session, so we tell the user plainly to come back tomorrow.
+CLEO_DAILY_QUOTA_MESSAGE = (
+    "I've reached my daily message limit for now. "
+    "Please try again tomorrow \u2014 I'll be refreshed and ready to help plan your Egypt trip!"
+)
+
+# Lightweight in-process daily-spend awareness (resets on restart). Groq's free
+# tier caps tokens/day; tracking cumulative usage here lets us log how close we
+# are without adding external state or dependencies.
+_groq_token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "requests": 0}
+
+
+def _record_usage(usage: Any) -> None:
+    """Accumulate ``response.usage`` and log the running daily total."""
+    if usage is None:
+        return
+    prompt = getattr(usage, "prompt_tokens", 0) or 0
+    completion = getattr(usage, "completion_tokens", 0) or 0
+    if not prompt and not completion:
+        return
+    _groq_token_usage["prompt_tokens"] += prompt
+    _groq_token_usage["completion_tokens"] += completion
+    _groq_token_usage["requests"] += 1
+    total = _groq_token_usage["prompt_tokens"] + _groq_token_usage["completion_tokens"]
+    logger.info(
+        "[GROQ USAGE] req #%d  prompt=%d completion=%d  | cumulative today: prompt=%d completion=%d total=%d",
+        _groq_token_usage["requests"],
+        prompt,
+        completion,
+        _groq_token_usage["prompt_tokens"],
+        _groq_token_usage["completion_tokens"],
+        total,
+    )
+
+
+# ---------------------------------------------------------------------------
 # LLM Response dataclass
 # ---------------------------------------------------------------------------
 
@@ -339,6 +390,8 @@ class GroqClient:
                 response = await self.async_client.chat.completions.create(**params)
                 message = response.choices[0].message
 
+                _record_usage(getattr(response, "usage", None))
+
                 return LLMResponse(
                     content=message.content,
                     tool_calls=message.tool_calls if hasattr(message, "tool_calls") and message.tool_calls else None,
@@ -359,6 +412,19 @@ class GroqClient:
                 if recovered is not None:
                     return recovered
 
+                # Daily token-quota exhaustion is a HARD cap that will not clear
+                # within the retry window. Don't burn the remaining retries (each
+                # retry also counts against rate-limit accounting); surface a
+                # specific, user-facing message immediately.
+                is_daily_quota = (
+                    "tokens per day" in error_str
+                    or "per day" in error_str
+                    or "tpd" in error_str
+                )
+                if is_daily_quota:
+                    logger.warning("[GROQ] Daily quota exhausted \u2014 not retrying: %s", e)
+                    return LLMResponse(content=CLEO_DAILY_QUOTA_MESSAGE)
+
                 is_retryable = (
                     "rate_limit" in error_type
                     or "rate limit" in error_str
@@ -376,9 +442,7 @@ class GroqClient:
                 break
 
         logger.error(f"Groq generate_async failed after {max_retries} attempts: {last_error}")
-        return LLMResponse(
-            content="I apologize, but I'm having trouble connecting right now. Please try again in a moment."
-        )
+        return LLMResponse(content=CLEO_FALLBACK_MESSAGE)
 
     async def generate_streaming(
         self,
@@ -468,6 +532,17 @@ class GroqClient:
                         "finish_reason": recovered.finish_reason,
                     }
 
+                # Daily token-quota exhaustion is a HARD cap that will not clear
+                # within the retry window; don't waste retries (see generate_async).
+                is_daily_quota = (
+                    "tokens per day" in error_str
+                    or "per day" in error_str
+                    or "tpd" in error_str
+                )
+                if is_daily_quota:
+                    logger.warning("[GROQ] Daily quota exhausted \u2014 not retrying: %s", e)
+                    return CLEO_DAILY_QUOTA_MESSAGE
+
                 is_retryable = (
                     "429" in error_str
                     or "503" in error_str
@@ -483,7 +558,7 @@ class GroqClient:
                 break
 
         logger.error(f"Groq generate failed after {max_retries} attempts: {last_error}")
-        return "I apologize, but I'm having trouble connecting right now. Please try again in a moment."
+        return CLEO_FALLBACK_MESSAGE
 
     async def test_connection(self) -> bool:
         """Test Groq API connection (async)."""

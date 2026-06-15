@@ -32,9 +32,22 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
+import httpx
+from slugify import slugify
+from supabase import create_client
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Supabase client for Storage operations
+supabase_client = None
+
+def get_supabase_client():
+    """Lazy init Supabase client (only if needed for image pipeline)."""
+    global supabase_client
+    if supabase_client is None:
+        supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    return supabase_client
 MASTER_JSON = Path(__file__).parent / "data" / "master_attractions.json"
 assert MASTER_JSON.exists(), f"Run clean_master_list.py first — missing {MASTER_JSON}"
 MASTER_ATTRACTIONS = json.loads(MASTER_JSON.read_text(encoding="utf-8"))
@@ -68,6 +81,61 @@ log = logging.getLogger("rebuild")
 # ── Helpers ───────────────────────────────────────────────────────────────
 def norm(name: str) -> str:
     return re.sub(r"[^a-z0-9 ]", "", name.lower()).strip()
+
+
+def slug(name: str) -> str:
+    """Create URL-safe slug from POI name."""
+    return slugify(name, lowercase=True, separator="-")
+
+
+async def store_google_photo(photo_ref: str, poi_name: str, idx: int) -> str:
+    """
+    Fetch a Google Places photo, upload to Supabase Storage, return permanent public URL.
+    
+    Args:
+        photo_ref: Google Places photo reference string
+        poi_name: POI name (for filename)
+        idx: photo index (for unique filename)
+    
+    Returns:
+        Permanent public URL of the uploaded image
+    
+    Raises:
+        Exception: If fetch or upload fails
+    """
+    # Fetch image bytes via Places Photo API (redirects to actual image)
+    img_url = (f"https://maps.googleapis.com/maps/api/place/photo"
+               f"?maxwidth=1200&photoreference={photo_ref}&key={GOOGLE_KEY}")
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        resp = await client.get(img_url, follow_redirects=True)
+        resp.raise_for_status()
+        
+        # Upload to Supabase Storage bucket 'poi-images'
+        storage = get_supabase_client().storage
+        path = f"pois/{slug(poi_name)}-{idx}.jpg"
+        
+        try:
+            storage.from_("poi-images").upload(
+                path,
+                resp.content,
+                {"content-type": "image/jpeg"}
+            )
+        except Exception as e:
+            # If file already exists (same POI rebuilt), try with timestamp
+            if "already exists" in str(e).lower() or "duplicate" in str(e).lower():
+                import time
+                path = f"pois/{slug(poi_name)}-{idx}-{int(time.time())}.jpg"
+                storage.from_("poi-images").upload(
+                    path,
+                    resp.content,
+                    {"content-type": "image/jpeg"}
+                )
+            else:
+                raise
+        
+        # Return permanent public URL (no key, no token)
+        return storage.from_("poi-images").get_public_url(path)
 
 
 def with_retry(fn, tries=4, base_delay=1.0):
@@ -129,14 +197,17 @@ def wikimedia_fetch(name: str, region: str, search_queries: list):
 
 # ── Source 2: Google Places (structured data) ─────────────────────────────
 def google_fetch(name: str, region: str, search_queries: list):
-    """Return dict of structured fields, or {} on failure."""
+    """Return dict of structured fields, or {} on failure.
+    
+    Now also returns 'photos' list with Google photo references for the image pipeline.
+    """
     queries = list(search_queries or []) + [f"{name} {region} Egypt"]
     place_id = None
     for q in queries:
         try:
             r = with_retry(lambda q=q: requests.get(GOOGLE_TEXT, params={
                 "query": q, "key": GOOGLE_KEY,
-                "fields": "place_id,name,rating,user_ratings_total,geometry",
+                "fields": "place_id,name,rating,user_ratings_total,geometry,photos",
             }, timeout=12))
             j = r.json()
             if j.get("status") == "OK" and j.get("results"):
@@ -151,7 +222,7 @@ def google_fetch(name: str, region: str, search_queries: list):
         r = with_retry(lambda: requests.get(GOOGLE_DETAILS, params={
             "place_id": place_id, "key": GOOGLE_KEY,
             "fields": "name,formatted_address,geometry,rating,user_ratings_total,"
-                      "opening_hours,website,formatted_phone_number,price_level",
+                      "opening_hours,website,formatted_phone_number,price_level,photos",
         }, timeout=12))
         j = r.json()
         if j.get("status") != "OK":
@@ -171,6 +242,7 @@ def google_fetch(name: str, region: str, search_queries: list):
         "website_url": d.get("website"),
         "phone_number": d.get("formatted_phone_number"),
         "price_level": d.get("price_level"),
+        "photo_refs": [p["photo_reference"] for p in d.get("photos", [])],  # NEW: for image pipeline
     }
     weekday = (d.get("opening_hours") or {}).get("weekday_text")
     if weekday:
@@ -180,11 +252,38 @@ def google_fetch(name: str, region: str, search_queries: list):
 
 # ── Merge sources -> POI row ──────────────────────────────────────────────
 def build_row(entry: dict, region: str) -> dict:
-    """Combine master entry + wikimedia + google into a Supabase-ready row."""
+    """Combine master entry + wikimedia + google into a Supabase-ready row.
+    
+    Image pipeline: fetch up to 5 Google photos via Storage, supplement with 1 Wikimedia.
+    """
     name = entry["name"]
     wiki = with_retry(lambda: wikimedia_fetch(name, region, entry.get("search_queries")), tries=3)
     time.sleep(0.1)  # gentle on Wikimedia
     goog = google_fetch(name, region, entry.get("search_queries"))
+
+    # Image pipeline: Google photos (via Storage) + Wikimedia (supplemental)
+    image_urls = []
+    photo_refs = goog.get("photo_refs", [])[:5]  # max 5 Google photos
+    
+    if photo_refs:
+        import asyncio
+        # Fetch and upload Google photos in parallel
+        async def fetch_all_photos():
+            tasks = []
+            for i, ref in enumerate(photo_refs):
+                tasks.append(store_google_photo(ref, name, i))
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            valid_urls = [r for r in results if isinstance(r, str) and r.startswith("http")]
+            return valid_urls
+        
+        try:
+            image_urls.extend(asyncio.run(fetch_all_photos()))
+        except Exception as e:
+            log.warning(f"Google photo fetch/upload failed for {name}: {e}")
+    
+    # Supplement with Wikimedia (1 max, as 6th image if Google exists)
+    wiki_images = wiki.get("images", [])[:1]
+    image_urls.extend(wiki_images)
 
     # Coordinates: prefer Google, fall back to Wikimedia
     coords = goog.get("coords") or wiki.get("coords")
@@ -206,7 +305,7 @@ def build_row(entry: dict, region: str) -> dict:
         "website_url": goog.get("website_url") or None,
         "phone_number": goog.get("phone_number") or None,
         "opening_hours": goog.get("opening_hours") or None,
-        "image_urls": wiki.get("images") or [],   # FIX bug #1: flat array
+        "image_urls": image_urls,  # Google-via-Storage (≤5) + Wikimedia (≤1)
         "tags": _build_tags(entry, wiki),          # FIX bug #2: flat array
         "is_active": True,
         "is_verified": True,

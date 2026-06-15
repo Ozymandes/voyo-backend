@@ -41,3 +41,7 @@ design-system/FULL_UI_GENERATION_PROMPT.md
 
 # Local pi-agent orchestration config (agents, chains) — keep on this machine only
 .pi/
+
+# Pipeline run artifacts (regenerable)
+voyo.db
+rebuild_report.json
