@@ -1,5 +1,11 @@
 # Safarny Flutter Tie-In — Scope & Decision Doc
 
+> **STATUS: BUILT ✅ (2026-06-18)** — Option A implemented + verified by 6
+> backend integration tests (mocked; no Groq/Docker/Supabase). Remaining:
+> one live e2e with fresh Groq quota (partner task). Details in §8 below.
+>
+> The rest of this doc is preserved as the original scope/decision record.
+
 **Status:** scoped, not started. This is the last architectural gap between
 "what the thesis claims" and "what the app does."
 **Owner:** next focused session (~1 day).

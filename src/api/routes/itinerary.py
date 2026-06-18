@@ -69,6 +69,12 @@ class PlanTripRequest(BaseModel):
     interests: List[str] = Field(default_factory=list)
     notes: Optional[str] = None
     hotel_location: Optional[List[float]] = None
+    # Option A safarny tie-in: when True, the route commits the plan as the
+    # authoritative itinerary via ``save_optimized_itinerary`` (after shape
+    # adaptation) and returns ``itinerary_id``. Default False keeps the
+    # existing preview-only behaviour so nothing that currently calls /plan
+    # (incl. the unit tests) is affected.
+    persist: bool = Field(default=False)
 
 
 class CreateItineraryRequest(BaseModel):
@@ -196,6 +202,39 @@ async def plan_trip(request: PlanTripRequest, user=Depends(get_current_user)):
             status_code=503,
             detail=f"Could not generate itinerary: {e}",
         )
+
+    # Option A safarny tie-in: CLEO converses, Safarny commits. When the
+    # caller requests persist (the Flutter "Save to Planner" path), the
+    # deterministic plan is committed as the authoritative itinerary through
+    # the SAME persistence layer the manual save uses — so tips, real VROOM
+    # times, and travel segments all land in itinerary_items. The plan is
+    # shape-adapted first (safarny emits day/time/transport_to_next_min;
+    # persistence reads day_number/arrival_time/travel_to_next_minutes).
+    # Honest failure: a persist error is surfaced as 500, never silently
+    # swallowed — the caller MUST know the save didn't happen (item #22).
+    if request.persist and result.get("status") == "ok":
+        from src.itinerary.persistence import (
+            ItineraryPersistence,
+            safarny_to_persistence_shape,
+        )
+        persistence = ItineraryPersistence()
+        schedule = safarny_to_persistence_shape(result)
+        day_count = profile.get("_day_count") or 1
+        title = request.title or f"{day_count}-Day Egypt Trip"
+        try:
+            saved = await persistence.save_optimized_itinerary(
+                user_id=user["user_id"],
+                title=title,
+                region_id=None,
+                optimized_schedule=schedule,
+            )
+        except Exception as e:
+            logger.error(f"/itinerary/plan persist failed: {e}", exc_info=True)
+            raise HTTPException(
+                status_code=500,
+                detail=f"Planned but failed to save: {e}",
+            )
+        return {**result, "itinerary_id": saved.get("itinerary_id")}
     return result
 
 

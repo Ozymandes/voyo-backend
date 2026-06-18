@@ -14,6 +14,66 @@ from src.database.supabase_client import SupabaseClient
 logger = logging.getLogger(__name__)
 
 
+# ── Safarny → persistence shape adapter ─────────────────────────────────────
+
+
+def safarny_to_persistence_shape(safarny_result: Dict[str, Any]) -> Dict[str, Any]:
+    """Adapt ``SafarnyPlanner.plan()`` output to the shape
+    ``save_optimized_itinerary`` consumes.
+
+    The two shapes diverge on key names (Safarny emits ``day`` / ``time`` /
+    ``transport_to_next_min``; persistence reads ``day_number`` /
+    ``arrival_time`` / ``travel_to_next_minutes``). Calling ``save_*`` with
+    raw Safarny output would collapse every stop onto day 1 with null times
+    and zeroed travel — silently destroying the real VROOM schedule this
+    whole pipeline exists to produce. This adapter closes that gap.
+
+    It also synthesises two fields ``save_*`` reads but Safarny does not emit:
+      * ``sequence`` — 1-based index within each day (stops are already
+        time-sorted by Safarny's ``_shape``).
+      * ``optimization_metadata.solver_status`` — derived from the plan's
+        ``provenance.times`` so the itinerary record records whether VROOM
+        actually scheduled it.
+
+    Pure function: no I/O, no Groq, no Docker, no Supabase. Unit-testable in
+    isolation — which is why it lives at module scope rather than as a method.
+    """
+    provenance = safarny_result.get("provenance") or {}
+    vroom_ok = provenance.get("times") == "vroom"
+    days_out: List[Dict[str, Any]] = []
+    for day in safarny_result.get("days", []):
+        # Safarny emits ``day``; fall back to ``day_number`` so this is also
+        # idempotent if called on an already-persistence-shaped dict.
+        day_number = day.get("day") or day.get("day_number") or 1
+        stops_out: List[Dict[str, Any]] = []
+        for idx, stop in enumerate(day.get("stops", []), start=1):
+            stops_out.append({
+                **stop,
+                "day_number": day_number,
+                "arrival_time": stop.get("time") or stop.get("arrival_time"),
+                "departure_time": stop.get("departure_time"),
+                "travel_to_next_minutes": stop.get("transport_to_next_min")
+                    or stop.get("travel_to_next_minutes")
+                    or 0,
+                "travel_to_next_km": stop.get("transport_to_next_km")
+                    or stop.get("travel_to_next_km")
+                    or 0,
+                # Preserve an explicit sequence if present; otherwise derive
+                # from Safarny's time-sorted order.
+                "sequence": stop.get("sequence") or idx,
+            })
+        days_out.append({"day_number": day_number, "stops": stops_out})
+    return {
+        **safarny_result,
+        "days": days_out,
+        "optimization_metadata": {
+            "solver_status": "vroom_optimal" if vroom_ok else "unscheduled_vroom_down",
+            "computed_with": "safarny_hybrid",
+            "provenance": provenance,
+        },
+    }
+
+
 class ItineraryPersistence:
     """Save/load itineraries to/from Supabase."""
 

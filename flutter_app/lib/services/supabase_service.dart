@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import '../models/poi.dart';
 import '../models/itinerary_poi.dart';
 import '../models/itinerary.dart';
+import '../widgets/trip_profile_sheet.dart';
 
 class SupabaseService {
   final _client = Supabase.instance.client;
@@ -390,6 +391,74 @@ class SupabaseService {
       // we cannot claim a schedule is feasible if we never verified it.
       throw PreviewAddUnavailableException('preview-add network failure: $e');
     }
+  }
+
+  /// Option A safarny tie-in: runs the deterministic planner on the backend
+  /// AND persists the result as the authoritative itinerary in one call.
+  /// Returns the new [itinerary_id], or null if the user is not signed in.
+  ///
+  /// Replaces the legacy fuzzy-keyword save path (which wrote no tips, no
+  /// VROOM times, and fuzzy-matched POI names). The structured
+  /// [TripProfile] is sent to ``/itinerary/plan`` with ``persist: true``;
+  /// Safarny selects POIs deterministically, VROOM assigns real
+  /// arrival/departure times, and per-stop tips land in
+  /// ``itinerary_items.notes`` — so the planner page renders the real plan,
+  /// not a lossy parse of CLEO's chat reply.
+  ///
+  /// Throws on ANY backend failure (503 / network / missing itinerary_id).
+  /// The caller MUST surface this honestly (item #22): a failed plan must
+  /// never silently fall back to the fuzzy-match path.
+  Future<int?> planAndSaveItinerary({
+    required String userId,
+    required TripProfile profile,
+  }) async {
+    final baseUrl = dotenv.env['CLEO_API_URL'] ?? 'http://10.0.2.2:8000';
+    final token = _client.auth.currentSession?.accessToken;
+    if (token == null) return null; // not signed in — caller handles
+    final body = <String, dynamic>{
+      'title': profile.title ?? '${profile.dayCount}-Day Egypt Trip',
+      if (profile.startDate != null)
+        'start_date': profile.startDate!.toIso8601String().split('T').first,
+      if (profile.endDate != null)
+        'end_date': profile.endDate!.toIso8601String().split('T').first,
+      'travelers': profile.travelers,
+      'budget_tier': profile.budgetTier,
+      'pace': profile.pace,
+      'companions': profile.companions,
+      'interests': profile.interests.toList(),
+      if (profile.notes != null && profile.notes!.trim().isNotEmpty)
+        'notes': profile.notes!.trim(),
+      'persist': true,
+    };
+    final resp = await http
+        .post(
+          Uri.parse('$baseUrl/api/v1/itinerary/plan'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode(body),
+        )
+        // Safarny = recommendation pre-filter + (optional) LLM select +
+        // VROOM solve, so allow generous time. A timeout here is real.
+        .timeout(const Duration(seconds: 90));
+    if (resp.statusCode != 200) {
+      throw Exception(
+        'Plan failed (HTTP ${resp.statusCode}): ${resp.body}',
+      );
+    }
+    final json =
+        jsonDecode(utf8.decode(resp.bodyBytes)) as Map<String, dynamic>;
+    final id = json['itinerary_id'];
+    if (id == null) {
+      // 200 but no itinerary_id → persist flag ignored or status != 'ok'.
+      // Surface honestly rather than returning a null the caller might
+      // read as "not signed in".
+      throw Exception(
+        'Plan returned no itinerary_id (status: ${json["status"]}). Response: $json',
+      );
+    }
+    return id as int;
   }
 }
 

@@ -70,6 +70,13 @@ class _ChatScreenState extends State<ChatScreen> {
   // Stops parsed from the last itinerary response
   List<_ParsedStop> _parsedStops = [];
 
+  // The structured trip profile behind the last Plan-a-trip request, if
+  // any. Captured in _sendItineraryRequest so the Import sheet can commit
+  // it deterministically via /itinerary/plan (Option A safarny tie-in)
+  // instead of the legacy fuzzy-keyword path. Null for purely
+  // conversational plans → Import falls back to fuzzy match.
+  TripProfile? _pendingProfile;
+
   // Current session — null until user sends first message
   String? _currentSessionId;
 
@@ -261,6 +268,13 @@ class _ChatScreenState extends State<ChatScreen> {
   /// are listed explicitly so CLEO's curate_itinerary tool receives concrete
   /// constraints to optimize against.
   void _sendItineraryRequest(TripProfile profile) {
+    // Option A safarny tie-in: remember the structured profile so the
+    // "Save to Planner" sheet can commit it deterministically via
+    // /itinerary/plan (persist=true) instead of the legacy fuzzy-keyword
+    // path. We still send the natural-language prompt to CLEO so the user
+    // sees a conversational preview in chat; Safarny is the authoritative
+    // committer on save. Cleared after a successful import.
+    _pendingProfile = profile;
     final days = profile.dayCount;
     final buf = StringBuffer();
     if (days > 0) {
@@ -503,7 +517,15 @@ class _ChatScreenState extends State<ChatScreen> {
           (_) => _ImportStopsSheet(
             stops: _parsedStops,
             userId: _userId ?? '',
-            onImported: () => widget.onSwitchToPlanner?.call(),
+            profile: _pendingProfile,
+            onImported: () {
+              // Clear the pending profile only after a successful import —
+              // so a failed save can retry the deterministic path.
+              if (_pendingProfile != null) {
+                _pendingProfile = null;
+              }
+              widget.onSwitchToPlanner?.call();
+            },
           ),
     );
   }
@@ -1383,11 +1405,17 @@ class _ImportStopsSheet extends StatefulWidget {
   final List<_ParsedStop> stops;
   final String userId;
   final VoidCallback onImported;
+  // Option A safarny tie-in: when present, _save() commits the
+  // deterministic plan via /itinerary/plan instead of the fuzzy path.
+  // Null = purely conversational plan → legacy fuzzy match (kept as a
+  // fallback so a chat-only plan still imports).
+  final TripProfile? profile;
 
   const _ImportStopsSheet({
     required this.stops,
     required this.userId,
     required this.onImported,
+    this.profile,
   });
 
   @override
@@ -1470,7 +1498,36 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
       _error = null;
     });
     try {
-      // Always create a new itinerary with the user-supplied name
+      // Option A safarny tie-in: if this plan came from a structured
+      // TripProfile (the "Plan a trip" sheet), commit it via the
+      // deterministic /itinerary/plan endpoint with persist=true. Safarny
+      // selects POIs from the recommendation pool, VROOM assigns real
+      // times, and tips land in itinerary_items.notes — so the planner
+      // page renders the real plan, not a lossy parse of CLEO's chat reply.
+      // CLEO's displayed stops become a conversational preview; Safarny is
+      // the authoritative committer. The two may differ slightly (both draw
+      // from the same candidate pool) — that is the thesis-aligned tradeoff.
+      if (widget.profile != null) {
+        final id = await _service.planAndSaveItinerary(
+          userId: widget.userId,
+          profile: widget.profile!,
+        );
+        if (id == null) {
+          throw Exception(
+            'Not signed in — could not commit the plan. Please sign in and try again.',
+          );
+        }
+        if (mounted) {
+          Navigator.pop(context);
+          widget.onImported();
+        }
+        return;
+      }
+
+      // Legacy path: purely conversational plan (no structured profile).
+      // Kept as a fallback so a chat-only itinerary still imports. Creates
+      // a bare itinerary + fuzzy-matches POI names. Tips/VROOM times are
+      // NOT written here — that gap is what the profile path above fixes.
       final title =
           _titleCtrl.text.trim().isEmpty
               ? '${widget.stops.map((s) => s.day).reduce((a, b) => a > b ? a : b)}-Day Egypt Trip'
