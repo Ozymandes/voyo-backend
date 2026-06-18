@@ -72,3 +72,6 @@ osrm-data/
 # Pipeline / session scratch: one-off scripts, DB backups (with content),
 # review JSONLs, logs. Regenerable; not meant to be shared via the repo.
 work/
+
+# Source upload dir for brand assets (canonical copies in flutter_app/assets/brand + /cleo)
+VOYO_flutter_assets/

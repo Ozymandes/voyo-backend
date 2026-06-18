@@ -49,6 +49,12 @@ class _MapScreenState extends State<MapScreen> {
   // ── POI state ───────────────────────────────────────────────────────────────
   List<Poi> _pois = [];
   List<ItineraryPoi> _itineraryPois = [];
+  // Canonical (enriched) Poi records for the itinerary stops above, keyed
+  // by poi_id. Hydrated once when stops load so that tapping an itinerary
+  // marker opens the SAME MapPoiPreviewCard (with real Supabase image /
+  // description / price) as a regular map POI — instead of the prior
+  // Wikipedia-lookup sheet that showed stale, inconsistent data.
+  Map<int, Poi> _itineraryPoiDetails = {};
   Timer? _debounceTimer;
   bool _isLoading = false;
   // Non-fatal POI/network error surfaced as a dismissible banner so the user
@@ -179,7 +185,16 @@ class _MapScreenState extends State<MapScreen> {
     final pois = await _supabaseService.getCurrentItineraryPois(userId);
     if (!mounted) return;
     setState(() => _itineraryPois = pois);
+    // Hydrate the canonical enriched records for these stop POIs in the
+    // background. This is what makes tapping a stop marker open the same
+    // rich MapPoiPreviewCard (real image / description / price) as a
+    // regular POI — fixing the 'stale stop card' bug. Non-blocking: if it
+    // fails or returns partial data, the marker still opens the preview
+    // with whatever canonical fields it has (Poi.fromJson is defensive).
     if (pois.isNotEmpty) {
+      final ids = pois.map((p) => p.poiId).toSet();
+      final details = await _supabaseService.getPoisByIds(ids);
+      if (mounted) setState(() => _itineraryPoiDetails = details);
       // Defer until after the rebuild so the map controller is ready
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _fitRouteBounds(pois);
@@ -729,6 +744,17 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _showStopInfo(ItineraryPoi poi) {
+    // Resolve the canonical enriched record for this stop POI, then open
+    // the SAME preview card a regular map POI uses — so itinerary stops
+    // show identical data (real Supabase image / description / price) as
+    // Explore / Planner / Details. Falls back to the dedicated stop sheet
+    // only if the canonical record isn't hydrated yet (e.g. the background
+    // fetch is still in flight or failed), so the marker is never dead.
+    final canonical = _itineraryPoiDetails[poi.poiId];
+    if (canonical != null) {
+      _showPoiBottomSheet(canonical);
+      return;
+    }
     showModalBottomSheet(
       context: context,
       backgroundColor: VoyoColors.paper,

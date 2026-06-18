@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/auth_service.dart';
 import '../../theme.dart';
-import '../../widgets/cleo_owl.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -55,33 +54,49 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: VoyoColors.page,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CleoOwl(size: 72),
-                const SizedBox(height: 16),
-                Text(
-                  'Voyo',
-                  style: GoogleFonts.fraunces(
-                    fontSize: 42,
-                    fontWeight: FontWeight.w300,
-                    fontStyle: FontStyle.italic,
-                    color: VoyoColors.ink,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Your Egyptian travel companion',
-                  style: GoogleFonts.instrumentSans(
-                    fontSize: 14,
-                    color: VoyoColors.stone,
-                  ),
-                ),
-                const SizedBox(height: 40),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Full-bleed brand background photo. Sits behind a light scrim
+          // so the form remains legible over any imagery.
+          Image.asset(
+            'assets/brand/VOYO_login_Background.png',
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.high,
+            errorBuilder: (_, _, _) => const ColoredBox(
+              color: VoyoColors.page,
+              child: SizedBox.expand(),
+            ),
+          ),
+          // Legibility scrim over the photo.
+          Container(color: Colors.black.withValues(alpha: 0.35)),
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Login logo lockup (brand mark + wordmark). Replaces the
+                    // prior CleoOwl + 'Voyo' text placeholder with the real
+                    // VOYO_Login_Logo asset supplied by the brand kit.
+                    Image.asset(
+                      'assets/brand/VOYO_Login_Logo.png',
+                      height: 120,
+                      fit: BoxFit.contain,
+                      filterQuality: FilterQuality.high,
+                      errorBuilder: (_, _, _) => const SizedBox(height: 120),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Your Egyptian travel companion',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.instrumentSans(
+                        fontSize: 14,
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
+                    ),
+                    const SizedBox(height: 36),
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -153,6 +168,8 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
+          ),
+        ],
       ),
     );
   }

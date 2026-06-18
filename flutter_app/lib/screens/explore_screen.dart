@@ -11,6 +11,7 @@ import '../theme.dart';
 import '../widgets/add_to_itinerary_sheet.dart';
 import '../widgets/poi_card.dart';
 import '../widgets/poi_detail_sheet.dart';
+import '../widgets/voyo_brand.dart';
 import 'map_screen.dart';
 import 'chat_screen.dart';
 import 'recommendations_screen.dart';
@@ -369,15 +370,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    'VOYO',
-                    style: GoogleFonts.fraunces(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w400,
-                      color: VoyoColors.ink,
-                      letterSpacing: 1,
-                    ),
-                  ),
+                  const VoyoWordmark(height: 22),
                   const SizedBox(width: 3),
                   Container(
                     width: 6,

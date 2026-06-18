@@ -48,6 +48,9 @@ dependencies:
   # the 'permanently denied' state so we can route to app settings.
   geolocator: ^13.0.1
   permission_handler: ^11.3.1
+  # SVG rendering for the VOYO brand wordmark/brandmark. PNGs (CLEO
+  # avatars, login background/logo) use the built-in Image.asset.
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:
@@ -75,6 +78,10 @@ flutter:
     - .env
     - assets/geojson/
     - assets/data/
+    # Brand kit (VOYO wordmark/brandmark SVGs + login background/logo PNGs).
+    - assets/brand/
+    # CLEO avatar PNGs (default + thinking states).
+    - assets/cleo/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

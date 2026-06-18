@@ -10,7 +10,7 @@ import '../services/cleo_service.dart';
 import '../services/chat_history_service.dart';
 import '../services/supabase_service.dart';
 import '../theme.dart';
-import '../widgets/cleo_owl.dart';
+import '../widgets/cleo_avatar.dart';
 import '../widgets/trip_profile_sheet.dart';
 
 /// Opens CLEO focused on a single POI: pushes [ChatScreen] with the POI id
@@ -604,7 +604,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     ),
                   ),
-                  const CleoOwl(size: 30),
+                  const CleoAvatar(size: 30),
                   const SizedBox(width: 8),
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -693,7 +693,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 16, 12, 12),
                 child: Row(
                   children: [
-                    const CleoOwl(size: 28),
+                    const CleoAvatar(size: 28),
                     const SizedBox(width: 10),
                     Text(
                       'Cleo',
@@ -853,7 +853,7 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CleoOwl(size: 80),
+            const CleoAvatar(size: 80),
             const SizedBox(height: 20),
             Text(
               'Your itinerary is waiting.',
@@ -958,7 +958,7 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const CleoOwl(size: 32),
+          const CleoAvatar(size: 32),
           const SizedBox(width: 11),
           Expanded(
             child: Container(
@@ -1804,7 +1804,7 @@ class _TypingIndicatorState extends State<_TypingIndicator>
       padding: const EdgeInsets.fromLTRB(16, 8, 0, 4),
       child: Row(
         children: [
-          const CleoOwl(size: 24),
+          const CleoAvatar(size: 24, variant: CleoAvatarVariant.thinking),
           const SizedBox(width: 10),
           AnimatedBuilder(
             animation: _ctrl,

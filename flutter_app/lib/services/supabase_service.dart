@@ -54,6 +54,39 @@ class SupabaseService {
     }
   }
 
+  /// Batch-resolves the canonical (enriched) [Poi] records for a set of
+  /// POI IDs. Uses the SAME `_poiColumns` select as [getPoisInView] /
+  /// [getFeaturedPois] so an itinerary-stop POI resolves to the identical
+  /// enriched record as the same POI shown in Explore / Planner / Details.
+  ///
+  /// This is the fix for the "stale stop card" bug: the itinerary-stop
+  /// markers on the map used to open a separate sheet that fetched images
+  /// + copy from Wikipedia by name, which was slow, unreliable, and
+  /// inconsistent with the rest of the app. Now we hydrate the canonical
+  /// Poi once and reuse the same [MapPoiPreviewCard] as regular POIs.
+  ///
+  /// Returns a {poi_id: Poi} map for O(1) lookup by callers.
+  Future<Map<int, Poi>> getPoisByIds(Iterable<int> ids) async {
+    final idList = ids.whereType<int>().toList(growable: false);
+    if (idList.isEmpty) return {};
+    try {
+      final response = await _client
+          .from('pois')
+          .select(_poiColumns)
+          .inFilter('id', idList.map((i) => i.toString()).toList())
+          .eq('is_active', true);
+      final List data = response as List;
+      return {
+        for (final json in data)
+          (json as Map<String, dynamic>)['id'] as int:
+              Poi.fromJson(json),
+      };
+    } catch (e) {
+      debugPrint('Error fetching POIs by IDs: $e');
+      return {};
+    }
+  }
+
   /// Returns the user's most recent itinerary with status 'current'.
   Future<Itinerary?> getCurrentItinerary(String userId) async {
     try {
