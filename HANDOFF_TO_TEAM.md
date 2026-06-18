@@ -119,6 +119,7 @@ These are genuine limitations, not bugs. Acknowledging them *strengthens* the th
 5. **Token streaming is currently chunked, not true SSE.** Lower priority; the staged status copy masks it well.
 6. **Fallback planner (Groq down) may produce fewer days when interests are geographically diverse.** The geographic coherence guard trims distant cities to keep the trip physically possible, so a 5-day request whose candidate pool spans Cairo+Luxor+Aswan may consolidate to 2–3 days in one region. With Groq **up**, the LLM reads regional intent ("Islamic Cairo, pyramids") and clusters accordingly, producing fuller trips. This is honest behaviour, not a bug — a 5-day trip genuinely *cannot* cover 500km-apart cities.
 7. **VROOM per-day solving.** The planner solves each day independently (not one bulk matrix) because Valhalla's `sources_to_targets` rejects large multi-region matrices. Cross-day order is the LLM's call; intra-day order is VROOM-optimal. This is correct but means inter-day travel time isn't optimized — acceptable since consecutive days are now geographically clustered by the guard above.
+8. **⚠️ Safarny Flutter tie-in is scoped but NOT built.** The `/itinerary/plan` endpoint works as an API (deterministic planner + VROOM + real tips + provenance), but the Flutter chat → planner save path **bypasses it**: `chat_screen._save()` uses fuzzy keyword POI matching and writes no tips/VROOM times. So trips users actually save lack safarny tips; the planner shows POI-level `narrative`/`description` only. Existing trips cannot be back-filled. **Full scope + Option A/B decision in `work/SAFARNY_TIEIN_SCOPE.md`** (~1 day of focused work; the thesis-critical `/plan` API itself is complete and demoable directly).
 
 ---
 
@@ -199,6 +200,7 @@ These are the single most important screenshots for the thesis — they prove no
 | **Writers** | Regenerate `evidence/05-db-completeness.json` from the 316-POI DB post-enrichment | Stale numbers must not leak into prose |
 | **Day 3** | Eval harness (with keystone ablation), figure regen, cross-ref consistency | After enrichment + manual review |
 | **Day 3** | e2e chain | After eval + full stack |
+| **Next session** | Safarny Flutter tie-in (`work/SAFARNY_TIEIN_SCOPE.md`) — rewire `chat_screen._save()` to call `/itinerary/plan`+persist instead of the fuzzy-match path | Closes the last "app doesn't do what the thesis says" gap; ~1 day; needs decision Option A vs B first |
 
 ---
 

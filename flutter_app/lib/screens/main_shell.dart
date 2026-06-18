@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme.dart';
 import 'explore_screen.dart';
@@ -82,13 +83,28 @@ class _MainShellState extends State<MainShell> {
             ],
           ),
           child: Center(
-            child: Text(
-              'V',
-              style: GoogleFonts.fraunces(
-                fontSize: 26,
-                fontWeight: FontWeight.w400,
-                fontStyle: FontStyle.italic,
-                color: Colors.white,
+            child: SvgPicture.asset(
+              'assets/brand/VOYO_Brandmark.svg',
+              width: 28,
+              height: 28,
+              // The brandmark SVG ships with VOYO burnt-orange fills (#f04408 /
+              // #f04308). On the burnt-terra gradient FAB those disappear to
+              // the eye (orange on orange = mud). We render it monochrome
+              // white with srcIn so the V reads cleanly against the gradient
+              // — this is a UI-context override, not a brand-color change.
+              colorFilter:
+                  const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              placeholderBuilder: (ctx) => Text(
+                // Fallback ONLY if the SVG fails to load at runtime. Keeps
+                // the button functional in a broken-asset scenario without
+                // silently hiding the regression (item #17).
+                'V',
+                style: GoogleFonts.fraunces(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w400,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),

@@ -60,6 +60,20 @@ class RedisCache:
             logger.warning("Running without cache - performance will be slower")
             self.redis_client = None
 
+        # EXPECTED on the thesis demo free tier. Redis is an OPTIONAL latency/
+        # cost optimisation (per evidence-deep/system-integration.md §4): every
+        # getter/setter short-circuits on `redis_client is None`, so the app
+        # runs correctly \u2014 just re-computes cacheable values each request.
+        # The recommendation engine benchmark (p95 1.662 ms) is unaffected
+        # because it is LLM-free arithmetic; the only observable cost is CLEO
+        # re-running for repeated factual queries. This is acceptable for the
+        # demo and is documented as such in HANDOFF_TO_TEAM.md.
+        if self.redis_client is None:
+            logger.info(
+                "Redis unavailable \u2014 running uncached (expected on free tier; "
+                "app degrades gracefully, see system-integration deep-dive §4)."
+            )
+
     def get(self, key: str) -> Optional[Dict]:
         """Get cached response"""
         if not self.redis_client:

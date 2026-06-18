@@ -5,6 +5,7 @@ Communicates with a self-hosted Valhalla instance running in Docker.
 Gracefully handles the case where Docker is not running.
 """
 
+import asyncio
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -55,6 +56,33 @@ class ValhallaClient:
         if targets is None:
             targets = sources
 
+        # Validate coordinates BEFORE the request. A 400 from Valhalla is
+        # almost always a coordinate problem (null / non-numeric / out of
+        # range), so we catch it here with a precise per-index message
+        # instead of letting Valhalla emit a confusing rejection. We do NOT
+        # silently drop bad coords — that would shift [i][j] indices and
+        # corrupt the caller's matrix mapping.
+        bad: List[str] = []
+        for label, coords in (("source", sources), ("target", targets)):
+            for i, c in enumerate(coords):
+                if not isinstance(c, (tuple, list)) or len(c) != 2:
+                    bad.append(f"{label}[{i}] not a (lat,lng) pair: {c!r}")
+                    continue
+                lat, lng = c[0], c[1]
+                if lat is None or lng is None:
+                    bad.append(f"{label}[{i}] null coordinate: lat={lat!r}, lng={lng!r}")
+                elif not isinstance(lat, (int, float)) or not isinstance(lng, (int, float)):
+                    bad.append(f"{label}[{i}] non-numeric: lat={lat!r}, lng={lng!r}")
+                elif not (-90 <= lat <= 90 and -180 <= lng <= 180):
+                    bad.append(f"{label}[{i}] out of range: lat={lat}, lng={lng}")
+        if bad:
+            for b in bad:
+                logger.error("Valhalla matrix rejected bad coordinate: %s", b)
+            raise RuntimeError(
+                "Valhalla matrix request rejected: invalid coordinates — "
+                f"{' | '.join(bad[:5])}"
+            )
+
         # Build Valhalla matrix request
         body = {
             "sources": [
@@ -66,18 +94,52 @@ class ValhallaClient:
             "costing": profile,
         }
 
-        try:
-            resp = await self.client.post(
-                f"{self.base_url}/sources_to_targets", json=body
-            )
-            resp.raise_for_status()
-            data = resp.json()
-        except httpx.HTTPError as e:
-            logger.error(f"Valhalla distance matrix error: {e}")
+        logger.debug(
+            "Valhalla matrix request: sources=%d targets=%d costing=%s "
+            "src_sample=%s tgt_sample=%s",
+            len(sources), len(targets), profile,
+            sources[:3], targets[:3],
+        )
+
+        # One retry on transient failures (disconnect / timeout / 5xx).
+        # 4xx payload errors are NOT retried — retrying a bad payload is
+        # pointless and burns the engine's quota.
+        data = None
+        last_exc: Optional[httpx.HTTPError] = None
+        for attempt in range(2):
+            try:
+                resp = await self.client.post(
+                    f"{self.base_url}/sources_to_targets", json=body
+                )
+                resp.raise_for_status()
+                data = resp.json()
+                last_exc = None
+                break
+            except httpx.HTTPStatusError as e:
+                code = e.response.status_code
+                snippet = (e.response.text or "")[:300].replace("\n", " ")
+                logger.error("Valhalla matrix HTTP %d — body: %s", code, snippet)
+                if 400 <= code < 500:
+                    # Payload/coordinate problem — never blame Docker for a 4xx.
+                    raise RuntimeError(
+                        f"Valhalla rejected the matrix request (HTTP {code}). "
+                        "This is a payload/coordinate problem, not a Docker issue. "
+                        f"Valhalla response: {snippet}"
+                    ) from e
+                last_exc = e  # 5xx — transient, fall through to retry
+            except httpx.HTTPError as e:
+                last_exc = e  # disconnect / timeout — transient
+            if attempt == 0:
+                logger.warning(
+                    "Valhalla matrix transient error (%s); retrying once.",
+                    type(last_exc).__name__,
+                )
+                await asyncio.sleep(1.0)
+
+        if data is None:
             raise RuntimeError(
-                f"Valhalla distance matrix request failed: {e}. "
-                "Is Docker running? Run: docker-compose up -d"
-            ) from e
+                self._connection_error_message("distance matrix", last_exc)
+            ) from last_exc
 
         # Parse Valhalla response into our format
         raw_matrix = data.get("sources_to_targets", [])
@@ -146,12 +208,20 @@ class ValhallaClient:
             )
             resp.raise_for_status()
             data = resp.json()
+        except httpx.HTTPStatusError as e:
+            code = e.response.status_code
+            snippet = (e.response.text or "")[:200].replace("\n", " ")
+            logger.error("Valhalla route HTTP %d — body: %s", code, snippet)
+            if 400 <= code < 500:
+                raise RuntimeError(
+                    f"Valhalla rejected the route request (HTTP {code}). "
+                    "Payload/coordinate problem, not a Docker issue. "
+                    f"Valhalla response: {snippet}"
+                ) from e
+            raise RuntimeError(self._connection_error_message("route", e)) from e
         except httpx.HTTPError as e:
-            logger.error(f"Valhalla route error: {e}")
-            raise RuntimeError(
-                f"Valhalla route request failed: {e}. "
-                "Is Docker running? Run: docker-compose up -d"
-            ) from e
+            logger.error("Valhalla route error: %s", e)
+            raise RuntimeError(self._connection_error_message("route", e)) from e
 
         trip = data.get("trip", {})
         legs_raw = trip.get("legs", [])
@@ -231,12 +301,20 @@ class ValhallaClient:
             )
             resp.raise_for_status()
             data = resp.json()
+        except httpx.HTTPStatusError as e:
+            code = e.response.status_code
+            snippet = (e.response.text or "")[:200].replace("\n", " ")
+            logger.error("Valhalla isochrone HTTP %d — body: %s", code, snippet)
+            if 400 <= code < 500:
+                raise RuntimeError(
+                    f"Valhalla rejected the isochrone request (HTTP {code}). "
+                    "Payload/coordinate problem, not a Docker issue. "
+                    f"Valhalla response: {snippet}"
+                ) from e
+            raise RuntimeError(self._connection_error_message("isochrone", e)) from e
         except httpx.HTTPError as e:
-            logger.error(f"Valhalla isochrone error: {e}")
-            raise RuntimeError(
-                f"Valhalla isochrone request failed: {e}. "
-                "Is Docker running? Run: docker-compose up -d"
-            ) from e
+            logger.error("Valhalla isochrone error: %s", e)
+            raise RuntimeError(self._connection_error_message("isochrone", e)) from e
 
         polygons: List[Dict[str, Any]] = []
         features = data.get("features", [])
@@ -255,6 +333,35 @@ class ValhallaClient:
             "polygons": polygons,
             "reachable_pois": [],  # populated by the route handler if POI data available
         }
+
+    # ==================================================================
+    # Error classification
+    # ==================================================================
+
+    @staticmethod
+    def _connection_error_message(operation: str, exc: Optional[httpx.HTTPError]) -> str:
+        """Build a Docker-appropriate message for a transport-layer failure.
+
+        Used for connection refused / timeout / server-disconnected / 5xx —
+        i.e. the classes where Docker/Valhalla actually might be the cause.
+        Deliberately NOT used for 4xx, which are payload problems.
+        """
+        name = type(exc).__name__ if exc is not None else "Unknown"
+        if isinstance(exc, (httpx.ConnectError, httpx.ConnectTimeout)):
+            return (
+                f"Valhalla is unavailable for {operation} ({name}). "
+                "Cannot reach the engine — check the Valhalla Docker container "
+                "(docker-compose up -d)."
+            )
+        if isinstance(exc, httpx.ReadTimeout):
+            return (
+                f"Valhalla {operation} timed out ({name}). "
+                "The engine may be busy loading tiles; retry shortly."
+            )
+        return (
+            f"Valhalla {operation} failed ({name}: {exc}). "
+            "If this persists, check the Valhalla Docker container."
+        )
 
     # ==================================================================
     # Polyline Decoding

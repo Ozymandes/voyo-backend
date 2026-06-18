@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/auth_service.dart';
@@ -77,24 +78,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Login logo lockup (brand mark + wordmark). Replaces the
-                    // prior CleoOwl + 'Voyo' text placeholder with the real
-                    // VOYO_Login_Logo asset supplied by the brand kit.
-                    Image.asset(
-                      'assets/brand/VOYO_Login_Logo.png',
+                    // Login logo lockup (brand mark + wordmark). Rendered as
+                    // monochrome white via srcIn so it reads cleanly over the
+                    // dark brand background photo — the SVG ships with VOYO
+                    // burnt-orange fills that would disappear against the image.
+                    // Tagline removed per spec (cleaner lockup).
+                    SvgPicture.asset(
+                      'assets/brand/VOYO_Logo_WordMark.svg',
                       height: 120,
-                      fit: BoxFit.contain,
-                      filterQuality: FilterQuality.high,
-                      errorBuilder: (_, _, _) => const SizedBox(height: 120),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Your Egyptian travel companion',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.instrumentSans(
-                        fontSize: 14,
-                        color: Colors.white.withValues(alpha: 0.9),
+                      colorFilter: const ColorFilter.mode(
+                        Colors.white,
+                        BlendMode.srcIn,
                       ),
+                      placeholderBuilder: (_) => const SizedBox(height: 120),
                     ),
                     const SizedBox(height: 36),
                 TextField(
@@ -159,7 +155,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Text(
                     "Don't have an account? Register",
                     style: GoogleFonts.instrumentSans(
-                      color: VoyoColors.sky,
+                      // White over the dark brand background photo (was
+                      // VoyoColors.sky — read as a low-contrast blue link).
+                      // 0.9 alpha matches the prior tagline weight so the
+                      // link reads as a soft secondary action, not a button.
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontWeight: FontWeight.w500,
                     ),
                   ),

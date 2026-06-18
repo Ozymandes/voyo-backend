@@ -149,9 +149,22 @@ class SupabaseService {
     int itineraryId,
   ) async {
     try {
+      // The joined pois() projection carries everything the planner/journey/
+      // add-stop surfaces render. Using `pois(*)` (all columns) so the
+      // tappable POI detail sheet opened from the planner stop card gets a
+      // fully-hydrated Poi (Poi.fromJson needs id/latitude/longitude as
+      // required fields, plus image_urls/average_rating/travel_tips for a
+      // rich detail view). `description` + `narrative` feed the per-stop
+      // description line (#general-fix) — `narrative` is the canonical
+      // LLM-enriched text from enrich_narratives.py, `description` is the
+      // shorter seed. Adding columns here is backward-compatible for the
+      // other call sites (journey_screen, add_to_itinerary_sheet): they
+      // simply ignore the extra fields. `*` on itinerary_items already
+      // returns `notes`, which is where Safarny/CLEO persists the per-stop
+      // tip (see persistence.save_optimized_itinerary).
       final response = await _client
           .from('itinerary_items')
-          .select('*, pois(name, category, city, latitude, longitude)')
+          .select('*, pois(*)')
           .eq('itinerary_id', itineraryId)
           .order('day_number')
           .order('sequence_order');
@@ -353,15 +366,29 @@ class SupabaseService {
           )
           .timeout(const Duration(seconds: 30));
       if (resp.statusCode != 200) {
-        debugPrint('preview-add HTTP ${resp.statusCode}: ${resp.body}');
-        return null;
+        // CRITICAL (#22): a failed feasibility check is NOT the same as a
+        // feasible result. We must surface this to the caller so the UI can
+        // render the "route verification unavailable" state instead of the
+        // generic clock-slot picker — which previously let users schedule
+        // impossible trips whenever the matrix engine returned an error.
+        // Returning null here would conflate "engine unreachable" with
+        // "user not signed in" and silently re-enable the dangerous fallback.
+        final detail =
+            resp.statusCode == 503 ? 'route engine unavailable' : 'HTTP ${resp.statusCode}';
+        throw PreviewAddUnavailableException(
+          'preview-add $detail: ${resp.body}',
+          status: resp.statusCode,
+        );
       }
       return FeasibilityVerdict.fromJson(
         jsonDecode(utf8.decode(resp.bodyBytes)) as Map<String, dynamic>,
       );
+    } on PreviewAddUnavailableException {
+      rethrow; // caller decides UI state; never swallow feasibility failures
     } catch (e) {
-      debugPrint('preview-add unavailable: $e');
-      return null; // routing backend down → UI falls back to current dumb add
+      // Network/timeout/DNS — also surface as unavailable. Same reason as above:
+      // we cannot claim a schedule is feasible if we never verified it.
+      throw PreviewAddUnavailableException('preview-add network failure: $e');
     }
   }
 }
@@ -421,6 +448,20 @@ class DisplacedPoi {
   const DisplacedPoi({required this.poiId, required this.dayWas});
   factory DisplacedPoi.fromJson(Map<String, dynamic> j) =>
       DisplacedPoi(poiId: j['poi_id'] as int, dayWas: j['day_was'] as int);
+}
+
+/// Thrown when the backend feasibility check itself failed (HTTP 503,
+/// network error, timeout). Distinct from `previewAdd` returning `null`,
+/// which now means only "user not signed in". This distinction is the
+/// keystone of item #22: a *failed* feasibility check must never become a
+/// *free* schedule (the old bug), and the only way to tell the two apart is
+/// to surface the failure instead of swallowing it into null.
+class PreviewAddUnavailableException implements Exception {
+  final String message;
+  final int? status;
+  const PreviewAddUnavailableException(this.message, {this.status});
+  @override
+  String toString() => 'PreviewAddUnavailableException: $message';
 }
 
 /// VROOM's deterministic placement for a candidate POI (Path B).

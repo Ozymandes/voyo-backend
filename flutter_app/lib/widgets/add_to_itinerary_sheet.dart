@@ -39,6 +39,13 @@ class _AddToItineraryFlowState extends State<AddToItineraryFlow> {
   // falls back to the dumb insert). Loaded right after the user picks a day.
   FeasibilityVerdict? _verdict;
   bool _verdictLoading = false;
+  // #22: a *failed* feasibility check is NOT a feasible result. When the
+  // backend / matrix engine itself errored (HTTP 503, timeout, network), we
+  // render the 'route verification unavailable' state instead of falling
+  // through to the generic clock-slot picker — that picker would silently
+  // let the user schedule an impossible trip whenever Valhalla errored,
+  // which is exactly the failure mode the thesis argues VOYO prevents.
+  bool _verdictUnavailable = false;
 
   // Geographic cluster hard-block state. When the candidate is far from the
   // day's existing cluster (> 150 km, e.g. Mount Sinai on a Luxor day), we
@@ -229,18 +236,33 @@ class _AddToItineraryFlowState extends State<AddToItineraryFlow> {
   Future<void> _loadVerdict(int day) async {
     final tripId = _trip?['id'] as int?;
     if (tripId == null) return;
-    setState(() => _verdictLoading = true);
-    final v = await widget.service.previewAdd(
-      itineraryId: tripId,
-      candidatePoiId: widget.poi.id,
-      preferredDay: day,
-      days: _days.isEmpty ? 1 : _days.last,
-    );
-    if (mounted)
-      setState(() {
-        _verdict = v;
-        _verdictLoading = false;
-      });
+    setState(() {
+      _verdictLoading = true;
+      _verdictUnavailable = false; // fresh day, fresh check
+    });
+    try {
+      final v = await widget.service.previewAdd(
+        itineraryId: tripId,
+        candidatePoiId: widget.poi.id,
+        preferredDay: day,
+        days: _days.isEmpty ? 1 : _days.last,
+      );
+      if (mounted)
+        setState(() {
+          _verdict = v;
+          _verdictLoading = false;
+          _verdictUnavailable = false;
+        });
+    } on PreviewAddUnavailableException catch (e) {
+      // Engine/down failure — surface honestly, do NOT fall through to slots.
+      debugPrint('preview-add unavailable: $e');
+      if (mounted)
+        setState(() {
+          _verdict = null;
+          _verdictLoading = false;
+          _verdictUnavailable = true;
+        });
+    }
   }
 
   /// Verdict fetch for a BRAND-NEW day ("Create a new Day N here"). Same as
@@ -253,7 +275,10 @@ class _AddToItineraryFlowState extends State<AddToItineraryFlow> {
     if (_verdictLoading) return; // guard against double-tap
     final tripId = _trip?['id'] as int?;
     if (tripId == null) return;
-    setState(() => _verdictLoading = true);
+    setState(() {
+      _verdictLoading = true;
+      _verdictUnavailable = false;
+    });
     try {
       final v = await widget.service.previewAdd(
         itineraryId: tripId,
@@ -265,9 +290,16 @@ class _AddToItineraryFlowState extends State<AddToItineraryFlow> {
         setState(() {
           _verdict = v;
           _verdictLoading = false;
+          _verdictUnavailable = false;
         });
-    } catch (_) {
-      if (mounted) setState(() => _verdictLoading = false);
+    } on PreviewAddUnavailableException catch (e) {
+      debugPrint('preview-add unavailable (new day): $e');
+      if (mounted)
+        setState(() {
+          _verdict = null;
+          _verdictLoading = false;
+          _verdictUnavailable = true;
+        });
     }
   }
 
@@ -970,18 +1002,23 @@ class _AddToItineraryFlowState extends State<AddToItineraryFlow> {
           const Divider(color: VoyoColors.smoke),
         ],
         const SizedBox(height: 14),
-        // ── Path B: deterministic placement vs manual override ────────────────
-        // The default path commits the POI at the exact clock slot VROOM
-        // computed ("~2:00 PM, between X and Y"). Manual clock-picking is an
-        // explicit secondary choice — it no longer silently stamps a default
-        // 9:00 AM onto every add. Falls back to the clock grid only when the
-        // backend is unreachable (verdict == null).
+        // ── Path B: deterministic placement vs manual override (#20/#22) ────
+        // ORDER MATTERS HERE. A failed feasibility check (engine error /
+        // 503 / network) must render the 'route verification unavailable'
+        // state — it must NOT fall through to the clock-slot grid, which
+        // would silently let the user schedule an impossible trip. The
+        // generic picker is reachable ONLY after a successful verdict (or
+        // an explicit manual override of a successful one).
         if (_verdictLoading)
           _buildComputingPlacement()
+        else if (_verdictUnavailable)
+          _buildRouteUnavailable()
         else if (_verdict?.candidatePlacement != null &&
             _verdict!.candidatePlacement!.arrivalTime != null &&
             !_manualTimeOverride)
           _buildPlacementCard()
+        else if (_verdict != null && !_verdict!.feasible)
+          _buildInfeasibleFromVerdict()
         else
           _buildManualSlots(),
       ],
@@ -1191,6 +1228,182 @@ class _AddToItineraryFlowState extends State<AddToItineraryFlow> {
     if (h < 12) return '$h:${m.toString().padLeft(2, "0")} AM';
     if (h == 12) return '12:${m.toString().padLeft(2, "0")} PM';
     return '${h - 12}:${m.toString().padLeft(2, "0")} PM';
+  }
+
+  // ── #22 honesty states ───────────────────────────────────────────────
+  // Two states below replace the old 'fall through to clock grid' behaviour
+  // whenever the feasibility check itself fails or returns infeasible.
+  // Neither offers the unverified clock grid: VOYO never pretends an
+  // itinerary is feasible when it couldn't verify it.
+
+  /// Shown when the route engine itself failed (503 / network / timeout).
+  /// This is the state that closes the regression: previously this case
+  /// silently rendered the generic 8 AM–7 PM clock grid, letting users
+  /// schedule trips the engine never verified. Now it surfaces the failure
+  /// honestly with concrete next actions.
+  Widget _buildRouteUnavailable() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: VoyoColors.terra.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(14),
+            border:
+                Border.all(color: VoyoColors.terra.withValues(alpha: 0.4)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.shield_outlined,
+                      size: 16, color: VoyoColors.terra),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Couldn\'t verify this route',
+                    style: GoogleFonts.fraunces(
+                      fontSize: 17,
+                      fontStyle: FontStyle.italic,
+                      color: VoyoColors.ink,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'VOYO needs route timing before adding this stop safely. '
+                'Please try again, choose another day, or open the route externally.',
+                style: GoogleFonts.instrumentSans(
+                    fontSize: 12.5, color: VoyoColors.stone, height: 1.5),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        FilledButton.icon(
+          onPressed: _saving
+              ? null
+              : () {
+                  // Re-run the feasibility check for the current day.
+                  if (_day != null) _loadVerdict(_day!);
+                },
+          style: FilledButton.styleFrom(
+            backgroundColor: VoyoColors.expedition,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14)),
+          ),
+          icon: _saving
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white))
+              : const Icon(Icons.refresh_rounded, color: Colors.white, size: 18),
+          label: Text(
+            'Try again',
+            style: GoogleFonts.instrumentSans(
+                fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white),
+          ),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          onPressed: () => setState(() => _step = _ItinStep.days),
+          icon: const Icon(Icons.swap_horiz_rounded,
+              size: 16, color: VoyoColors.ink),
+          label: Text(
+            'Choose a different day',
+            style: GoogleFonts.instrumentSans(
+                fontSize: 13, fontWeight: FontWeight.w600, color: VoyoColors.ink),
+          ),
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: VoyoColors.smoke),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14)),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextButton.icon(
+          onPressed: () => Navigator.pop(context, false),
+          icon: const Icon(Icons.close_rounded,
+              size: 16, color: VoyoColors.stone),
+          label: Text(
+            'Cancel',
+            style: GoogleFonts.instrumentSans(
+                fontSize: 13, color: VoyoColors.stone),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Shown when VROOM ran successfully and returned infeasible (the candidate
+  /// lands in `unassigned`). Distinct from _buildRouteUnavailable: here we
+  // *do* have a verified answer — the answer is 'no'.
+  Widget _buildInfeasibleFromVerdict() {
+    final reason = _verdict?.reason.isEmpty ?? true
+        ? 'This stop won\'t fit on Day $_day given the current time budget and '
+            'opening hours. Try another day or trim an existing stop.'
+        : _verdict!.reason;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: VoyoColors.caution.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: VoyoColors.caution.withValues(alpha: 0.4)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.warning_amber_rounded,
+                  size: 16, color: VoyoColors.caution),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  reason,
+                  style: GoogleFonts.instrumentSans(
+                      fontSize: 12.5, color: VoyoColors.ink, height: 1.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: () => setState(() => _step = _ItinStep.days),
+          icon: const Icon(Icons.swap_horiz_rounded,
+              size: 16, color: VoyoColors.ink),
+          label: Text(
+            'Choose a different day',
+            style: GoogleFonts.instrumentSans(
+                fontSize: 13, fontWeight: FontWeight.w600, color: VoyoColors.ink),
+          ),
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: VoyoColors.smoke),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14)),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextButton.icon(
+          onPressed: () => Navigator.pop(context, false),
+          icon: const Icon(Icons.close_rounded,
+              size: 16, color: VoyoColors.stone),
+          label: Text(
+            'Cancel',
+            style: GoogleFonts.instrumentSans(
+                fontSize: 13, color: VoyoColors.stone),
+          ),
+        ),
+      ],
+    );
   }
 }
 

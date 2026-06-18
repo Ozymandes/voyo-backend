@@ -19,13 +19,27 @@ class MapPoiPreviewCard extends StatelessWidget {
   final Poi poi;
   final VoidCallback onViewDetails;
   final VoidCallback onAddToTrip;
+  /// Itinerary context for this card. When the POI is part of the active
+  /// itinerary (tapped via a stop marker), passing [itineraryDay] +
+  /// [itineraryStop] renders a compact "Day N · Stop M" badge — restoring
+  /// the label the pre-revamp card showed. Both default to null (plain map
+  /// POI tap), in which case no itinerary badge is shown.
+  final int? itineraryDay;
+  final int? itineraryStop;
 
   const MapPoiPreviewCard({
     super.key,
     required this.poi,
     required this.onViewDetails,
     required this.onAddToTrip,
+    this.itineraryDay,
+    this.itineraryStop,
   });
+
+  /// Whether the itinerary-stop badge should render. Requires BOTH fields —
+  /// a partial day-only or stop-only label would be ambiguous, so we omit.
+  bool get _showItineraryLabel =>
+      itineraryDay != null && itineraryStop != null;
 
   @override
   Widget build(BuildContext context) {
@@ -109,6 +123,18 @@ class MapPoiPreviewCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // #1: itinerary stop label. Restored here on the revamped
+                  // card — the pre-revamp stop sheet showed "Day 6 · Stop 2"
+                  // and the rewrite dropped it. Rendered compactly above the
+                  // title so the canonical image/description/rating layout
+                  // below is unchanged. Hidden for plain map-POI taps.
+                  if (_showItineraryLabel) ...[
+                    _ItineraryStopLabel(
+                      day: itineraryDay!,
+                      stop: itineraryStop!,
+                    ),
+                    const SizedBox(height: 6),
+                  ],
                   Text(
                     poi.name,
                     maxLines: 2,
@@ -197,6 +223,36 @@ class MapPoiPreviewCard extends StatelessWidget {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
+
+/// Compact "Day N · Stop M" label for the itinerary-stop variant of the
+/// preview card. Uses the VOYO expedtion accent so it reads as a planner-
+/// originated tag, not a category badge. Sits above the title; the category
+/// badge stays on the image (its canonical home).
+class _ItineraryStopLabel extends StatelessWidget {
+  final int day;
+  final int stop;
+  const _ItineraryStopLabel({required this.day, required this.stop});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: VoyoColors.expedition.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        'Day $day · Stop $stop',
+        style: GoogleFonts.instrumentSans(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.3,
+          color: VoyoColors.expedition,
+        ),
+      ),
+    );
+  }
+}
 
 /// One-line location + rating + entry summary, VOYO-style.
 class _MetaRow extends StatelessWidget {

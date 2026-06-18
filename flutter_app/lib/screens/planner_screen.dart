@@ -5,6 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/itinerary.dart';
 import '../services/supabase_service.dart';
 import '../theme.dart';
+import '../models/poi.dart';
+import '../widgets/poi_detail_sheet.dart';
 import 'map_screen.dart';
 
 class PlannerScreen extends StatefulWidget {
@@ -269,13 +271,13 @@ class _PlannerScreenState extends State<PlannerScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(
-                    Icons.add_location_alt_outlined,
+                    Icons.auto_awesome_outlined,
                     size: 48,
                     color: VoyoColors.smoke,
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'No stops added yet.',
+                    'No stops on this trip yet.',
                     style: GoogleFonts.fraunces(
                       fontSize: 20,
                       fontStyle: FontStyle.italic,
@@ -284,29 +286,13 @@ class _PlannerScreenState extends State<PlannerScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Tap + to add your first stop.',
+                    'VOYO builds itineraries with CLEO. Open CLEO from the '
+                    'bottom bar to plan your stops.',
+                    textAlign: TextAlign.center,
                     style: GoogleFonts.instrumentSans(
                       fontSize: 13,
                       color: VoyoColors.stone,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  FilledButton.icon(
-                    onPressed: () => _showAddStopSheet(dayHint: 1),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: VoyoColors.terra,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    icon: const Icon(Icons.add, size: 18, color: Colors.white),
-                    label: Text(
-                      'Add First Stop',
-                      style: GoogleFonts.instrumentSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
+                      height: 1.5,
                     ),
                   ),
                 ],
@@ -330,7 +316,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
               ),
             ),
           ],
-          SliverToBoxAdapter(child: _buildAddDayButton()),
         ],
         const SliverToBoxAdapter(child: SizedBox(height: 32)),
       ],
@@ -617,33 +602,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
               ],
             ),
           ),
-          // + Add stop for this day
-          GestureDetector(
-            onTap: () => _showAddStopSheet(dayHint: day),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: const Color(0x14C4622A),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0x20C4622A)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.add, size: 13, color: VoyoColors.terra),
-                  const SizedBox(width: 3),
-                  Text(
-                    'Add stop',
-                    style: GoogleFonts.instrumentSans(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: VoyoColors.terra,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -663,6 +621,30 @@ class _PlannerScreenState extends State<PlannerScreen> {
     }
   }
 
+  // ── Stop detail ──────────────────────────────────────────────────────────
+
+  // Opens the full POI detail sheet for an itinerary stop so the user can
+  // read the complete narrative when the 2-line preview is truncated
+  // (#general-fix: planner previews were not clickable). Guards on a real
+  // poi_id + coordinates — custom_title stops have no detail sheet, and a
+  // partially-hydrated joined row would crash Poi.fromJson (which requires
+  // latitude/longitude).
+  void _showStopPoiDetail(Map<String, dynamic> item) {
+    final poiId = item['poi_id'] as int?;
+    final poiMap = item['pois'] as Map<String, dynamic>?;
+    if (poiId == null || poiMap == null) return;
+    if (poiMap['latitude'] == null || poiMap['longitude'] == null) return;
+    final merged = Map<String, dynamic>.from(poiMap);
+    merged['id'] ??= poiId; // pois(*) already returns id; belt-and-suspenders
+    final poi = Poi.fromJson(merged);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => PoiDetailSheet(poi: poi),
+    );
+  }
+
   // ── Stop card ─────────────────────────────────────────────────────────────
 
   Widget _buildStopCard(Map<String, dynamic> item) {
@@ -673,6 +655,19 @@ class _PlannerScreenState extends State<PlannerScreen> {
     final timeStr = item['start_time'] as String? ?? '';
     final isCurrent = _isCurrent(item);
     final isVisited = _isVisited(item);
+    // Per-stop narrative + tip surfaced from the planner pipeline
+    // (#general-fix). Previously the planner page rendered only
+    // name + category, dropping both pieces of copy the Safarny/CLEO
+    // planner actually produced:
+    //   - `narrative`: canonical LLM-enriched description
+    //     (enrich_narratives.py). Preferred over `description` when set.
+    //   - `description`: shorter seed description; fallback.
+    //   - `notes`: the per-stop tip Safarny writes to itinerary_items
+    //     (persistence.save_optimized_itinerary maps stop.tip → notes).
+    final narrative = (poi?['narrative'] as String? ?? '').trim();
+    final description = (poi?['description'] as String? ?? '').trim();
+    final showDesc = narrative.isNotEmpty ? narrative : description;
+    final tip = (item['notes'] as String? ?? '').trim();
 
     return Dismissible(
       key: ValueKey(item['id']),
@@ -845,6 +840,66 @@ class _PlannerScreenState extends State<PlannerScreen> {
                               ),
                             ),
                           ],
+                          // Per-stop description + Safarny tip (#general-fix).
+                          // Tapping the description/tip area opens the full POI
+                          // detail sheet so the truncated narrative can be read
+                          // in full — previously the preview was not clickable.
+                          if (showDesc.isNotEmpty || tip.isNotEmpty)
+                            GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => _showStopPoiDetail(item),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // 2-line preview of the canonical narrative
+                                  // (or shorter seed description).
+                                  if (showDesc.isNotEmpty) ...[
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      showDesc,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.instrumentSans(
+                                        fontSize: 12,
+                                        color: VoyoColors.stone,
+                                        height: 1.45,
+                                      ),
+                                    ),
+                                  ],
+                                  // Safarny/CLEO tip: italic, expedition accent,
+                                  // with a lightbulb glyph so it's visually
+                                  // distinct from the factual description above.
+                                  if (tip.isNotEmpty) ...[
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Icon(
+                                          Icons.lightbulb_outline_rounded,
+                                          size: 13,
+                                          color: VoyoColors.expedition,
+                                        ),
+                                        const SizedBox(width: 5),
+                                        Expanded(
+                                          child: Text(
+                                            tip,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: GoogleFonts.instrumentSans(
+                                              fontSize: 11.5,
+                                              color: VoyoColors.expedition,
+                                              fontStyle: FontStyle.italic,
+                                              height: 1.4,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -1021,42 +1076,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
     );
   }
 
-  // ── Add day button ────────────────────────────────────────────────────────
-
-  Widget _buildAddDayButton() {
-    final nextDay =
-        (_byDay.keys.isEmpty
-            ? 0
-            : _byDay.keys.reduce((a, b) => a > b ? a : b)) +
-        1;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: GestureDetector(
-        onTap: () => _showAddStopSheet(dayHint: nextDay),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: VoyoColors.smoke,
-              width: 2,
-              style: BorderStyle.solid,
-            ),
-          ),
-          child: Text(
-            '+ Add Day',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.instrumentSans(
-              fontSize: 13,
-              color: VoyoColors.stone,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   // ── Error ─────────────────────────────────────────────────────────────────
 
   Widget _buildError() {
@@ -1125,27 +1144,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
               await _service.setActiveItinerary(userId: uid, itineraryId: id);
               _load();
             },
-          ),
-    );
-  }
-
-  // ── Add stop sheet ────────────────────────────────────────────────────────
-
-  void _showAddStopSheet({int dayHint = 1}) {
-    final itinerary = _itinerary;
-    if (itinerary == null) return;
-    final existingDays = _byDay.keys.toList()..sort();
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder:
-          (_) => _AddStopSheet(
-            service: _service,
-            itineraryId: itinerary.id,
-            dayHint: dayHint,
-            existingDays: existingDays,
-            onAdded: _load, // reload the whole timeline
           ),
     );
   }
@@ -1530,531 +1528,6 @@ class _TripsHistorySheetState extends State<_TripsHistorySheet> {
       ),
     );
   }
-}
-
-// ---------------------------------------------------------------------------
-// Add Stop Bottom Sheet
-// ---------------------------------------------------------------------------
-
-class _AddStopSheet extends StatefulWidget {
-  final SupabaseService service;
-  final int itineraryId;
-  final int dayHint;
-  final List<int> existingDays;
-  final VoidCallback onAdded;
-
-  const _AddStopSheet({
-    required this.service,
-    required this.itineraryId,
-    required this.dayHint,
-    required this.existingDays,
-    required this.onAdded,
-  });
-
-  @override
-  State<_AddStopSheet> createState() => _AddStopSheetState();
-}
-
-class _AddStopSheetState extends State<_AddStopSheet> {
-  final _searchCtrl = TextEditingController();
-
-  // Step 1: search
-  List<dynamic> _results = []; // List<Poi>
-  bool _searching = false;
-
-  // Step 2: confirm
-  dynamic _selectedPoi; // Poi or null
-  late int _selectedDay;
-  TimeOfDay _selectedTime = const TimeOfDay(hour: 9, minute: 0);
-  bool _saving = false;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedDay = widget.dayHint;
-    // Defer search until after the first frame — calling setState from
-    // initState during a pointer event triggers _debugDuringDeviceUpdate.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _search(''));
-  }
-
-  @override
-  void dispose() {
-    _searchCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _search(String q) async {
-    setState(() => _searching = true);
-    try {
-      final results =
-          q.trim().isEmpty
-              ? await widget.service.getFeaturedPois(limit: 15)
-              : await widget.service.searchPois(q.trim());
-      if (mounted)
-        setState(() {
-          _results = results;
-          _searching = false;
-        });
-    } catch (_) {
-      if (mounted) setState(() => _searching = false);
-    }
-  }
-
-  Future<void> _pickTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: _selectedTime,
-      builder:
-          (ctx, child) => Theme(
-            data: Theme.of(ctx).copyWith(
-              colorScheme: const ColorScheme.light(
-                primary: VoyoColors.terra,
-                onSurface: VoyoColors.ink,
-              ),
-            ),
-            child: child!,
-          ),
-    );
-    if (picked != null) setState(() => _selectedTime = picked);
-  }
-
-  Future<void> _save() async {
-    if (_selectedPoi == null) return;
-    setState(() {
-      _saving = true;
-      _error = null;
-    });
-    try {
-      final h = _selectedTime.hour.toString().padLeft(2, '0');
-      final m = _selectedTime.minute.toString().padLeft(2, '0');
-      await widget.service.addItineraryItem(
-        itineraryId: widget.itineraryId,
-        poiId: _selectedPoi.id as int,
-        dayNumber: _selectedDay,
-        startTime: '$h:$m:00',
-      );
-      if (mounted) {
-        Navigator.pop(context);
-        widget.onAdded();
-      }
-    } catch (e) {
-      if (mounted)
-        setState(() {
-          _error = e.toString();
-          _saving = false;
-        });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final screenH = MediaQuery.of(context).size.height;
-    return Container(
-      height: screenH * 0.88,
-      decoration: const BoxDecoration(
-        color: VoyoColors.page,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        children: [
-          // Handle
-          Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 4),
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: VoyoColors.smoke,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          // Header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 16, 12),
-            child: Row(
-              children: [
-                if (_selectedPoi != null)
-                  GestureDetector(
-                    onTap: () => setState(() => _selectedPoi = null),
-                    child: const Padding(
-                      padding: EdgeInsets.only(right: 10),
-                      child: Icon(
-                        Icons.arrow_back,
-                        size: 20,
-                        color: VoyoColors.stone,
-                      ),
-                    ),
-                  ),
-                Text(
-                  _selectedPoi == null ? 'Add a Stop' : 'Set Details',
-                  style: GoogleFonts.fraunces(
-                    fontSize: 22,
-                    fontStyle: FontStyle.italic,
-                    color: VoyoColors.ink,
-                  ),
-                ),
-                const Spacer(),
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: const Icon(
-                    Icons.close,
-                    size: 20,
-                    color: VoyoColors.stone,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Divider(color: VoyoColors.smoke, height: 1),
-          // Body — each step has its own independent scroll
-          Expanded(
-            child:
-                _selectedPoi == null
-                    ? _buildSearchStep()
-                    : _buildConfigStep(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchStep() {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: TextField(
-            controller: _searchCtrl,
-            onChanged: _search,
-            style: GoogleFonts.instrumentSans(
-              color: VoyoColors.ink,
-              fontSize: 14,
-            ),
-            decoration: InputDecoration(
-              hintText: 'Search places…',
-              hintStyle: GoogleFonts.instrumentSans(
-                color: VoyoColors.stone,
-                fontSize: 14,
-              ),
-              prefixIcon: const Icon(
-                Icons.search,
-                color: VoyoColors.stone,
-                size: 18,
-              ),
-              suffixIcon:
-                  _searchCtrl.text.isNotEmpty
-                      ? GestureDetector(
-                        onTap: () {
-                          _searchCtrl.clear();
-                          _search('');
-                        },
-                        child: const Icon(
-                          Icons.close,
-                          color: VoyoColors.stone,
-                          size: 16,
-                        ),
-                      )
-                      : null,
-              filled: true,
-              fillColor: VoyoColors.vellum,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 10,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(22),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(22),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(22),
-                borderSide: const BorderSide(
-                  color: VoyoColors.terra,
-                  width: 1.5,
-                ),
-              ),
-            ),
-          ),
-        ),
-        Expanded(
-          child:
-              _searching
-                  ? const Center(
-                    child: CircularProgressIndicator(
-                      color: VoyoColors.terra,
-                      strokeWidth: 2,
-                    ),
-                  )
-                  : _results.isEmpty
-                  ? Center(
-                    child: Text(
-                      'No places found.',
-                      style: GoogleFonts.instrumentSans(
-                        fontSize: 13,
-                        color: VoyoColors.stone,
-                      ),
-                    ),
-                  )
-                  : ListView.separated(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    itemCount: _results.length,
-                    separatorBuilder:
-                        (_, _) => Divider(color: VoyoColors.smoke, height: 1),
-                    itemBuilder: (_, i) {
-                      final poi = _results[i];
-                      final name = poi.name as String;
-                      final cat = poi.category as String?;
-                      return ListTile(
-                        leading: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            gradient: _gradient(cat),
-                          ),
-                        ),
-                        title: Text(
-                          name,
-                          style: GoogleFonts.fraunces(
-                            fontSize: 15,
-                            color: VoyoColors.ink,
-                          ),
-                        ),
-                        subtitle: Text(
-                          cat ?? '',
-                          style: GoogleFonts.instrumentSans(
-                            fontSize: 11,
-                            color: VoyoColors.stone,
-                          ),
-                        ),
-                        trailing: const Icon(
-                          Icons.chevron_right,
-                          color: VoyoColors.smoke,
-                        ),
-                        onTap: () => setState(() => _selectedPoi = poi),
-                      );
-                    },
-                  ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildConfigStep(BuildContext context) {
-    final poi = _selectedPoi;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Selected POI card
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: VoyoColors.paper,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: VoyoColors.smoke),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    gradient: _gradient(poi.category as String?),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        poi.name as String,
-                        style: GoogleFonts.fraunces(
-                          fontSize: 16,
-                          color: VoyoColors.ink,
-                        ),
-                      ),
-                      Text(
-                        poi.category as String? ?? '',
-                        style: GoogleFonts.instrumentSans(
-                          fontSize: 11,
-                          color: VoyoColors.stone,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Day selector
-          Text(
-            'Which day?',
-            style: GoogleFonts.instrumentSans(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: VoyoColors.ink,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              ...widget.existingDays.map(_dayChip),
-              _dayChip(
-                (widget.existingDays.isEmpty ? 0 : widget.existingDays.last) +
-                    1,
-                label: 'New Day',
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // Time picker
-          Text(
-            'What time?',
-            style: GoogleFonts.instrumentSans(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: VoyoColors.ink,
-            ),
-          ),
-          const SizedBox(height: 10),
-          GestureDetector(
-            onTap: _pickTime,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                color: VoyoColors.vellum,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: VoyoColors.smoke),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.access_time_outlined,
-                    color: VoyoColors.stone,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    _selectedTime.format(context),
-                    style: GoogleFonts.jetBrainsMono(
-                      fontSize: 16,
-                      color: VoyoColors.terra,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'tap to change',
-                    style: GoogleFonts.instrumentSans(
-                      fontSize: 11,
-                      color: VoyoColors.stone,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          if (_error != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              _error!,
-              style: GoogleFonts.instrumentSans(
-                fontSize: 12,
-                color: VoyoColors.expedition,
-              ),
-            ),
-          ],
-          const SizedBox(height: 24),
-
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: FilledButton(
-              onPressed: _saving ? null : _save,
-              style: FilledButton.styleFrom(
-                backgroundColor: VoyoColors.terra,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              child:
-                  _saving
-                      ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                      : Text(
-                        'Add to Itinerary',
-                        style: GoogleFonts.instrumentSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _dayChip(int day, {String? label}) {
-    final isSelected = _selectedDay == day;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedDay = day),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? VoyoColors.terra : VoyoColors.paper,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? VoyoColors.terra : VoyoColors.smoke,
-          ),
-        ),
-        child: Text(
-          label ?? 'Day $day',
-          style: GoogleFonts.instrumentSans(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: isSelected ? Colors.white : VoyoColors.stone,
-          ),
-        ),
-      ),
-    );
-  }
-
-  LinearGradient _gradient(String? category) => switch (category) {
-    'historical' || 'religious' => const LinearGradient(
-      colors: [Color(0xFF3D2B1F), Color(0xFFC4622A)],
-    ),
-    'natural' => const LinearGradient(
-      colors: [Color(0xFF1A3A2A), Color(0xFF2A7A50)],
-    ),
-    'cultural' || 'entertainment' => const LinearGradient(
-      colors: [Color(0xFF1A2C40), Color(0xFF1C72B4)],
-    ),
-    _ => const LinearGradient(colors: [Color(0xFF2C1A2E), Color(0xFF6040B0)]),
-  };
 }
 
 // ---------------------------------------------------------------------------

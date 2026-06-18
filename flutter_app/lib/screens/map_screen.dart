@@ -244,11 +244,15 @@ class _MapScreenState extends State<MapScreen> {
 
   // ── Bottom sheets ────────────────────────────────────────────────────────────
 
-  void _showPoiBottomSheet(Poi poi) {
+  void _showPoiBottomSheet(Poi poi, {int? itineraryDay, int? itineraryStop}) {
     // Geotag tap → compact preview card (canonical enriched POI, truncated
     // copy, two actions). The full `PoiDetailSheet` opens only when the user
     // taps 'View details'. Keeps the map interaction light while preserving
     // the same data source as Planner/Explore.
+    //
+    // itineraryDay/Stop are passed ONLY when opening from an itinerary stop
+    // marker (_showStopInfo), so the revamped card renders the restored
+    // "Day N · Stop M" label (#1). Plain geotag taps omit them.
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -260,6 +264,8 @@ class _MapScreenState extends State<MapScreen> {
             ),
             child: MapPoiPreviewCard(
               poi: poi,
+              itineraryDay: itineraryDay,
+              itineraryStop: itineraryStop,
               onViewDetails: () {
                 Navigator.pop(sheetCtx); // close preview
                 _showPoiDetailSheet(poi);
@@ -750,9 +756,17 @@ class _MapScreenState extends State<MapScreen> {
     // Explore / Planner / Details. Falls back to the dedicated stop sheet
     // only if the canonical record isn't hydrated yet (e.g. the background
     // fetch is still in flight or failed), so the marker is never dead.
+    //
+    // Pass the day/stop so the revamped card shows the "Day N · Stop M"
+    // label (#1) — the regression the partner flagged was this exact label
+    // vanishing when the card moved to the canonical enriched layout.
     final canonical = _itineraryPoiDetails[poi.poiId];
     if (canonical != null) {
-      _showPoiBottomSheet(canonical);
+      _showPoiBottomSheet(
+        canonical,
+        itineraryDay: poi.dayNumber,
+        itineraryStop: poi.sequenceOrder,
+      );
       return;
     }
     showModalBottomSheet(

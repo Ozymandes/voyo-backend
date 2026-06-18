@@ -59,6 +59,22 @@ class IsochroneModeConfig {
   });
 }
 
+/// ETA provenance for the summary card's source-aware label (item 8).
+/// Set inside [IsochroneController._rankPois] when the matrix result lands
+/// so the card can key its label off a deterministic field instead of
+/// guessing from row flags.
+enum EtaSource {
+  /// Real road-following times from the local Valhalla `/table` endpoint.
+  valhalla,
+
+  /// Matrix failed (503 / timeout / length mismatch); rows are haversine
+  /// distance + profile speed. The card offers a Retry affordance here.
+  fallback,
+
+  /// No ranked POIs at all (no data to label).
+  offline,
+}
+
 /// Owns the "Explore from here" isochrone state + fetch/recompute logic.
 ///
 /// Mutate [ranges] / [profile] from UI controls (sliders, profile selector),
@@ -74,6 +90,12 @@ class IsochroneController extends ChangeNotifier {
   int _reachableCount = 0;
   List<RankedPoi> _rankedPois = const [];
   bool _ranking = false;
+
+  // ETA source (item 8) + retained map controller so widgets that don't own
+  // a MapController (the summary card) can still trigger a retry or a mode
+  // switch via [retry] / [switchToMode] without leaking the dependency up.
+  EtaSource _etaSource = EtaSource.offline;
+  MapController? _mapController;
 
   /// Reachable-area time ranges in minutes. Sliders write here.
   List<int> ranges = const [15, 30, 45];
@@ -93,6 +115,10 @@ class IsochroneController extends ChangeNotifier {
   List<RankedPoi> get rankedPois => _rankedPois;
   bool get isRanking => _ranking;
   int get maxMinutes => _rings.isEmpty ? 0 : _rings.last.timeMinutes;
+
+  /// Provenance of the current ranked-list ETAs (valhalla / fallback /
+  /// offline). The summary card keys its ETA label off this.
+  EtaSource get etaSource => _etaSource;
 
   /// Fetch reachable-area rings from [point], fit them into view, and expose
   /// a reachable-POI summary (count + the 5 nearest by travel time) for the
@@ -147,6 +173,7 @@ class IsochroneController extends ChangeNotifier {
     final center = point;
     _center = center;
     _lastPois = pois;
+    _mapController = mapController;
     if (!isRefinement) {
       // Fresh long-press: loading spinner + clear the stale bloom.
       _loading = true;
@@ -216,12 +243,46 @@ class IsochroneController extends ChangeNotifier {
     );
   }
 
+  /// Re-run the current explore without requiring a [MapController] argument
+  /// — used by the summary-card "Retry" affordance (item 4/12) when the
+  /// matrix fetch landed in the fallback path. Uses the [MapController]
+  /// retained from the most recent `explore` / `reExplore` call.
+  Future<void> retry() async {
+    final c = _center;
+    final m = _mapController;
+    if (c == null || m == null) return;
+    await _explore(
+      c,
+      _lastPois,
+      mapController: m,
+      ranges: ranges,
+      profile: profile,
+      autoPickMode: false,
+      isRefinement: true,
+    );
+  }
+
+  /// Flip the active travel mode from a widget that doesn't own a
+  /// [MapController] (e.g. the "Switch to Walking" affordance inside the
+  /// summary card). No-op when there is no active explore to refine.
+  Future<void> switchToMode(String mode) async {
+    if (profile == mode) return;
+    final c = _center;
+    final m = _mapController;
+    if (c == null || m == null) return;
+    final cfg = modeConfig(mode);
+    profile = mode;
+    ranges = _nestedRanges(cfg.defaultMinutes, profile: mode);
+    await reExplore(mapController: m);
+  }
+
   void clear() {
     _rings = [];
     _center = null;
     _reachableCount = 0;
     _rankedPois = const [];
     _ranking = false;
+    _etaSource = EtaSource.offline;
     notifyListeners();
   }
 
@@ -234,7 +295,11 @@ class IsochroneController extends ChangeNotifier {
         .toList();
   }
 
-  /// Ranks reachable POIs by travel time and returns the closest 5.
+  /// Ranks reachable POIs by travel time. Returns the full sorted list
+  /// (the summary card owns the compact top-5 cut and the partitioning for
+  /// driving mode). Sets [_etaSource] so the card's ETA label reflects
+  /// whether the times came from the Valhalla matrix or the haversine
+  /// fallback.
   ///
   /// Prefers the road-following OSRM table endpoint; when that is
   /// unreachable (503 / offline) it falls back to a haversine distance plus
@@ -245,7 +310,10 @@ class IsochroneController extends ChangeNotifier {
     List<Poi> reachable,
     String profile,
   ) async {
-    if (reachable.isEmpty) return const [];
+    if (reachable.isEmpty) {
+      _etaSource = EtaSource.offline;
+      return const [];
+    }
 
     // Pre-filter to the nearest by straight-line distance so the OSRM table
     // request stays small + fast. The road-time top 5 sit well within these.
@@ -266,6 +334,7 @@ class IsochroneController extends ChangeNotifier {
 
     final ranked = <RankedPoi>[];
     if (table != null && table.length == subset.length) {
+      _etaSource = EtaSource.valhalla;
       for (final row in table) {
         ranked.add(
           RankedPoi(
@@ -277,6 +346,7 @@ class IsochroneController extends ChangeNotifier {
         );
       }
     } else {
+      _etaSource = EtaSource.fallback;
       final speedKmh = _profileSpeedKmh(profile);
       for (final poi in subset) {
         final dKm = _haversineKm(origin, LatLng(poi.latitude, poi.longitude));
@@ -296,7 +366,7 @@ class IsochroneController extends ChangeNotifier {
     ranked.removeWhere((r) => r.distanceKm == 0 && r.durationMin == 0);
 
     ranked.sort((a, b) => a.durationMin.compareTo(b.durationMin));
-    return ranked.take(5).toList();
+    return ranked;
   }
 
   /// Straight-line distance in kilometres between two points.
@@ -863,6 +933,34 @@ IconData _modeIcon(String profile) {
   }
 }
 
+/// Routed-distance threshold (km) below which a POI in driving mode is
+/// treated as "better on foot" (item 6/7/11). Matches the `_effectiveMode`
+/// short-hop cut so the icon and the section assignment agree.
+const double _drivingWalkableThresholdKm = 1.2;
+
+/// Partition a driving-mode ranked list into (drive-worthy, walk-nearby).
+/// Walk mode returns everything in the primary bucket. Used by both the
+/// compact summary card and the expanded "view all" sheet so the two stay
+/// in sync.
+void _partitionForMode(
+  String profile,
+  List<RankedPoi> ranked,
+  List<RankedPoi> primary,
+  List<RankedPoi> nearby,
+) {
+  if (profile != 'auto') {
+    primary.addAll(ranked);
+    return;
+  }
+  for (final r in ranked) {
+    if (r.distanceKm > _drivingWalkableThresholdKm) {
+      primary.add(r);
+    } else {
+      nearby.add(r);
+    }
+  }
+}
+
 /// Non-modal, persistent summary card rendered inside the map `Stack`.
 ///
 /// Shows the reachable-area headline plus the 5 nearest reachable POIs
@@ -870,7 +968,11 @@ IconData _modeIcon(String profile) {
 /// isochrone bloom stays fully visible beside the list — a signature demo
 /// moment. The card is anchored bottom-left with a constrained width so most
 /// of the map (and the bloom) remains visible. Reset via the `Clear` action.
-class IsochroneSummaryCard extends StatelessWidget {
+///
+/// Stateful (item 6/7/9/10/11): owns the collapsed/expanded flag for the
+/// driving-mode "Nearby, better on foot" section, and opens the full ranked
+/// list in a [DraggableScrollableSheet] via "View all N places".
+class IsochroneSummaryCard extends StatefulWidget {
   final IsochroneController controller;
 
   /// Called when a ranked POI row is tapped — opens the add-to-itinerary flow.
@@ -884,6 +986,54 @@ class IsochroneSummaryCard extends StatelessWidget {
     required this.controller,
     required this.onPoiTap,
   });
+
+  @override
+  State<IsochroneSummaryCard> createState() => _IsochroneSummaryCardState();
+}
+
+class _IsochroneSummaryCardState extends State<IsochroneSummaryCard> {
+  // Driving-mode collapsed/expanded flag for the "Nearby, better on foot"
+  // section. Collapsed by default so the primary driving list dominates the
+  // compact card (item 11).
+  bool _nearbyExpanded = false;
+
+  IsochroneController get controller => widget.controller;
+
+  // Reset the collapsed-section flag whenever the explore point or mode
+  // changes so a stale expanded state doesn't bleed into a fresh context.
+  @override
+  void didUpdateWidget(covariant IsochroneSummaryCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller.profile != controller.profile ||
+        oldWidget.controller.center != controller.center) {
+      _nearbyExpanded = false;
+    }
+  }
+
+  void _openViewAll() {
+    final ranked = controller.rankedPois;
+    final profile = controller.profile;
+    if (ranked.isEmpty) return;
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.75,
+        minChildSize: 0.4,
+        maxChildSize: 0.95,
+        builder: (_, scrollController) => _ViewAllSheet(
+          ranked: ranked,
+          profile: profile,
+          maxMinutes: controller.maxMinutes,
+          reachableCount: controller.reachableCount,
+          etaSource: controller.etaSource,
+          onPoiTap: widget.onPoiTap,
+          scrollController: scrollController,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -924,7 +1074,13 @@ class IsochroneSummaryCard extends StatelessWidget {
     final cfg = IsochroneController.modeConfig(profile);
     final modeLabel = cfg.label;
     final ranked = controller.rankedPois;
-    final anyEstimated = ranked.any((r) => r.estimated);
+    final isDrivingMode = profile == 'auto';
+
+    // Partition for driving mode (item 6/7/11). Walk/bike → everything in
+    // `primary`, nothing in `nearby`.
+    final primary = <RankedPoi>[];
+    final nearby = <RankedPoi>[];
+    _partitionForMode(profile, ranked, primary, nearby);
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -955,18 +1111,28 @@ class IsochroneSummaryCard extends StatelessWidget {
                 _rankingPlaceholder()
               else if (ranked.isEmpty)
                 _emptyPlaces()
+              else if (isDrivingMode && primary.isEmpty)
+                _walkSuggestion()
               else ...[
-                for (var i = 0; i < ranked.length; i++)
+                // Compact: top 5 from the primary (drive-worthy) list.
+                for (var i = 0; i < primary.length && i < 5; i++)
                   _PoiRankRow(
                     rank: i + 1,
-                    data: ranked[i],
+                    data: primary[i],
                     // Per-row transport label: a 0.3 km hop shows a walk icon
                     // even in driving mode, so a car icon never sits next to
                     // a '0 km · 0 min' row.
                     profile: profile,
-                    onTap: () => onPoiTap(ranked[i].poi),
+                    onTap: () => widget.onPoiTap(primary[i].poi),
                   ),
-                if (anyEstimated) _estimateNote(),
+                // "View all N places" only when there is more to show than
+                // the compact 5-row cut (item 9/10).
+                if (ranked.length > 5) _viewAllButton(ranked.length),
+                // Driving-mode secondary section: collapsible list of POIs
+                // the user would actually walk to (item 11).
+                if (isDrivingMode && nearby.isNotEmpty)
+                  _nearbyOnFootSection(nearby, profile),
+                _etaSourceLabel(),
               ],
               // Mode-aware blurb: walking = compact-area copy, driving =
               // cross-city copy, cycling = caveat about road comfort.
@@ -1093,7 +1259,179 @@ class IsochroneSummaryCard extends StatelessWidget {
     );
   }
 
-  Widget _estimateNote() {
+  /// Driving-mode special case (item 6/7): every reachable POI is ≤ 1.2 km,
+  /// so a car list would be misleading. Show the suggested copy + a tappable
+  /// "Switch to Walking" affordance that flips mode via the controller.
+  Widget _walkSuggestion() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.directions_walk_rounded,
+            size: 16,
+            color: VoyoColors.discovery,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Most nearby places are better explored on foot.',
+                  style: GoogleFonts.instrumentSans(
+                    fontSize: 12.5,
+                    color: VoyoColors.ink,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => controller.switchToMode('pedestrian'),
+                  child: Text(
+                    'Switch to Walking for this area',
+                    style: GoogleFonts.instrumentSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: VoyoColors.expedition,
+                      decoration: TextDecoration.underline,
+                      decorationColor: VoyoColors.expedition,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// "View all N places" affordance (item 9/10) — opens the full ranked
+  /// list in a DraggableScrollableSheet.
+  Widget _viewAllButton(int total) {
+    return InkWell(
+      onTap: _openViewAll,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 14),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.unfold_more_rounded,
+              size: 14,
+              color: VoyoColors.discovery,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'View all $total places',
+              style: GoogleFonts.instrumentSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: VoyoColors.discovery,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Collapsible "Nearby, better on foot" section shown under the primary
+  /// driving list (item 11). Collapsed by default; the chevron toggles it.
+  Widget _nearbyOnFootSection(List<RankedPoi> nearby, String profile) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(height: 1, color: VoyoColors.smoke),
+        InkWell(
+          onTap: () => setState(() => _nearbyExpanded = !_nearbyExpanded),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 14),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.directions_walk_rounded,
+                  size: 13,
+                  color: VoyoColors.stone,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Nearby, better on foot',
+                    style: GoogleFonts.instrumentSans(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: VoyoColors.stone,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${nearby.length}',
+                  style: GoogleFonts.jetBrainsMono(
+                    fontSize: 10,
+                    color: VoyoColors.stone,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  _nearbyExpanded
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
+                  size: 16,
+                  color: VoyoColors.stone,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_nearbyExpanded)
+          for (var i = 0; i < nearby.length; i++)
+            _PoiRankRow(
+              rank: i + 1,
+              data: nearby[i],
+              profile: profile,
+              onTap: () => widget.onPoiTap(nearby[i].poi),
+            ),
+      ],
+    );
+  }
+
+  /// Source-aware ETA label (item 8) + Retry affordance (item 4/12).
+  /// `EtaSource.valhalla` → "Route times from local routing engine.";
+  /// `EtaSource.fallback` → "Times approximate." + a Retry button that
+  /// re-runs the explore via the controller's retained MapController.
+  Widget _etaSourceLabel() {
+    final source = controller.etaSource;
+    if (source == EtaSource.valhalla) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(14, 6, 14, 8),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.verified_rounded,
+              size: 12,
+              color: VoyoColors.verified,
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                'Route times from local routing engine.',
+                style: GoogleFonts.instrumentSans(
+                  fontSize: 10.5,
+                  color: VoyoColors.stone,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    // fallback — show approximate copy + a Retry affordance.
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 6, 14, 8),
       child: Row(
@@ -1101,16 +1439,46 @@ class IsochroneSummaryCard extends StatelessWidget {
           const Icon(
             Icons.timeline_outlined,
             size: 12,
-            color: VoyoColors.stone,
+            color: VoyoColors.caution,
           ),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              'Times approximate (offline estimate).',
+              'Times approximate.',
               style: GoogleFonts.instrumentSans(
                 fontSize: 10.5,
                 color: VoyoColors.stone,
                 fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: controller.retry,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: VoyoColors.expedition.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.refresh_rounded,
+                    size: 11,
+                    color: VoyoColors.expedition,
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    'Retry',
+                    style: GoogleFonts.instrumentSans(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                      color: VoyoColors.expedition,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -1142,6 +1510,324 @@ class IsochroneSummaryCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Expanded "View all" sheet (item 9/10). Full scrollable ranked list with
+/// two-section layout in driving mode (Best by car + Nearby, better on foot).
+/// Each row carries distance, ETA when reliable, category, tap-to-preview /
+/// add-to-trip via [onPoiTap].
+class _ViewAllSheet extends StatelessWidget {
+  final List<RankedPoi> ranked;
+  final String profile;
+  final int maxMinutes;
+  final int reachableCount;
+  final EtaSource etaSource;
+  final void Function(Poi poi) onPoiTap;
+  final ScrollController scrollController;
+
+  const _ViewAllSheet({
+    required this.ranked,
+    required this.profile,
+    required this.maxMinutes,
+    required this.reachableCount,
+    required this.etaSource,
+    required this.onPoiTap,
+    required this.scrollController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDrivingMode = profile == 'auto';
+    final primary = <RankedPoi>[];
+    final nearby = <RankedPoi>[];
+    _partitionForMode(profile, ranked, primary, nearby);
+    final cfg = IsochroneController.modeConfig(profile);
+    final hasNearbyHeader = isDrivingMode && nearby.isNotEmpty;
+    final itemCount =
+        primary.length + (hasNearbyHeader ? 1 + nearby.length : 0);
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: VoyoColors.paper,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 4),
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: VoyoColors.smoke,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 6, 8, 10),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.explore_rounded,
+                  size: 18,
+                  color: VoyoColors.discovery,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Reachable from this point',
+                        style: GoogleFonts.fraunces(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: VoyoColors.ink,
+                        ),
+                      ),
+                      Text(
+                        '${cfg.label} within $maxMinutes min'
+                        ' · $reachableCount'
+                        ' ${reachableCount == 1 ? 'place' : 'places'}',
+                        style: GoogleFonts.instrumentSans(
+                          fontSize: 12,
+                          color: VoyoColors.stone,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, size: 20),
+                  color: VoyoColors.stone,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+          ),
+          Container(height: 1, color: VoyoColors.smoke),
+          Expanded(
+            child: ListView.builder(
+              controller: scrollController,
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              itemCount: itemCount,
+              itemBuilder: (ctx, i) {
+                if (i < primary.length) {
+                  return _ExpandedPoiRow(
+                    rank: i + 1,
+                    data: primary[i],
+                    profile: profile,
+                    onTap: () => onPoiTap(primary[i].poi),
+                  );
+                }
+                final local = i - primary.length;
+                if (local == 0) {
+                  return _SectionHeader(
+                    icon: Icons.directions_walk_rounded,
+                    label: 'Nearby, better on foot',
+                    count: nearby.length,
+                  );
+                }
+                final nearbyIdx = local - 1;
+                return _ExpandedPoiRow(
+                  rank: nearbyIdx + 1,
+                  data: nearby[nearbyIdx],
+                  profile: profile,
+                  onTap: () => onPoiTap(nearby[nearbyIdx].poi),
+                );
+              },
+            ),
+          ),
+          if (etaSource == EtaSource.fallback)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 6, 18, 12),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.timeline_outlined,
+                    size: 12,
+                    color: VoyoColors.caution,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Times approximate. Pull to refresh for live routing.',
+                      style: GoogleFonts.instrumentSans(
+                        fontSize: 10.5,
+                        color: VoyoColors.stone,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Section header used inside the "View all" sheet.
+class _SectionHeader extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final int count;
+
+  const _SectionHeader({
+    required this.icon,
+    required this.label,
+    required this.count,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: VoyoColors.vellum,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 13, color: VoyoColors.stone),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.instrumentSans(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                color: VoyoColors.stone,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ),
+          Text(
+            '$count',
+            style: GoogleFonts.jetBrainsMono(
+              fontSize: 10.5,
+              color: VoyoColors.stone,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Expanded-row layout for the "View all" sheet (item 9/10): distance,
+/// ETA when reliable, category, tap-to-preview / add-to-trip via [onTap].
+class _ExpandedPoiRow extends StatelessWidget {
+  final int rank;
+  final RankedPoi data;
+  final String profile;
+  final VoidCallback onTap;
+
+  const _ExpandedPoiRow({
+    required this.rank,
+    required this.data,
+    required this.profile,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final rowMode = _effectiveMode(profile, data.distanceKm, data.durationMin);
+    final rawMin = data.durationMin;
+    final timeMin =
+        (rawMin.isFinite && rawMin > 0)
+            ? rawMin.round().clamp(1, 999)
+            : _walkTimeMin(data.distanceKm).clamp(1, 999);
+    final category = data.poi.category;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 22,
+              child: Text(
+                '$rank',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.fraunces(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  fontStyle: FontStyle.italic,
+                  color: VoyoColors.discovery,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Icon(_modeIcon(rowMode), size: 16, color: VoyoColors.stone),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    data.poi.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.instrumentSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: VoyoColors.ink,
+                    ),
+                  ),
+                  if (category != null && category.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      category,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.instrumentSans(
+                        fontSize: 11,
+                        color: VoyoColors.stone,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${data.distanceKm.toStringAsFixed(1)} km',
+                  style: GoogleFonts.jetBrainsMono(
+                    fontSize: 11.5,
+                    color: VoyoColors.ink,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  data.estimated ? '~$timeMin min' : '$timeMin min',
+                  style: GoogleFonts.instrumentSans(
+                    fontSize: 11,
+                    color:
+                        data.estimated ? VoyoColors.caution : VoyoColors.stone,
+                    fontStyle:
+                        data.estimated ? FontStyle.italic : FontStyle.normal,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.add_circle_outline_rounded,
+              size: 18,
+              color: VoyoColors.expedition,
+            ),
+          ],
+        ),
       ),
     );
   }

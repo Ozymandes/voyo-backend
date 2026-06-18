@@ -82,9 +82,12 @@ CLEO_FALLBACK_MESSAGE = (
 
 # Distinct message for the hard daily-token cap: retrying won't help within a
 # single session, so we tell the user plainly to come back tomorrow.
+# Copy matches the partner QA spec (#3): no retry loop, no fake AI answer,
+# and a clear note that DB-only / deterministic features (explore, saved
+# itineraries, the routing engines) keep working while the LLM tier is out.
 CLEO_DAILY_QUOTA_MESSAGE = (
-    "I've reached my daily message limit for now. "
-    "Please try again tomorrow \u2014 I'll be refreshed and ready to help plan your Egypt trip!"
+    "CLEO has reached today\u2019s AI message limit. "
+    "You can still explore places and use saved itinerary tools, and I\u2019ll be ready again shortly."
 )
 
 # Lightweight in-process daily-spend awareness (resets on restart). Groq's free
