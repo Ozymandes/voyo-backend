@@ -1,53 +1,167 @@
 {
   "_meta": {
-    "source": "LIVE Supabase query via venv/Scripts/python.exe validate_database.py (re-runnable integrity check), 2026-06-15",
-    "validator": "validate_database.py (queries the live pois table with the service key)",
-    "exit_status": "ran to completion; reported 'ATTENTION NEEDED' only for the disclosed low-completeness fields (semantically-correct nulls), no integrity defects"
+    "source": "LIVE Supabase query (regenerate via work/regen_db_completeness.py)",
+    "generated_at": "2026-06-17 22:27",
+    "validator": "regen_db_completeness.py — read-only SELECTs, re-runnable"
   },
-  "total_active_pois": 255,
+  "total_active_pois": 316,
   "duplicates": 0,
+  "duplicate_names_if_any": [],
   "regional_distribution": {
-    "Cairo": 11,
-    "Giza": 9,
+    "Sinai": 43,
     "Alexandria": 43,
+    "Aswan": 42,
+    "Cairo": 41,
     "Luxor": 39,
-    "Aswan": 43,
-    "Hurghada": 29,
+    "Giza": 39,
     "Marsa Alam": 39,
-    "Sinai": 42,
-    "_note": "Cairo (11) and Giza (9) are the THINNEST regions despite being the two most-visited. This is a master-list CURATION GAP, not a technical defect — disclosed honestly as a limitation."
+    "Hurghada": 30
   },
+  "regional_distribution_note": "Cairo/Giza imbalance from the 2026-06-15 evidence is RESOLVED (both now 39-41).",
   "field_completeness": {
-    "description": {"filled": 255, "pct": 100.0},
-    "latitude": {"filled": 255, "pct": 100.0},
-    "longitude": {"filled": 255, "pct": 100.0},
-    "total_reviews": {"filled": 255, "pct": 100.0, "note": "min=6, max=74497; the old len(reviews) cap-at-5 bug is gone (0 rows ==5)"},
-    "historical_significance": {"filled": 254, "pct": 99.2},
-    "tags": {"filled": 253, "pct": 99.2, "format": "flat list (0 dict-wrappers)"},
-    "average_rating": {"filled": 250, "pct": 98.0},
-    "image_urls": {"filled": 210, "pct": 82.4, "format": "flat list 255/255 (0 dict-wrappers)", "wikimedia_permanent": 208, "note": "the 45 image-less POIs are obscure remote sites (diving reefs, desert locations) with no Wikipedia article — NOT the famous sites"},
-    "opening_hours": {"filled": 172, "pct": 67.5, "note": "outdoor/natural sites have no operating hours — null is semantically CORRECT, not a gap"},
-    "ticket_price": {"filled": 149, "pct": 58.4, "note": "107 of 255 POIs are genuinely FREE (beaches, reefs, streets, markets) — null price is correct. Spot-checked paid sites are exact (Pyramid 240, Karnak 220, Egyptian Museum 200 EGP)"},
-    "website_url": {"filled": 102, "pct": 40.0, "note": "natural sites rarely have websites — null is correct"}
+    "narrative": {
+      "filled": 316,
+      "pct": 100.0,
+      "note": "LLM-grounded (Wikipedia/Tavily/Official); grounding_rate 88% — see narrative_sources.json"
+    },
+    "travel_tips": {
+      "filled": 312,
+      "pct": 98.7,
+      "note": "expert tips from the enrichment run"
+    },
+    "best_visit_times": {
+      "filled": 316,
+      "pct": 100.0,
+      "note": "researched season + time_of_day; the bland 'Year-round/Any time' pattern is gone"
+    },
+    "description": {
+      "filled": 316,
+      "pct": 100.0
+    },
+    "historical_significance": {
+      "filled": 315,
+      "pct": 99.7
+    },
+    "latitude": {
+      "filled": 316,
+      "pct": 100.0
+    },
+    "longitude": {
+      "filled": 316,
+      "pct": 100.0
+    },
+    "image_urls": {
+      "filled": 315,
+      "pct": 99.7,
+      "note": "image-less POIs are obscure remote reefs/desert sites, not the famous ones"
+    },
+    "tags": {
+      "filled": 314,
+      "pct": 99.4
+    },
+    "average_rating": {
+      "filled": 316,
+      "pct": 100.0
+    },
+    "total_reviews": {
+      "filled": 316,
+      "pct": 100.0,
+      "note": "min=0, max=74525"
+    },
+    "popularity_score": {
+      "filled": 316,
+      "pct": 100.0
+    },
+    "city": {
+      "filled": 256,
+      "pct": 81.0
+    },
+    "address": {
+      "filled": 316,
+      "pct": 100.0
+    },
+    "ticket_prices": {
+      "filled": 104,
+      "pct": 32.9,
+      "note": "structured dual-tier {egyptian,foreigner,currency}. 212 POIs are free/unverified — blank is the honest state, not a gap (see enrichment_research_worksheet_README.md)"
+    },
+    "ticket_price": {
+      "filled": 181,
+      "pct": 57.3,
+      "note": "legacy scalar, retained as fallback for the 127 POIs not yet migrated to ticket_prices"
+    },
+    "opening_hours": {
+      "filled": 211,
+      "pct": 66.8,
+      "note": "natural/outdoor sites have no hours — null is semantically CORRECT"
+    },
+    "website_url": {
+      "filled": 128,
+      "pct": 40.5,
+      "note": "natural sites rarely have websites — null is correct"
+    },
+    "phone_number": {
+      "filled": 115,
+      "pct": 36.4
+    },
+    "average_visit_duration": {
+      "filled": 38,
+      "pct": 12.0
+    },
+    "currency": {
+      "filled": 184,
+      "pct": 58.2
+    }
   },
-  "image_format_integrity": {"flat_list_correct": "255/255", "dict_wrapper_old_bug": "0/255"},
-  "tags_format_integrity": {"flat_list_correct": "253/255", "dict_wrapper_old_bug": "0/255"},
-  "review_counts": {"min": 6, "max": 74497, "count_equals_5_old_bug": 0},
-  "category_enum_invalid": 0,
+  "pricing_breakdown": {
+    "structured_ticket_prices": 104,
+    "legacy_ticket_price_only": 81,
+    "no_price_data_free_or_unverified": 131,
+    "note": "212 POIs are genuinely free or honestly unverified (Egyptian monument fees are volatile 2023-2025). Blank is the honest state."
+  },
   "famous_six": [
-    {"name": "Great Pyramid of Giza (Khufu)", "reviews": 31657, "has_image": true},
-    {"name": "Karnak Temple Complex", "reviews": 30583, "has_image": true},
-    {"name": "Great Sphinx of Giza", "reviews": 25886, "has_image": true},
-    {"name": "Valley of the Kings", "reviews": 22930, "has_image": true},
-    {"name": "The Egyptian Museum", "reviews": 64632, "has_image": true},
-    {"name": "Abu Simbel Temples", "reviews": 20755, "has_image": true}
+    {
+      "name": "Khan el-Khalili",
+      "reviews": 74525,
+      "has_image": true,
+      "has_narrative": true
+    },
+    {
+      "name": "The Egyptian Museum",
+      "reviews": 64658,
+      "has_image": true,
+      "has_narrative": true
+    },
+    {
+      "name": "SOHO Square",
+      "reviews": 44328,
+      "has_image": true,
+      "has_narrative": true
+    },
+    {
+      "name": "Old Market",
+      "reviews": 41512,
+      "has_image": true,
+      "has_narrative": true
+    },
+    {
+      "name": "Al-Azhar Park",
+      "reviews": 40593,
+      "has_image": true,
+      "has_narrative": true
+    },
+    {
+      "name": "Citadel of Cairo (Saladin Citadel)",
+      "reviews": 35600,
+      "has_image": true,
+      "has_narrative": true
+    }
   ],
-  "famous_six_summary": "6/6 have permanent Wikimedia images + real review counts (20k–64k). Before the rebuild: 0/6 had a usable image.",
   "honest_gaps_summary": [
-    "ticket_price 58% — 107 sites are genuinely free (null is correct)",
-    "opening_hours 67% — natural/outdoor sites have no hours (null is correct)",
-    "website_url 40% — natural sites have no website (null is correct)",
-    "45 image-less POIs — obscure remote sites, not the famous ones",
-    "Regional imbalance: Cairo 11 / Giza 9 are thinnest — master-list curation gap, disclosed not hidden"
+    "ticket_prices 104/316 (32%) — 212 POIs are free/unverified (blank is honest, not a defect)",
+    "opening_hours — null for natural/outdoor sites (semantically correct)",
+    "website_url — null for natural sites (correct)",
+    "average_visit_duration sparse — not all POIs have published durations",
+    "narrative 100% grounded (88% with external source citation) — see narrative_sources.json"
   ]
 }

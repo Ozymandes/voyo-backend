@@ -146,6 +146,195 @@ class ItineraryEngine:
             pace=pace,
         )
 
+    async def preview_add(
+        self,
+        itinerary_id: int,
+        user_id: str,
+        candidate_poi_id: int,
+        preferred_day: Optional[int] = None,
+        hotel_location: Optional[Tuple[float, float]] = None,
+        days: Optional[int] = None,
+        daily_start: str = "09:00",
+        daily_end: str = "18:00",
+        travel_profile: str = "auto",
+        pace: str = "balanced",
+    ) -> Dict[str, Any]:
+        """Dry-run feasibility check: "can this POI be added, and where?"
+
+        Loads the existing itinerary's POIs, adds the candidate, and runs the
+        real VROOM solver (no heuristic). Because VROOM models each day as a
+        vehicle with a time window and POIs carry opening-hours windows, the
+        solver's verdict is honest road-network + time-budget feasibility:
+
+          * candidate in ``unassigned`` → **infeasible** (trip at capacity,
+            or POI unreachable in any day's window / opening hours).
+          * candidate assigned to a vehicle/day → that's the **recommended**
+            day. May differ from the user's preferred day — e.g. an Aswan
+            POI won't land on a Cairo day no matter the preference.
+          * any previously-assigned POI that becomes unassigned → **displaced**
+            by the candidate (the day got too full).
+
+        Nothing is persisted — the caller still saves via the normal flow
+        once the user confirms. (Honest routing: this is the whole point of
+        running a real optimizer instead of a haversine guess.)
+        """
+        from src.itinerary.persistence import ItineraryPersistence
+
+        persistence = ItineraryPersistence()
+        existing = await persistence.load_itinerary_raw(itinerary_id, user_id)
+        if not existing:
+            raise ValueError(f"Itinerary {itinerary_id} not found")
+
+        existing_poi_ids = [item["poi_id"] for item in existing.get("items", [])]
+        # Existing per-POI day assignment, used to detect displacement.
+        prior_day_by_poi: Dict[int, int] = {
+            item["poi_id"]: int(item.get("day_number", 0))
+            for item in existing.get("items", [])
+            if item.get("poi_id") is not None
+        }
+
+        # If the caller didn't pass a day count, infer from the existing plan.
+        if days is None:
+            days = max([1, *prior_day_by_poi.values()])
+
+        # Simulate the addition (deduped — if the POI is already on the trip,
+        # there's nothing to add; we still report that honestly).
+        already_on_trip = candidate_poi_id in existing_poi_ids
+        all_ids = existing_poi_ids + ([] if already_on_trip else [candidate_poi_id])
+
+        optimized = await self.generate(
+            poi_ids=all_ids,
+            user_id=user_id,
+            days=days,
+            hotel_location=hotel_location,
+            daily_start=daily_start,
+            daily_end=daily_end,
+            travel_profile=travel_profile,
+            pace=pace,
+        )
+
+        meta = optimized.get("optimization_metadata", {})
+        unassigned: List[int] = list(meta.get("unassigned", []) or [])
+
+        # Where did VROOM place the candidate?
+        recommended_day: Optional[int] = None
+        for day in optimized.get("days", []):
+            for stop in day.get("stops", []):
+                if stop.get("poi_id") == candidate_poi_id:
+                    recommended_day = int(day.get("day_number", 0))
+                    break
+            if recommended_day is not None:
+                break
+
+        feasible = candidate_poi_id not in unassigned and recommended_day is not None
+
+        # Displacement = existing POIs that WERE assigned but are now unassigned.
+        displaced = [
+            {"poi_id": pid, "day_was": prior_day_by_poi[pid]}
+            for pid in unassigned
+            if pid != candidate_poi_id and pid in prior_day_by_poi
+        ]
+
+        preferred_feasible = (
+            feasible and (preferred_day is None or recommended_day == preferred_day)
+        )
+
+        # Path B — deterministic placement. Walk the VROOM-optimized schedule
+        # to extract exactly where the candidate landed: its arrival time
+        # (the suggested clock slot), and the POIs immediately before/after
+        # it so the UI can say "between X and Y". This is what lets the
+        # planner stop offering a fabricated clock grid and instead commit
+        # the POI at the route-optimal time VROOM actually computed.
+        placement = self._extract_placement(
+            optimized, candidate_poi_id, recommended_day
+        )
+
+        return {
+            "feasible": feasible,
+            "already_on_trip": already_on_trip,
+            "recommended_day": recommended_day,
+            "preferred_day": preferred_day,
+            "preferred_day_feasible": preferred_feasible,
+            "displaced_pois": displaced,
+            "candidate_placement": placement,
+            "solver_status": meta.get("solver_status", "UNKNOWN"),
+            "reason": self._explain_preview(
+                feasible=feasible,
+                already_on_trip=already_on_trip,
+                recommended_day=recommended_day,
+                preferred_day=preferred_day,
+                displaced=displaced,
+            ),
+            "preview": optimized,
+        }
+
+    @staticmethod
+    def _extract_placement(
+        optimized: Dict, candidate_poi_id: int, recommended_day: Optional[int]
+    ) -> Optional[Dict[str, Any]]:
+        """Pull the candidate's VROOM-assigned slot + neighbours from the preview.
+
+        Returns ``None`` when the candidate wasn't placed (infeasible). On
+        success returns ``{arrival_time, sequence, previous_name, next_name,
+        day_stops_count}`` — everything the client needs to render "CLEO
+        suggests ~2:00 PM, between the Egyptian Museum and Khan el-Khalili".
+        """
+        if recommended_day is None:
+            return None
+        for day in optimized.get("days", []):
+            if int(day.get("day_number", 0)) != recommended_day:
+                continue
+            stops = day.get("stops", [])
+            for idx, stop in enumerate(stops):
+                if stop.get("poi_id") != candidate_poi_id:
+                    continue
+                prev_stop = stops[idx - 1] if idx > 0 else None
+                next_stop = stops[idx + 1] if idx + 1 < len(stops) else None
+                return {
+                    "arrival_time": stop.get("arrival_time"),
+                    "departure_time": stop.get("departure_time"),
+                    "sequence": stop.get("sequence"),
+                    "previous_name": (prev_stop or {}).get("poi_name"),
+                    "next_name": (next_stop or {}).get("poi_name"),
+                    "day_stops_count": len(stops),
+                }
+        return None
+
+    @staticmethod
+    def _explain_preview(
+        *,
+        feasible: bool,
+        already_on_trip: bool,
+        recommended_day: Optional[int],
+        preferred_day: Optional[int],
+        displaced: List[Dict[str, Any]],
+    ) -> str:
+        """One human sentence summarizing the verdict, in VOYO voice."""
+        if already_on_trip:
+            return "This place is already on your trip."
+        if not feasible:
+            return (
+                "This won't fit on any day of your current trip — every day is "
+                "at capacity or the opening hours don't align. Try removing a "
+                "stop or extending a day's hours."
+            )
+        names = lambda n: f"Day {n}"
+        if displaced:
+            disp_str = ", ".join(
+                f"Day {d['day_was']}" for d in displaced
+            )
+            return (
+                f"Fits on {names(recommended_day)}, but adding it crowds the day "
+                f"— another stop would be pushed off ({disp_str}). Add it anyway, "
+                "or pick a different day."
+            )
+        if preferred_day is not None and recommended_day != preferred_day:
+            return (
+                f"Your Day {preferred_day} can't take it, but it fits naturally "
+                f"on {names(recommended_day)} — less travel, better pacing."
+            )
+        return f"Fits cleanly on {names(recommended_day)}."
+
     # ==================================================================
     # Internal Methods
     # ==================================================================

@@ -43,6 +43,11 @@ dependencies:
   shared_preferences: ^2.3.0
   url_launcher: ^6.3.0
   flutter_markdown: ^0.7.4
+  # Location for the Discovery weather widget (D3). geolocator handles the
+  # platform permission flow + GPS read; permission_handler is used to detect
+  # the 'permanently denied' state so we can route to app settings.
+  geolocator: ^13.0.1
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

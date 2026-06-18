@@ -101,21 +101,17 @@ class POI(Base):
     name = Column(String(200), nullable=False)
     name_arabic = Column(String(200))
     description = Column(Text)
-    description_arabic = Column(Text)
     category = Column(Enum(POICategory), nullable=False)
 
     # Location information
     address = Column(String(500))
-    address_arabic = Column(String(500))
     latitude = Column(Float)
     longitude = Column(Float)
     city = Column(String(100))
-    postal_code = Column(String(20))
 
     # Contact information
     phone_number = Column(String(30))
     website_url = Column(String(500))
-    email_address = Column(String(255))
 
     # Operating information
     opening_hours = Column(JSON)  # Store as structured JSON
@@ -131,13 +127,10 @@ class POI(Base):
 
     # Media
     image_urls = Column(JSON)  # Array of image URLs
-    video_urls = Column(JSON)  # Array of video URLs
 
     # Metadata
     historical_significance = Column(Text)
-    historical_significance_arabic = Column(Text)
     tags = Column(JSON)  # Array of tags for search
-    near_by_pois = Column(JSON)  # Array of nearby POI IDs
 
     # Status
     is_active = Column(Boolean, default=True)

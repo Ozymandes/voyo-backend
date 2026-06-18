@@ -14,27 +14,43 @@ class IsochroneRing {
   const IsochroneRing({required this.timeMinutes, required this.points});
 }
 
+/// One row of the origin→destinations travel matrix returned by the OSRM
+/// ``/table`` endpoint. ``index`` aligns to the caller's destinations order.
+class DistanceTableRow {
+  final int index;
+  final double distanceM;
+  final double durationS;
+
+  const DistanceTableRow({
+    required this.index,
+    required this.distanceM,
+    required this.durationS,
+  });
+}
+
 class RoutingService {
   static const _defaultBackend = 'http://10.0.2.2:8000';
 
-  String get _backend =>
-      dotenv.env['CLEO_API_URL'] ?? _defaultBackend;
+  String get _backend => dotenv.env['CLEO_API_URL'] ?? _defaultBackend;
 
   /// Fetches a road-following polyline from the self-hosted Valhalla backend
   /// (``GET /api/v1/routing/route``). Falls back to straight-line connections
   /// when the backend is unavailable so the map never breaks.
-  Future<List<LatLng>> fetchRoute(List<LatLng> waypoints,
-      {String profile = 'auto'}) async {
+  Future<List<LatLng>> fetchRoute(
+    List<LatLng> waypoints, {
+    String profile = 'auto',
+  }) async {
     if (waypoints.length < 2) return waypoints;
 
-    final coords =
-        waypoints.map((p) => '${p.latitude},${p.longitude}').join(';');
+    final coords = waypoints
+        .map((p) => '${p.latitude},${p.longitude}')
+        .join(';');
     final uri = Uri.parse(
-        '$_backend/api/v1/routing/route?waypoints=$coords&profile=$profile');
+      '$_backend/api/v1/routing/route?waypoints=$coords&profile=$profile',
+    );
 
     try {
-      final response =
-          await http.get(uri).timeout(const Duration(seconds: 10));
+      final response = await http.get(uri).timeout(const Duration(seconds: 10));
       if (response.statusCode != 200) return waypoints;
 
       final data = json.decode(response.body) as Map<String, dynamic>;
@@ -43,10 +59,9 @@ class RoutingService {
       if (polyline == null || polyline.isEmpty) return waypoints;
 
       return polyline
-          .map((c) => LatLng(
-                (c[0] as num).toDouble(),
-                (c[1] as num).toDouble(),
-              ))
+          .map(
+            (c) => LatLng((c[0] as num).toDouble(), (c[1] as num).toDouble()),
+          )
           .toList();
     } catch (e) {
       debugPrint('Valhalla route unavailable, using straight lines: $e');
@@ -73,9 +88,8 @@ class RoutingService {
 
     try {
       final response = await http
-          .post(uri,
-              headers: {'Content-Type': 'application/json'}, body: body)
-          .timeout(const Duration(seconds: 15));
+          .post(uri, headers: {'Content-Type': 'application/json'}, body: body)
+          .timeout(const Duration(seconds: 25));
       if (response.statusCode != 200) return [];
 
       final data = json.decode(response.body) as Map<String, dynamic>;
@@ -100,6 +114,46 @@ class RoutingService {
     }
   }
 
+  /// Fetches an origin→destinations travel matrix (distance + duration) from
+  /// the self-hosted OSRM backend (``POST /api/v1/routing/table``). Returns one
+  /// [DistanceTableRow] per destination, aligned to the input order, or `null`
+  /// when the backend is unreachable (503/timeout) so the caller can fall back
+  /// to a local straight-line estimate.
+  Future<List<DistanceTableRow>?> fetchTable({
+    required LatLng origin,
+    required List<LatLng> destinations,
+    String profile = 'auto',
+  }) async {
+    if (destinations.isEmpty) return const [];
+    final uri = Uri.parse('$_backend/api/v1/routing/table');
+    final body = json.encode({
+      'origin': {'lat': origin.latitude, 'lng': origin.longitude},
+      'destinations': [
+        for (final d in destinations) {'lat': d.latitude, 'lng': d.longitude},
+      ],
+      'profile': profile,
+    });
+
+    try {
+      final response = await http
+          .post(uri, headers: {'Content-Type': 'application/json'}, body: body)
+          .timeout(const Duration(seconds: 15));
+      if (response.statusCode != 200) return null;
+      final data = json.decode(response.body) as List;
+      return [
+        for (final row in data)
+          DistanceTableRow(
+            index: (row['index'] as num).toInt(),
+            distanceM: (row['distance_m'] as num).toDouble(),
+            durationS: (row['duration_s'] as num).toDouble(),
+          ),
+      ];
+    } catch (e) {
+      debugPrint('Routing table unavailable, will estimate: $e');
+      return null;
+    }
+  }
+
   /// Extracts a flat ring of [LatLng] from a Valhalla isochrone GeoJSON
   /// feature (Polygon or MultiPolygon — takes the largest outer ring).
   List<LatLng> _extractRingCoordinates(Map<String, dynamic>? geojson) {
@@ -117,7 +171,9 @@ class RoutingService {
       // Pick the polygon with the most points as the representative ring.
       List best = [];
       for (final poly in coords as List) {
-        if (poly is List && poly.isNotEmpty && (poly[0] as List).length > best.length) {
+        if (poly is List &&
+            poly.isNotEmpty &&
+            (poly[0] as List).length > best.length) {
           best = poly[0] as List;
         }
       }
@@ -128,17 +184,15 @@ class RoutingService {
 
     return ring
         .whereType<List>()
-        .map((c) => LatLng(
-              (c[1] as num).toDouble(),
-              (c[0] as num).toDouble(),
-            ))
+        .map((c) => LatLng((c[1] as num).toDouble(), (c[0] as num).toDouble()))
         .toList();
   }
 
   /// Fetches road-following routes for every day in the itinerary.
   /// Returns dayNumber → sorted route polyline.
   Future<Map<int, List<LatLng>>> fetchRoutesByDay(
-      List<ItineraryPoi> pois) async {
+    List<ItineraryPoi> pois,
+  ) async {
     final byDay = <int, List<ItineraryPoi>>{};
     for (final poi in pois) {
       byDay.putIfAbsent(poi.dayNumber, () => []).add(poi);
@@ -171,16 +225,13 @@ class RoutingService {
   String? buildGoogleMapsUrl(List<ItineraryPoi> pois) {
     if (pois.isEmpty) return null;
 
-    final sorted = [...pois]
-      ..sort((a, b) {
-        final d = a.dayNumber.compareTo(b.dayNumber);
-        return d != 0 ? d : a.sequenceOrder.compareTo(b.sequenceOrder);
-      });
+    final sorted = [...pois]..sort((a, b) {
+      final d = a.dayNumber.compareTo(b.dayNumber);
+      return d != 0 ? d : a.sequenceOrder.compareTo(b.sequenceOrder);
+    });
 
-    final origin =
-        '${sorted.first.latitude},${sorted.first.longitude}';
-    final destination =
-        '${sorted.last.latitude},${sorted.last.longitude}';
+    final origin = '${sorted.first.latitude},${sorted.first.longitude}';
+    final destination = '${sorted.last.latitude},${sorted.last.longitude}';
 
     final buffer = StringBuffer(
       'https://www.google.com/maps/dir/?api=1'
@@ -191,10 +242,10 @@ class RoutingService {
 
     // Google Maps URL supports at most 8 intermediate waypoints
     if (sorted.length > 2) {
-      final middle =
-          sorted.sublist(1, sorted.length - 1).take(8).toList();
-      final waypoints =
-          middle.map((p) => '${p.latitude},${p.longitude}').join('|');
+      final middle = sorted.sublist(1, sorted.length - 1).take(8).toList();
+      final waypoints = middle
+          .map((p) => '${p.latitude},${p.longitude}')
+          .join('|');
       buffer.write('&waypoints=$waypoints');
     }
 

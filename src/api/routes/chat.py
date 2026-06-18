@@ -6,7 +6,7 @@ import asyncio
 import json
 import logging
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
@@ -38,11 +38,29 @@ class ChatRequest(BaseModel):
     )
 
 
+class SourceItem(BaseModel):
+    """A single provenance pill shown under CLEO's answer (Tier 2 #3)."""
+    label: str = Field(..., description="Human label, e.g. 'Karnak Temple' or 'OpenWeather (Luxor)'")
+    kind: str = Field(..., description="'database' | 'weather' | 'web' | 'image'")
+
+
 class ChatResponse(BaseModel):
-    """Response model for chat endpoint."""
+    """Response model for chat endpoint.
+
+    Non-breaking extension (D2): ``response`` remains the primary text field
+    so older clients keep working. ``sources`` and ``confidence`` are optional
+    and omitted (null) when CLEO answered from general knowledge or a cached
+    reply with no recorded provenance.
+    """
     response: str = Field(..., description="CLEO's response")
     user_id: Optional[str] = Field(None, description="User ID")
     timestamp: str = Field(..., description="Response timestamp")
+    sources: Optional[List[SourceItem]] = Field(
+        None, description="Provenance pills (DB rows / weather / web) grounding the answer"
+    )
+    confidence: Optional[str] = Field(
+        None, description="Coarse grounding confidence: 'high' | 'medium' | 'low'"
+    )
 
 
 class StreamEvent(BaseModel):
@@ -64,23 +82,27 @@ async def chat(request: ChatRequest):
     """
     try:
         if request.intent == "poi_explain" and request.poi_id is not None:
-            response = await agent.explain_poi(
+            result = await agent.explain_poi(
                 poi_id=request.poi_id,
                 user_message=request.message,
                 user_id=request.user_id,
                 debug=request.debug,
             )
         else:
-            response = await agent.process_message(
+            result = await agent.process_message(
                 user_message=request.message,
                 user_id=request.user_id,
                 debug=request.debug,
             )
 
         return ChatResponse(
-            response=response,
+            response=result.text,
             user_id=request.user_id,
             timestamp=datetime.now().isoformat(),
+            sources=[
+                SourceItem(label=s.label, kind=s.kind) for s in result.sources
+            ] or None,
+            confidence=result.confidence,
         )
 
     except Exception as e:
@@ -99,23 +121,39 @@ async def chat_stream(request: ChatRequest):
     """
     async def event_generator():
         try:
+            # The underlying "stream" methods just chunk an already-complete
+            # response, so we call the non-stream pipeline once (which also
+            # gives us the source provenance) and emit the text in chunks + a
+            # final ``sources`` event. Keeps provenance consistent with /chat.
             if request.intent == "poi_explain" and request.poi_id is not None:
-                aiter = agent.explain_poi_stream(
+                result = await agent.explain_poi(
                     poi_id=request.poi_id,
                     user_message=request.message,
                     user_id=request.user_id,
                     debug=request.debug,
                 )
             else:
-                aiter = agent.process_message_stream(
+                result = await agent.process_message(
                     user_message=request.message,
                     user_id=request.user_id,
                     debug=request.debug,
                 )
 
-            async for chunk in aiter:
-                payload = json.dumps({"chunk": chunk, "done": False})
+            text = result.text
+            chunk_size = 5
+            for i in range(0, len(text), chunk_size):
+                payload = json.dumps({"chunk": text[i : i + chunk_size], "done": False})
                 yield f"data: {payload}\n\n"
+
+            # Provenance pills (Tier 2 #3) — emitted once, after the text, so
+            # the client can render source pills when streaming completes.
+            meta_payload = json.dumps({
+                "chunk": "",
+                "done": False,
+                "sources": [{"label": s.label, "kind": s.kind} for s in result.sources],
+                "confidence": result.confidence,
+            })
+            yield f"data: {meta_payload}\n\n"
 
             # Sentinel
             yield f"data: {json.dumps({'chunk': '', 'done': True})}\n\n"

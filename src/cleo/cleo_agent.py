@@ -12,7 +12,8 @@ import json
 import logging
 import re
 from datetime import datetime
-from typing import Any, AsyncGenerator, Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
 
 from src.cleo.config import CleoConfig, GroqClient, LLMResponse, config, CLEO_FALLBACK_MESSAGE
 from src.cleo.semantic_cache import SemanticCache
@@ -29,6 +30,38 @@ from src.cleo.user_profile_manager import UserProfileManager
 from src.cleo.safeguards import ScopeDetector, SafetyFilter, ResponseValidator
 
 logger = logging.getLogger(__name__)
+
+
+# ── Result envelope for tool-grounded responses ───────────────────────────
+# Source pills (Tier 2 #3): every grounded answer carries the tools/sources
+# it was built from so the UI can show honest provenance. ``confidence`` is a
+# coarse heuristic (DB-grounded = high, web-only = medium, no tools = low)
+# derived from which tools fired — never a number the model invents.
+
+@dataclass
+class SourceRef:
+    """A single provenance entry shown as a source pill."""
+    label: str               # e.g. "Karnak Temple", "OpenWeather (Luxor)"
+    kind: str                # "database" | "weather" | "web" | "image"
+
+
+@dataclass
+class CleoResult:
+    """Enriched response envelope returned by process_message / explain_poi."""
+    text: str
+    sources: List[SourceRef] = field(default_factory=list)
+    confidence: str = "medium"   # "high" | "medium" | "low"
+
+
+# Map tool-name → (kind, fallback label) for source provenance.
+_TOOL_SOURCE_KIND = {
+    "search_pois": ("database", "VOYO verified database"),
+    "get_poi_details": ("database", "VOYO verified database"),
+    "get_historical_info": ("database", "VOYO verified database"),
+    "get_weather": ("weather", "OpenWeather"),
+    "search_web": ("web", "Web search"),
+    "search_wikimedia_image": ("image", "Wikimedia Commons"),
+}
 
 
 class CleoAgent:
@@ -100,9 +133,13 @@ class CleoAgent:
         safety_decision = self.safety_filter.check_query_safety(user_message)
         if not safety_decision.safe:
             logger.warning(f"Query flagged by safety filter: {safety_decision.reasoning}")
-            return (
-                safety_decision.suggested_response
-                or "I cannot assist with that request. I'm designed to help with Egyptian travel and tourism."
+            return CleoResult(
+                text=(
+                    safety_decision.suggested_response
+                    or "I cannot assist with that request. I'm designed to help with Egyptian travel and tourism."
+                ),
+                sources=[],
+                confidence="low",
             )
 
         # Fetch conversation context (Supabase-backed, survives restarts)
@@ -118,9 +155,13 @@ class CleoAgent:
         )
         if not scope_decision.in_scope:
             logger.info(f"Query out-of-scope: {scope_decision.reasoning}")
-            return (
-                scope_decision.redirection
-                or "I specialize in Egyptian travel and tourism. How can I help you plan your Egypt trip?"
+            return CleoResult(
+                text=(
+                    scope_decision.redirection
+                    or "I specialize in Egyptian travel and tourism. How can I help you plan your Egypt trip?"
+                ),
+                sources=[],
+                confidence="low",
             )
 
         # ── PROFILE & STYLE ────────────────────────────────────────
@@ -148,11 +189,11 @@ class CleoAgent:
                     print("CACHE HIT!")
                 if user_id:
                     await self.memory.add_message_async(user_id, "assistant", cached)
-                return cached
+                return CleoResult(text=cached, sources=[], confidence="medium")
 
         # ── AGENT CORE — Real ReAct Loop ────────────────────────────
 
-        response = await self._agent_loop(
+        response, sources = await self._agent_loop(
             user_message=user_message,
             user_id=user_id,
             conversation_context=conversation_context,
@@ -164,6 +205,16 @@ class CleoAgent:
         # ── POST-PROCESSING ────────────────────────────────────────
 
         response = self._post_process(response, user_message)
+
+        # Confidence heuristic: DB-grounded → high, web-only → medium,
+        # no tools fired → low (chitchat/general knowledge).
+        kinds = {s.kind for s in sources}
+        if "database" in kinds:
+            confidence = "high"
+        elif kinds:
+            confidence = "medium"
+        else:
+            confidence = "low"
 
         # Persist assistant response
         if user_id:
@@ -179,27 +230,7 @@ class CleoAgent:
         if self._is_cacheable(user_message, response_style):
             self.cache.set(user_message, response)
 
-        return response
-
-    async def process_message_stream(
-        self,
-        user_message: str,
-        user_id: Optional[str] = None,
-        debug: bool = False,
-    ) -> AsyncGenerator[str, None]:
-        """Stream response chunks via SSE.
-
-        Falls back to a single non-streamed response if the LLM decides
-        to use tools (tool calls don't stream cleanly).
-        """
-        # Run the full pipeline but stream the final LLM call
-        # For simplicity: run the normal pipeline, then yield chunks of the response
-        # True token-level streaming can be added later when the frontend supports it
-        response = await self.process_message(user_message, user_id, debug)
-        # Simulate streaming by yielding chunks
-        chunk_size = 5
-        for i in range(0, len(response), chunk_size):
-            yield response[i : i + chunk_size]
+        return CleoResult(text=response, sources=sources, confidence=confidence)
 
     # ==================================================================
     # POI_EXPLAIN — grounded deep-dive on a single POI
@@ -211,7 +242,7 @@ class CleoAgent:
         user_message: Optional[str] = None,
         user_id: Optional[str] = None,
         debug: bool = False,
-    ) -> str:
+    ) -> CleoResult:
         """Explain a single POI in depth (the ``poi_explain`` intent).
 
         Loads the full POI row from Supabase, injects it as ground-truth
@@ -228,9 +259,13 @@ class CleoAgent:
         poi = await asyncio.to_thread(self.tools["supabase"].get_poi_details, poi_id)
         if not poi:
             logger.warning(f"explain_poi: POI id={poi_id} not found")
-            return (
-                f"I couldn't find details for that place (POI id {poi_id}). "
-                "It may have been removed — try another attraction."
+            return CleoResult(
+                text=(
+                    f"I couldn't find details for that place (POI id {poi_id}). "
+                    "It may have been removed — try another attraction."
+                ),
+                sources=[],
+                confidence="low",
             )
 
         name = poi.get("name", "this place")
@@ -250,7 +285,7 @@ class CleoAgent:
                 logger.warning(f"explain_poi: failed to persist user message: {e}")
 
         # 4. Run the agent loop with POI ground truth + the wikimedia tool
-        response = await self._agent_loop(
+        response, loop_sources = await self._agent_loop(
             user_message=user_message,
             user_id=user_id,
             conversation_context="",
@@ -275,20 +310,13 @@ class CleoAgent:
             except Exception as e:
                 logger.warning(f"explain_poi: failed to persist assistant message: {e}")
 
-        return response
-
-    async def explain_poi_stream(
-        self,
-        poi_id: int,
-        user_message: Optional[str] = None,
-        user_id: Optional[str] = None,
-        debug: bool = False,
-    ) -> AsyncGenerator[str, None]:
-        """Stream the POI_EXPLAIN response (mirrors ``process_message_stream``)."""
-        response = await self.explain_poi(poi_id, user_message, user_id, debug)
-        chunk_size = 5
-        for i in range(0, len(response), chunk_size):
-            yield response[i : i + chunk_size]
+        # Source provenance: the POI's own DB record is always the primary
+        # source (ground truth injected above); merge in any tool-sourced
+        # refs (e.g. a Wikimedia image) collected by the loop.
+        sources = [SourceRef(label=name, kind="database")] + [
+            s for s in loop_sources if not (s.kind == "database" and s.label == name)
+        ]
+        return CleoResult(text=response, sources=sources, confidence="high")
 
     def _sanitize_poi_explain_response(self, response: str) -> str:
         """Repair common LLM artifacts in the POI_EXPLAIN output.
@@ -420,7 +448,7 @@ class CleoAgent:
         debug: bool = False,
         extra_system_context: str = "",
         include_wikimedia_image: bool = False,
-    ) -> str:
+    ) -> tuple:
         """Genuine ReAct loop.
 
         1. Send messages + tool definitions to Groq.
@@ -449,6 +477,10 @@ class CleoAgent:
         )
 
         max_iters = self.config.max_agent_iterations
+
+        # Collected (tool_name, tool_args, result) tuples for source
+        # provenance (Tier 2 #3 source pills).
+        tool_invocations: List[tuple] = []
 
         # Determine whether to FORCE a tool call on the FIRST iteration.
         # Prevents the model from answering POI/itinerary queries purely
@@ -493,8 +525,8 @@ class CleoAgent:
                         "substituting fallback message.",
                         llm_response.finish_reason,
                     )
-                    return CLEO_FALLBACK_MESSAGE
-                return content
+                    return CLEO_FALLBACK_MESSAGE, self._sources_from_invocations(tool_invocations)
+                return content, self._sources_from_invocations(tool_invocations)
 
             # ── LLM wants to call tools → execute them ──────────────
             # Append the assistant's tool-call message to history
@@ -513,6 +545,9 @@ class CleoAgent:
                 # Execute the tool
                 result = await self._execute_tool(tool_name, tool_args, user_id=user_id)
 
+                # Record the invocation for source provenance (Tier 2 #3).
+                tool_invocations.append((tool_name, tool_args, result))
+
                 # Append tool result as a tool-role message
                 result_str = json.dumps(result) if isinstance(result, (dict, list)) else str(result)
                 messages.append({
@@ -529,11 +564,61 @@ class CleoAgent:
 
         # Safety valve — max iterations exhausted
         logger.warning(f"Agent loop hit max iterations ({max_iters}) for: {user_message[:50]}")
-        return "I apologize, I'm having difficulty processing that request. Could you rephrase it?"
+        return (
+            "I apologize, I'm having difficulty processing that request. Could you rephrase it?",
+            self._sources_from_invocations(tool_invocations),
+        )
 
     # ==================================================================
     # Tool Execution
     # ==================================================================
+
+    def _sources_from_invocations(
+        self, invocations: List[tuple]
+    ) -> List[SourceRef]:
+        """Build deduped source refs from the tools that fired in the loop.
+
+        Database lookups surface the actual POI names (when extractable) so
+        the pill reads e.g. "Karnak Temple" rather than a generic label.
+        Falls back to the tool's generic label when names can't be parsed.
+        """
+        refs: List[SourceRef] = []
+        seen: set = set()
+        for tool_name, tool_args, result in invocations:
+            kind, fallback = _TOOL_SOURCE_KIND.get(tool_name, (None, None))
+            if kind is None:
+                continue  # e.g. update_user_preference — not a citation source
+            labels = self._extract_source_labels(tool_name, tool_args, result, fallback)
+            for label in labels:
+                key = (kind, label)
+                if key in seen:
+                    continue
+                seen.add(key)
+                refs.append(SourceRef(label=label, kind=kind))
+        return refs
+
+    @staticmethod
+    def _extract_source_labels(
+        tool_name: str, tool_args: Dict, result: Any, fallback: str
+    ) -> List[str]:
+        """Best-effort extraction of human labels from a tool result."""
+        # Database tools: surface POI names from the returned rows.
+        if tool_name in ("search_pois", "get_poi_details", "get_historical_info"):
+            names: List[str] = []
+            rows = result if isinstance(result, list) else [result]
+            for row in rows:
+                if isinstance(row, dict):
+                    name = row.get("name")
+                    if isinstance(name, str) and name.strip():
+                        names.append(name.strip())
+            # For get_historical_info the row is significance text, not a
+            # named POI — fall back to the generic DB label in that case.
+            return names if names else ([fallback] if tool_name != "get_historical_info" else [fallback])
+        # Weather: surface the city the forecast was for.
+        if tool_name == "get_weather":
+            city = tool_args.get("city")
+            return [f"OpenWeather ({city})" if city else fallback]
+        return [fallback]
 
     async def _execute_tool(
         self, tool_name: str, tool_args: Dict, user_id: Optional[str] = None

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/itinerary.dart';
 import '../services/supabase_service.dart';
@@ -22,6 +23,47 @@ class _PlannerScreenState extends State<PlannerScreen> {
   bool _loading = true;
   String? _error;
 
+  // ── Completion state (#14) ───────────────────────────────────────────────
+  // Manually-crossed-off stops are persisted locally (SharedPreferences) so a
+  // reload preserves them. Local-only is deliberate: itinerary_items has no
+  // `completed` column and a Supabase migration on the IPv6-only DB is
+  // high-risk for the demo. The "Now" / active stop is the first
+  // non-completed stop of today — driven by completion state, not just the
+  // wall clock (so finishing the 9 AM stop activates the 10 AM one even at
+  // 9:05).
+  final Set<int> _completedIds = {};
+
+  String get _completedPrefsKey => 'voyo_completed_${_userId ?? 'guest'}';
+
+  Future<void> _loadCompleted() async {
+    final prefs = await SharedPreferences.getInstance();
+    final ids = prefs.getStringList(_completedPrefsKey) ?? const [];
+    _completedIds
+      ..clear()
+      ..addAll(ids.map((s) => int.tryParse(s)).whereType<int>());
+  }
+
+  Future<void> _persistCompleted() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _completedPrefsKey,
+      _completedIds.map((i) => i.toString()).toList(),
+    );
+  }
+
+  bool _isUserCompleted(Map<String, dynamic> item) {
+    final id = item['id'];
+    return id is int && _completedIds.contains(id);
+  }
+
+  Future<void> _toggleComplete(Map<String, dynamic> item) async {
+    final id = item['id'] as int;
+    setState(() {
+      if (!_completedIds.add(id)) _completedIds.remove(id);
+    });
+    await _persistCompleted();
+  }
+
   String? get _userId => _supabase.auth.currentUser?.id;
 
   @override
@@ -31,7 +73,10 @@ class _PlannerScreenState extends State<PlannerScreen> {
   }
 
   Future<void> _load() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     final uid = _userId;
     if (uid == null) {
       setState(() => _loading = false);
@@ -43,9 +88,19 @@ class _PlannerScreenState extends State<PlannerScreen> {
       if (itinerary != null) {
         items = await _service.getItineraryItemsWithPois(itinerary.id);
       }
-      if (mounted) setState(() { _itinerary = itinerary; _items = items; _loading = false; });
+      await _loadCompleted();
+      if (mounted)
+        setState(() {
+          _itinerary = itinerary;
+          _items = items;
+          _loading = false;
+        });
     } catch (e) {
-      if (mounted) setState(() { _error = e.toString(); _loading = false; });
+      if (mounted)
+        setState(() {
+          _error = e.toString();
+          _loading = false;
+        });
     }
   }
 
@@ -55,6 +110,27 @@ class _PlannerScreenState extends State<PlannerScreen> {
     for (final item in _items) {
       final day = item['day_number'] as int;
       map.putIfAbsent(day, () => []).add(item);
+    }
+    // Chronological order (#15): scheduled stops by start_time ascending,
+    // unscheduled (null/empty start_time) at the bottom of the day. This is
+    // what makes a saved 11:00 AM stop render *between* 10:00 AM and 1:00 PM
+    // — previously the list followed DB row order and stops appeared to land
+    // in the wrong slot even when the saved time was correct.
+    int timeKey(String? t) {
+      if (t == null || t.trim().isEmpty) return 240000; // 24:00 → sorts last
+      final parts = t.split(':');
+      if (parts.length < 2) return 240000;
+      final h = int.tryParse(parts[0]) ?? 0;
+      final m = int.tryParse(parts[1]) ?? 0;
+      return h * 60 + m;
+    }
+
+    for (final day in map.keys) {
+      map[day]!.sort((a, b) {
+        final ka = timeKey(a['start_time'] as String?);
+        final kb = timeKey(b['start_time'] as String?);
+        return ka.compareTo(kb);
+      });
     }
     return map;
   }
@@ -66,28 +142,19 @@ class _PlannerScreenState extends State<PlannerScreen> {
     return diff.clamp(1, 999);
   }
 
-  bool _isVisited(Map<String, dynamic> item) {
-    final day = item['day_number'] as int;
-    final cur = _currentDayNumber;
-    if (day < cur) return true;
-    if (day > cur) return false;
-    // Same day — check if time has passed
-    final timeStr = item['start_time'] as String? ?? '23:59:00';
-    final parts = timeStr.split(':');
-    final stopTime = TimeOfDay(
-      hour: int.parse(parts[0]),
-      minute: int.parse(parts[1]),
-    );
-    final now = TimeOfDay.now();
-    return now.hour > stopTime.hour ||
-        (now.hour == stopTime.hour && now.minute > stopTime.minute);
-  }
+  /// A stop is "visited" when the user has crossed it off (#14). Previously
+  /// this was inferred from the wall clock (stop time passed) which made the
+  /// "Now" badge a guess and gave no manual control. Completion state is now
+  /// the single source of truth — driven by the user, persisted locally.
+  bool _isVisited(Map<String, dynamic> item) => _isUserCompleted(item);
 
   bool _isCurrent(Map<String, dynamic> item) {
     final day = item['day_number'] as int;
     if (day != _currentDayNumber) return false;
     final dayItems = _byDay[day] ?? [];
-    // Current = first non-visited stop of today
+    // Current = first non-completed stop of today. Because completion drives
+    // this (not the clock), finishing the 9 AM stop immediately activates
+    // the next one even if its scheduled time is later.
     for (final d in dayItems) {
       if (!_isVisited(d)) return d == item;
     }
@@ -99,13 +166,19 @@ class _PlannerScreenState extends State<PlannerScreen> {
     final top = MediaQuery.of(context).padding.top;
     return Scaffold(
       backgroundColor: VoyoColors.page,
-      body: _loading
-          ? const Center(child: CircularProgressIndicator(color: VoyoColors.terra, strokeWidth: 2))
-          : _error != null
+      body:
+          _loading
+              ? const Center(
+                child: CircularProgressIndicator(
+                  color: VoyoColors.terra,
+                  strokeWidth: 2,
+                ),
+              )
+              : _error != null
               ? _buildError()
               : _itinerary == null
-                  ? _buildEmptyState(top)
-                  : _buildPlanner(top),
+              ? _buildEmptyState(top)
+              : _buildPlanner(top),
     );
   }
 
@@ -122,22 +195,29 @@ class _PlannerScreenState extends State<PlannerScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.calendar_today_outlined,
-                      size: 56, color: VoyoColors.smoke),
+                  const Icon(
+                    Icons.calendar_today_outlined,
+                    size: 56,
+                    color: VoyoColors.smoke,
+                  ),
                   const SizedBox(height: 20),
                   Text(
                     'Your itinerary is waiting.',
                     style: GoogleFonts.fraunces(
-                        fontSize: 26,
-                        fontStyle: FontStyle.italic,
-                        color: VoyoColors.ink),
+                      fontSize: 26,
+                      fontStyle: FontStyle.italic,
+                      color: VoyoColors.ink,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Create a trip and CLEO will help you fill it with the best Egypt has to offer.',
                     style: GoogleFonts.instrumentSans(
-                        fontSize: 14, color: VoyoColors.stone, height: 1.5),
+                      fontSize: 14,
+                      color: VoyoColors.stone,
+                      height: 1.5,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 28),
@@ -149,13 +229,17 @@ class _PlannerScreenState extends State<PlannerScreen> {
                       style: FilledButton.styleFrom(
                         backgroundColor: VoyoColors.expedition,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
-                      child: Text('+ Create Trip',
-                          style: GoogleFonts.instrumentSans(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white)),
+                      child: Text(
+                        '+ Create Trip',
+                        style: GoogleFonts.instrumentSans(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -184,32 +268,46 @@ class _PlannerScreenState extends State<PlannerScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.add_location_alt_outlined,
-                      size: 48, color: VoyoColors.smoke),
+                  const Icon(
+                    Icons.add_location_alt_outlined,
+                    size: 48,
+                    color: VoyoColors.smoke,
+                  ),
                   const SizedBox(height: 12),
-                  Text('No stops added yet.',
-                      style: GoogleFonts.fraunces(
-                          fontSize: 20,
-                          fontStyle: FontStyle.italic,
-                          color: VoyoColors.stone)),
+                  Text(
+                    'No stops added yet.',
+                    style: GoogleFonts.fraunces(
+                      fontSize: 20,
+                      fontStyle: FontStyle.italic,
+                      color: VoyoColors.stone,
+                    ),
+                  ),
                   const SizedBox(height: 6),
-                  Text('Tap + to add your first stop.',
-                      style: GoogleFonts.instrumentSans(
-                          fontSize: 13, color: VoyoColors.stone)),
+                  Text(
+                    'Tap + to add your first stop.',
+                    style: GoogleFonts.instrumentSans(
+                      fontSize: 13,
+                      color: VoyoColors.stone,
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   FilledButton.icon(
                     onPressed: () => _showAddStopSheet(dayHint: 1),
                     style: FilledButton.styleFrom(
                       backgroundColor: VoyoColors.terra,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     icon: const Icon(Icons.add, size: 18, color: Colors.white),
-                    label: Text('Add First Stop',
-                        style: GoogleFonts.instrumentSans(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white)),
+                    label: Text(
+                      'Add First Stop',
+                      style: GoogleFonts.instrumentSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -225,8 +323,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
                   children: [
                     for (int i = 0; i < byDay[day]!.length; i++) ...[
                       _buildStopCard(byDay[day]![i]),
-                      if (i < byDay[day]!.length - 1)
-                        _buildTravelPill(),
+                      if (i < byDay[day]!.length - 1) _buildTravelPill(),
                     ],
                   ],
                 ),
@@ -254,16 +351,19 @@ class _PlannerScreenState extends State<PlannerScreen> {
                 child: Text(
                   trip?.title ?? 'Planner',
                   style: GoogleFonts.fraunces(
-                      fontSize: 26,
-                      fontStyle: FontStyle.italic,
-                      color: VoyoColors.ink),
+                    fontSize: 26,
+                    fontStyle: FontStyle.italic,
+                    color: VoyoColors.ink,
+                  ),
                 ),
               ),
               GestureDetector(
                 onTap: _showTripsSheet,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: VoyoColors.vellum,
                     borderRadius: BorderRadius.circular(10),
@@ -272,14 +372,20 @@ class _PlannerScreenState extends State<PlannerScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.history,
-                          size: 13, color: VoyoColors.stone),
+                      const Icon(
+                        Icons.history,
+                        size: 13,
+                        color: VoyoColors.stone,
+                      ),
                       const SizedBox(width: 4),
-                      Text('Trips',
-                          style: GoogleFonts.instrumentSans(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: VoyoColors.stone)),
+                      Text(
+                        'Trips',
+                        style: GoogleFonts.instrumentSans(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: VoyoColors.stone,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -288,19 +394,25 @@ class _PlannerScreenState extends State<PlannerScreen> {
               GestureDetector(
                 onTap: _showCreateSheet,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0x1AD45028),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                        color: VoyoColors.expedition.withValues(alpha: 0.3)),
+                      color: VoyoColors.expedition.withValues(alpha: 0.3),
+                    ),
                   ),
-                  child: Text('+ New',
-                      style: GoogleFonts.instrumentSans(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: VoyoColors.expedition)),
+                  child: Text(
+                    '+ New',
+                    style: GoogleFonts.instrumentSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: VoyoColors.expedition,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -312,7 +424,9 @@ class _PlannerScreenState extends State<PlannerScreen> {
               child: Text(
                 _tripSubtitle(trip),
                 style: GoogleFonts.instrumentSans(
-                    fontSize: 13, color: VoyoColors.stone),
+                  fontSize: 13,
+                  color: VoyoColors.stone,
+                ),
               ),
             ),
           ],
@@ -326,12 +440,19 @@ class _PlannerScreenState extends State<PlannerScreen> {
   // ── Trip summary card ─────────────────────────────────────────────────────
 
   Widget _buildTripCard(Itinerary trip) {
-    final totalDays = (trip.startDate != null && trip.endDate != null)
-        ? trip.endDate!.difference(trip.startDate!).inDays + 1
-        : null;
+    // Day-count fallback hierarchy (#13): trip date range → distinct day
+    // numbers present in the stops → 0. Never render "— days" again: a
+    // trip with stops on days 1, 2, 3 has 3 days even without explicit dates.
+    int totalDays;
+    if (trip.startDate != null && trip.endDate != null) {
+      totalDays = trip.endDate!.difference(trip.startDate!).inDays + 1;
+    } else if (_byDay.keys.isNotEmpty) {
+      totalDays = _byDay.keys.reduce((a, b) => a > b ? a : b);
+    } else {
+      totalDays = 0;
+    }
     final totalStops = _items.length;
-    final byDay = _byDay;
-    final daysWithStops = byDay.keys.length;
+    final completedCount = _items.where(_isUserCompleted).length;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),
@@ -342,22 +463,21 @@ class _PlannerScreenState extends State<PlannerScreen> {
         border: Border.all(color: VoyoColors.smoke),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2)),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
         children: [
           Row(
             children: [
-              _statCell(
-                  totalDays?.toString() ?? '—', 'days', VoyoColors.terra),
+              _statCell(totalDays.toString(), 'days', VoyoColors.terra),
               _statDivider(),
               _statCell(totalStops.toString(), 'stops', VoyoColors.sky),
               _statDivider(),
-              _statCell(
-                  daysWithStops.toString(), 'planned', VoyoColors.verified),
+              _statCell(completedCount.toString(), 'done', VoyoColors.verified),
             ],
           ),
           if (totalStops > 0) ...[
@@ -368,17 +488,22 @@ class _PlannerScreenState extends State<PlannerScreen> {
               width: double.infinity,
               height: 40,
               child: OutlinedButton.icon(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const MapScreen()),
-                ),
+                onPressed:
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const MapScreen()),
+                    ),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: VoyoColors.sky),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                icon: const Icon(Icons.route_outlined,
-                    size: 16, color: VoyoColors.sky),
+                icon: const Icon(
+                  Icons.route_outlined,
+                  size: 16,
+                  color: VoyoColors.sky,
+                ),
                 label: Text(
                   'View Route on Map',
                   style: GoogleFonts.instrumentSans(
@@ -399,29 +524,48 @@ class _PlannerScreenState extends State<PlannerScreen> {
     return Expanded(
       child: Column(
         children: [
-          Text(value,
-              style: GoogleFonts.jetBrainsMono(
-                  fontSize: 22, fontWeight: FontWeight.w700, color: color)),
-          Text(label,
-              style: GoogleFonts.instrumentSans(
-                  fontSize: 11, color: VoyoColors.stone)),
+          Text(
+            value,
+            style: GoogleFonts.jetBrainsMono(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: GoogleFonts.instrumentSans(
+              fontSize: 11,
+              color: VoyoColors.stone,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _statDivider() => Container(
-      width: 1, height: 32, color: VoyoColors.smoke);
+  Widget _statDivider() =>
+      Container(width: 1, height: 32, color: VoyoColors.smoke);
 
   // ── Day header ────────────────────────────────────────────────────────────
 
   Widget _buildDayHeader(int day, Itinerary trip) {
     final date = trip.startDate?.add(Duration(days: day - 1));
-    final months = ['Jan','Feb','Mar','Apr','May','Jun',
-                    'Jul','Aug','Sep','Oct','Nov','Dec'];
-    final dateStr = date != null
-        ? '${months[date.month - 1]} ${date.day}'
-        : '';
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final dateStr = date != null ? '${months[date.month - 1]} ${date.day}' : '';
     final isToday = day == _currentDayNumber;
 
     return Padding(
@@ -435,14 +579,18 @@ class _PlannerScreenState extends State<PlannerScreen> {
               color: isToday ? VoyoColors.terra : VoyoColors.vellum,
               shape: BoxShape.circle,
               border: Border.all(
-                  color: isToday ? VoyoColors.terra : VoyoColors.smoke),
+                color: isToday ? VoyoColors.terra : VoyoColors.smoke,
+              ),
             ),
             child: Center(
-              child: Text('$day',
-                  style: GoogleFonts.instrumentSans(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: isToday ? Colors.white : VoyoColors.stone)),
+              child: Text(
+                '$day',
+                style: GoogleFonts.instrumentSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: isToday ? Colors.white : VoyoColors.stone,
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -450,15 +598,22 @@ class _PlannerScreenState extends State<PlannerScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Day $day${isToday ? ' · Today' : ''}',
-                    style: GoogleFonts.instrumentSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: isToday ? VoyoColors.terra : VoyoColors.ink)),
+                Text(
+                  'Day $day${isToday ? ' · Today' : ''}',
+                  style: GoogleFonts.instrumentSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isToday ? VoyoColors.terra : VoyoColors.ink,
+                  ),
+                ),
                 if (dateStr.isNotEmpty)
-                  Text(dateStr,
-                      style: GoogleFonts.instrumentSans(
-                          fontSize: 11, color: VoyoColors.stone)),
+                  Text(
+                    dateStr,
+                    style: GoogleFonts.instrumentSans(
+                      fontSize: 11,
+                      color: VoyoColors.stone,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -477,11 +632,14 @@ class _PlannerScreenState extends State<PlannerScreen> {
                 children: [
                   const Icon(Icons.add, size: 13, color: VoyoColors.terra),
                   const SizedBox(width: 3),
-                  Text('Add stop',
-                      style: GoogleFonts.instrumentSans(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: VoyoColors.terra)),
+                  Text(
+                    'Add stop',
+                    style: GoogleFonts.instrumentSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: VoyoColors.terra,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -509,9 +667,8 @@ class _PlannerScreenState extends State<PlannerScreen> {
 
   Widget _buildStopCard(Map<String, dynamic> item) {
     final poi = item['pois'] as Map<String, dynamic>?;
-    final name = item['custom_title'] as String? ??
-        poi?['name'] as String? ??
-        'Stop';
+    final name =
+        item['custom_title'] as String? ?? poi?['name'] as String? ?? 'Stop';
     final category = poi?['category'] as String?;
     final timeStr = item['start_time'] as String? ?? '';
     final isCurrent = _isCurrent(item);
@@ -528,242 +685,335 @@ class _PlannerScreenState extends State<PlannerScreen> {
           color: const Color(0xFFD94040),
           borderRadius: BorderRadius.circular(14),
         ),
-        child: const Icon(Icons.delete_outline,
-            color: Colors.white, size: 22),
+        child: const Icon(Icons.delete_outline, color: Colors.white, size: 22),
       ),
       confirmDismiss: (_) async {
         return await showDialog<bool>(
-          context: context,
-          builder: (_) => AlertDialog(
-            backgroundColor: VoyoColors.paper,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16)),
-            title: Text('Remove stop?',
-                style: GoogleFonts.fraunces(
-                    fontSize: 18,
-                    fontStyle: FontStyle.italic,
-                    color: VoyoColors.ink)),
-            content: Text(
-              'This stop will be removed from your itinerary.',
-              style: GoogleFonts.instrumentSans(
-                  fontSize: 13, color: VoyoColors.stone),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text('Cancel',
-                    style: GoogleFonts.instrumentSans(
+              context: context,
+              builder:
+                  (_) => AlertDialog(
+                    backgroundColor: VoyoColors.paper,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    title: Text(
+                      'Remove stop?',
+                      style: GoogleFonts.fraunces(
+                        fontSize: 18,
+                        fontStyle: FontStyle.italic,
+                        color: VoyoColors.ink,
+                      ),
+                    ),
+                    content: Text(
+                      'This stop will be removed from your itinerary.',
+                      style: GoogleFonts.instrumentSans(
+                        fontSize: 13,
                         color: VoyoColors.stone,
-                        fontWeight: FontWeight.w600)),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text('Remove',
-                    style: GoogleFonts.instrumentSans(
-                        color: const Color(0xFFD94040),
-                        fontWeight: FontWeight.w600)),
-              ),
-            ],
-          ),
-        ) ?? false;
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: Text(
+                          'Cancel',
+                          style: GoogleFonts.instrumentSans(
+                            color: VoyoColors.stone,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: Text(
+                          'Remove',
+                          style: GoogleFonts.instrumentSans(
+                            color: const Color(0xFFD94040),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+            ) ??
+            false;
       },
       onDismissed: (_) => _deleteStop(item),
       child: IntrinsicHeight(
-      child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Timeline spine + dot — uses IntrinsicHeight so spine matches card
-        Column(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(width: 2, height: 14, color: VoyoColors.smoke),
-            Container(
-              width: 13,
-              height: 13,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isVisited
-                    ? VoyoColors.verified
-                    : isCurrent
-                        ? VoyoColors.terra
-                        : VoyoColors.smoke,
-                border: isCurrent
-                    ? Border.all(
-                        color: VoyoColors.terra.withValues(alpha: 0.3),
-                        width: 4)
-                    : null,
-              ),
-            ),
-            Expanded(
-              child: Container(width: 2, color: VoyoColors.smoke),
-            ),
-          ],
-        ),
-        const SizedBox(width: 12),
-        // Card
-        Expanded(
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 4),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: VoyoColors.paper,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: isCurrent
-                    ? VoyoColors.terra.withValues(alpha: 0.4)
-                    : VoyoColors.smoke,
-                width: isCurrent ? 1.5 : 1,
-              ),
-              boxShadow: isCurrent
-                  ? [
-                      BoxShadow(
-                          color: VoyoColors.terra.withValues(alpha: 0.08),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2))
-                    ]
-                  : null,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            // Timeline spine + dot — uses IntrinsicHeight so spine matches card
+            Column(
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (timeStr.isNotEmpty)
-                        Text(
-                          _formatTime(timeStr),
-                          style: GoogleFonts.jetBrainsMono(
-                              fontSize: 11,
-                              color: isCurrent
-                                  ? VoyoColors.terra
-                                  : VoyoColors.stone),
-                        ),
-                      const SizedBox(height: 2),
-                      Text(
-                        name,
-                        style: GoogleFonts.fraunces(
-                          fontSize: 16,
-                          color: isVisited ? VoyoColors.stone : VoyoColors.ink,
-                          decoration: isVisited
-                              ? TextDecoration.lineThrough
-                              : null,
-                          decorationColor: VoyoColors.stone,
-                        ),
-                      ),
-                      if (category != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          _categoryLabel(category),
-                          style: GoogleFonts.instrumentSans(
-                              fontSize: 11, color: VoyoColors.stone),
-                        ),
-                      ],
-                    ],
+                Container(width: 2, height: 14, color: VoyoColors.smoke),
+                Container(
+                  width: 13,
+                  height: 13,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color:
+                        isVisited
+                            ? VoyoColors.verified
+                            : isCurrent
+                            ? VoyoColors.terra
+                            : VoyoColors.smoke,
+                    border:
+                        isCurrent
+                            ? Border.all(
+                              color: VoyoColors.terra.withValues(alpha: 0.3),
+                              width: 4,
+                            )
+                            : null,
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
+                Expanded(child: Container(width: 2, color: VoyoColors.smoke)),
+              ],
+            ),
+            const SizedBox(width: 12),
+            // Card
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: VoyoColors.paper,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color:
+                        isCurrent
+                            ? VoyoColors.terra.withValues(alpha: 0.4)
+                            : VoyoColors.smoke,
+                    width: isCurrent ? 1.5 : 1,
+                  ),
+                  boxShadow:
+                      isCurrent
+                          ? [
+                            BoxShadow(
+                              color: VoyoColors.terra.withValues(alpha: 0.08),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ]
+                          : null,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (isCurrent)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: VoyoColors.terra,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text('NOW',
-                            style: GoogleFonts.instrumentSans(
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            timeStr.isNotEmpty
+                                ? _formatTime(timeStr)
+                                : 'Unscheduled',
+                            style: GoogleFonts.jetBrainsMono(
+                              fontSize: 11,
+                              color:
+                                  isCurrent
+                                      ? VoyoColors.terra
+                                      : (timeStr.isNotEmpty
+                                          ? VoyoColors.stone
+                                          : VoyoColors.stone.withValues(
+                                            alpha: 0.6,
+                                          )),
+                              fontStyle:
+                                  timeStr.isNotEmpty
+                                      ? FontStyle.normal
+                                      : FontStyle.italic,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            name,
+                            style: GoogleFonts.fraunces(
+                              fontSize: 16,
+                              color:
+                                  isVisited ? VoyoColors.stone : VoyoColors.ink,
+                              decoration:
+                                  isVisited ? TextDecoration.lineThrough : null,
+                              decorationColor: VoyoColors.stone,
+                            ),
+                          ),
+                          if (category != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              _categoryLabel(category),
+                              style: GoogleFonts.instrumentSans(
+                                fontSize: 11,
+                                color: VoyoColors.stone,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isCurrent)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: VoyoColors.terra,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'NOW',
+                              style: GoogleFonts.instrumentSans(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,
-                                letterSpacing: 0.5)),
-                      )
-                    else if (isVisited)
-                      const Icon(Icons.check_circle_outline,
-                          size: 16, color: VoyoColors.verified),
-                    const SizedBox(height: 6),
-                    GestureDetector(
-                      onTap: () async {
-                        final confirmed = await showDialog<bool>(
-                          context: context,
-                          builder: (_) => AlertDialog(
-                            backgroundColor: VoyoColors.paper,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
-                            title: Text('Remove stop?',
-                                style: GoogleFonts.fraunces(
-                                    fontSize: 18,
-                                    fontStyle: FontStyle.italic,
-                                    color: VoyoColors.ink)),
-                            content: Text(
-                              'This stop will be removed from your itinerary.',
-                              style: GoogleFonts.instrumentSans(
-                                  fontSize: 13, color: VoyoColors.stone),
+                                letterSpacing: 0.5,
+                              ),
                             ),
-                            actions: [
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.pop(context, false),
-                                child: Text('Cancel',
-                                    style: GoogleFonts.instrumentSans(
-                                        color: VoyoColors.stone,
-                                        fontWeight: FontWeight.w600)),
-                              ),
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.pop(context, true),
-                                child: Text('Remove',
-                                    style: GoogleFonts.instrumentSans(
-                                        color: const Color(0xFFD94040),
-                                        fontWeight: FontWeight.w600)),
-                              ),
-                            ],
                           ),
-                        );
-                        if (confirmed == true) _deleteStop(item);
-                      },
-                      child: const Icon(Icons.delete_outline,
-                          size: 17, color: VoyoColors.stone),
+                        if (isCurrent) const SizedBox(height: 8),
+                        // ── Completion toggle (#14) ────────────────────────────
+                        // Tap the circle to cross this stop off (or undo). The
+                        // state is persisted locally, survives reload, and drives
+                        // the "NOW" badge — so finishing one stop activates the
+                        // next even before the clock catches up.
+                        Tooltip(
+                          message:
+                              isVisited
+                                  ? 'Marked visited — tap to undo'
+                                  : 'Mark as visited',
+                          child: InkResponse(
+                            onTap: () => _toggleComplete(item),
+                            radius: 22,
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 180),
+                              child:
+                                  isVisited
+                                      ? const Icon(
+                                        Icons.check_circle_rounded,
+                                        key: ValueKey('done'),
+                                        size: 26,
+                                        color: VoyoColors.verified,
+                                      )
+                                      : Icon(
+                                        Icons.radio_button_unchecked_rounded,
+                                        key: const ValueKey('todo'),
+                                        size: 26,
+                                        color:
+                                            isCurrent
+                                                ? VoyoColors.terra
+                                                : VoyoColors.smoke,
+                                      ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: () async {
+                            final confirmed = await showDialog<bool>(
+                              context: context,
+                              builder:
+                                  (_) => AlertDialog(
+                                    backgroundColor: VoyoColors.paper,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    title: Text(
+                                      'Remove stop?',
+                                      style: GoogleFonts.fraunces(
+                                        fontSize: 18,
+                                        fontStyle: FontStyle.italic,
+                                        color: VoyoColors.ink,
+                                      ),
+                                    ),
+                                    content: Text(
+                                      'This stop will be removed from your itinerary.',
+                                      style: GoogleFonts.instrumentSans(
+                                        fontSize: 13,
+                                        color: VoyoColors.stone,
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed:
+                                            () => Navigator.pop(context, false),
+                                        child: Text(
+                                          'Cancel',
+                                          style: GoogleFonts.instrumentSans(
+                                            color: VoyoColors.stone,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed:
+                                            () => Navigator.pop(context, true),
+                                        child: Text(
+                                          'Remove',
+                                          style: GoogleFonts.instrumentSans(
+                                            color: const Color(0xFFD94040),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                            );
+                            if (confirmed == true) _deleteStop(item);
+                          },
+                          child: const Icon(
+                            Icons.delete_outline,
+                            size: 17,
+                            color: VoyoColors.stone,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
-      ],
-    ))); // closes Dismissible > IntrinsicHeight > Row
+      ),
+    ); // closes Dismissible > IntrinsicHeight > Row
   }
 
   // ── Travel pill ───────────────────────────────────────────────────────────
 
   Widget _buildTravelPill() {
+    // Neutral timeline connector (#15): previously this rendered a car-icon
+    // "In transit" pill between EVERY stop pair, which fabricated a driving
+    // transit segment even when no route/time had been computed. That's the
+    // kind of fake certainty the spec calls out. We now render a subtle
+    // dotted connector that signals "next stop" without claiming a mode or
+    // duration we don't actually have.
     return Row(
       children: [
         // Spine continuation
         const SizedBox(width: 5, height: 28),
         const SizedBox(width: 20),
         Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
           decoration: BoxDecoration(
-            color: const Color(0x14C4622A),
+            color: VoyoColors.vellum,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0x1EC4622A)),
+            border: Border.all(color: VoyoColors.smoke),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.directions_car_outlined,
-                  size: 11, color: VoyoColors.terra),
+              Icon(Icons.south_rounded, size: 11, color: VoyoColors.stone),
               const SizedBox(width: 4),
-              Text('In transit',
-                  style: GoogleFonts.instrumentSans(
-                      fontSize: 11,
-                      color: VoyoColors.terra,
-                      fontWeight: FontWeight.w500)),
+              Text(
+                'next stop',
+                style: GoogleFonts.instrumentSans(
+                  fontSize: 10,
+                  color: VoyoColors.stone,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
         ),
@@ -774,7 +1024,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
   // ── Add day button ────────────────────────────────────────────────────────
 
   Widget _buildAddDayButton() {
-    final nextDay = (_byDay.keys.isEmpty ? 0 : _byDay.keys.reduce((a, b) => a > b ? a : b)) + 1;
+    final nextDay =
+        (_byDay.keys.isEmpty
+            ? 0
+            : _byDay.keys.reduce((a, b) => a > b ? a : b)) +
+        1;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: GestureDetector(
@@ -785,13 +1039,19 @@ class _PlannerScreenState extends State<PlannerScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-                color: VoyoColors.smoke, width: 2,
-                style: BorderStyle.solid),
+              color: VoyoColors.smoke,
+              width: 2,
+              style: BorderStyle.solid,
+            ),
           ),
-          child: Text('+ Add Day',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.instrumentSans(
-                  fontSize: 13, color: VoyoColors.stone)),
+          child: Text(
+            '+ Add Day',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.instrumentSans(
+              fontSize: 13,
+              color: VoyoColors.stone,
+            ),
+          ),
         ),
       ),
     );
@@ -806,26 +1066,39 @@ class _PlannerScreenState extends State<PlannerScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline,
-                size: 48, color: VoyoColors.expedition),
+            const Icon(
+              Icons.error_outline,
+              size: 48,
+              color: VoyoColors.expedition,
+            ),
             const SizedBox(height: 12),
-            Text('Something went wrong.',
-                style: GoogleFonts.fraunces(
-                    fontSize: 20,
-                    fontStyle: FontStyle.italic,
-                    color: VoyoColors.ink)),
+            Text(
+              'Something went wrong.',
+              style: GoogleFonts.fraunces(
+                fontSize: 20,
+                fontStyle: FontStyle.italic,
+                color: VoyoColors.ink,
+              ),
+            ),
             const SizedBox(height: 6),
-            Text(_error ?? '',
-                style: GoogleFonts.instrumentSans(
-                    fontSize: 12, color: VoyoColors.stone),
-                textAlign: TextAlign.center),
+            Text(
+              _error ?? '',
+              style: GoogleFonts.instrumentSans(
+                fontSize: 12,
+                color: VoyoColors.stone,
+              ),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 20),
             TextButton(
               onPressed: _load,
-              child: Text('Try again',
-                  style: GoogleFonts.instrumentSans(
-                      color: VoyoColors.expedition,
-                      fontWeight: FontWeight.w600)),
+              child: Text(
+                'Try again',
+                style: GoogleFonts.instrumentSans(
+                  color: VoyoColors.expedition,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),
@@ -842,16 +1115,17 @@ class _PlannerScreenState extends State<PlannerScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _TripsHistorySheet(
-        service: _service,
-        userId: uid,
-        currentItineraryId: _itinerary?.id,
-        onChanged: _load,
-        onSelected: (id) async {
-          await _service.setActiveItinerary(userId: uid, itineraryId: id);
-          _load();
-        },
-      ),
+      builder:
+          (_) => _TripsHistorySheet(
+            service: _service,
+            userId: uid,
+            currentItineraryId: _itinerary?.id,
+            onChanged: _load,
+            onSelected: (id) async {
+              await _service.setActiveItinerary(userId: uid, itineraryId: id);
+              _load();
+            },
+          ),
     );
   }
 
@@ -865,13 +1139,14 @@ class _PlannerScreenState extends State<PlannerScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _AddStopSheet(
-        service: _service,
-        itineraryId: itinerary.id,
-        dayHint: dayHint,
-        existingDays: existingDays,
-        onAdded: _load, // reload the whole timeline
-      ),
+      builder:
+          (_) => _AddStopSheet(
+            service: _service,
+            itineraryId: itinerary.id,
+            dayHint: dayHint,
+            existingDays: existingDays,
+            onAdded: _load, // reload the whole timeline
+          ),
     );
   }
 
@@ -882,27 +1157,42 @@ class _PlannerScreenState extends State<PlannerScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _CreateTripSheet(
-        onCreated: (itinerary) {
-          setState(() { _itinerary = itinerary; _items = []; });
-        },
-        service: _service,
-        userId: _userId ?? '',
-      ),
+      builder:
+          (_) => _CreateTripSheet(
+            onCreated: (itinerary) {
+              setState(() {
+                _itinerary = itinerary;
+                _items = [];
+              });
+            },
+            service: _service,
+            userId: _userId ?? '',
+          ),
     );
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   String _tripSubtitle(Itinerary trip) {
-    final months = ['Jan','Feb','Mar','Apr','May','Jun',
-                    'Jul','Aug','Sep','Oct','Nov','Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     if (trip.startDate != null && trip.endDate != null) {
       final days = trip.endDate!.difference(trip.startDate!).inDays + 1;
       final start =
           '${months[trip.startDate!.month - 1]} ${trip.startDate!.day}';
-      final end =
-          '${months[trip.endDate!.month - 1]} ${trip.endDate!.day}';
+      final end = '${months[trip.endDate!.month - 1]} ${trip.endDate!.day}';
       return '$start – $end · $days days';
     }
     return 'Active trip';
@@ -919,15 +1209,15 @@ class _PlannerScreenState extends State<PlannerScreen> {
   }
 
   String _categoryLabel(String cat) => switch (cat) {
-        'historical' => 'Historical Site',
-        'religious' => 'Religious Site',
-        'natural' => 'Nature',
-        'cultural' => 'Cultural',
-        'entertainment' => 'Entertainment',
-        'dining' => 'Dining',
-        'shopping' => 'Shopping',
-        _ => cat[0].toUpperCase() + cat.substring(1),
-      };
+    'historical' => 'Historical Site',
+    'religious' => 'Religious Site',
+    'natural' => 'Nature',
+    'cultural' => 'Cultural',
+    'entertainment' => 'Entertainment',
+    'dining' => 'Dining',
+    'shopping' => 'Shopping',
+    _ => cat[0].toUpperCase() + cat.substring(1),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -965,44 +1255,61 @@ class _TripsHistorySheetState extends State<_TripsHistorySheet> {
 
   Future<void> _load() async {
     final trips = await widget.service.getAllItineraries(widget.userId);
-    if (mounted) setState(() { _trips = trips; _loading = false; });
+    if (mounted)
+      setState(() {
+        _trips = trips;
+        _loading = false;
+      });
   }
 
   Future<void> _delete(Map<String, dynamic> trip) async {
     final id = trip['id'] as int;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: VoyoColors.paper,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Delete trip?',
-            style: GoogleFonts.fraunces(
+      builder:
+          (_) => AlertDialog(
+            backgroundColor: VoyoColors.paper,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Text(
+              'Delete trip?',
+              style: GoogleFonts.fraunces(
                 fontSize: 18,
                 fontStyle: FontStyle.italic,
-                color: VoyoColors.ink)),
-        content: Text(
-          '"${trip['title']}" and all its stops will be permanently deleted.',
-          style: GoogleFonts.instrumentSans(
-              fontSize: 13, color: VoyoColors.stone),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel',
-                style: GoogleFonts.instrumentSans(
+                color: VoyoColors.ink,
+              ),
+            ),
+            content: Text(
+              '"${trip['title']}" and all its stops will be permanently deleted.',
+              style: GoogleFonts.instrumentSans(
+                fontSize: 13,
+                color: VoyoColors.stone,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.instrumentSans(
                     color: VoyoColors.stone,
-                    fontWeight: FontWeight.w600)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text('Delete',
-                style: GoogleFonts.instrumentSans(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(
+                  'Delete',
+                  style: GoogleFonts.instrumentSans(
                     color: const Color(0xFFD94040),
-                    fontWeight: FontWeight.w600)),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
     if (confirmed != true) return;
 
@@ -1027,48 +1334,65 @@ class _TripsHistorySheetState extends State<_TripsHistorySheet> {
           Padding(
             padding: const EdgeInsets.only(top: 12, bottom: 4),
             child: Container(
-              width: 36, height: 4,
+              width: 36,
+              height: 4,
               decoration: BoxDecoration(
-                  color: VoyoColors.smoke,
-                  borderRadius: BorderRadius.circular(2)),
+                color: VoyoColors.smoke,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 16, 12),
             child: Row(
               children: [
-                Text('My Trips',
-                    style: GoogleFonts.fraunces(
-                        fontSize: 22,
-                        fontStyle: FontStyle.italic,
-                        color: VoyoColors.ink)),
+                Text(
+                  'My Trips',
+                  style: GoogleFonts.fraunces(
+                    fontSize: 22,
+                    fontStyle: FontStyle.italic,
+                    color: VoyoColors.ink,
+                  ),
+                ),
                 const Spacer(),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
-                  child: const Icon(Icons.close,
-                      size: 20, color: VoyoColors.stone),
+                  child: const Icon(
+                    Icons.close,
+                    size: 20,
+                    color: VoyoColors.stone,
+                  ),
                 ),
               ],
             ),
           ),
           Divider(color: VoyoColors.smoke, height: 1),
           Expanded(
-            child: _loading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                        color: VoyoColors.terra, strokeWidth: 2))
-                : _trips.isEmpty
-                    ? Center(
-                        child: Text('No trips yet.',
-                            style: GoogleFonts.instrumentSans(
-                                fontSize: 13, color: VoyoColors.stone)))
-                    : ListView.separated(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        itemCount: _trips.length,
-                        separatorBuilder: (_, _) =>
-                            Divider(color: VoyoColors.smoke, height: 1),
-                        itemBuilder: (_, i) => _tripTile(_trips[i]),
+            child:
+                _loading
+                    ? const Center(
+                      child: CircularProgressIndicator(
+                        color: VoyoColors.terra,
+                        strokeWidth: 2,
                       ),
+                    )
+                    : _trips.isEmpty
+                    ? Center(
+                      child: Text(
+                        'No trips yet.',
+                        style: GoogleFonts.instrumentSans(
+                          fontSize: 13,
+                          color: VoyoColors.stone,
+                        ),
+                      ),
+                    )
+                    : ListView.separated(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: _trips.length,
+                      separatorBuilder:
+                          (_, _) => Divider(color: VoyoColors.smoke, height: 1),
+                      itemBuilder: (_, i) => _tripTile(_trips[i]),
+                    ),
           ),
         ],
       ),
@@ -1081,68 +1405,88 @@ class _TripsHistorySheetState extends State<_TripsHistorySheet> {
     final status = trip['status'] as String? ?? 'draft';
     final isCurrent = id == widget.currentItineraryId;
     final stopCount = trip['stop_count'] as int;
-    final startDate = trip['start_date'] != null
-        ? DateTime.tryParse(trip['start_date'] as String)
-        : null;
-    final endDate = trip['end_date'] != null
-        ? DateTime.tryParse(trip['end_date'] as String)
-        : null;
+    final startDate =
+        trip['start_date'] != null
+            ? DateTime.tryParse(trip['start_date'] as String)
+            : null;
+    final endDate =
+        trip['end_date'] != null
+            ? DateTime.tryParse(trip['end_date'] as String)
+            : null;
 
-    final months = ['Jan','Feb','Mar','Apr','May','Jun',
-                    'Jul','Aug','Sep','Oct','Nov','Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     String dateStr = 'No dates set';
     if (startDate != null && endDate != null) {
-      dateStr = '${months[startDate.month - 1]} ${startDate.day}'
+      dateStr =
+          '${months[startDate.month - 1]} ${startDate.day}'
           ' – ${months[endDate.month - 1]} ${endDate.day}, ${endDate.year}';
     } else if (startDate != null) {
       dateStr = 'From ${months[startDate.month - 1]} ${startDate.day}';
     }
 
     return ListTile(
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-      onTap: isCurrent
-          ? null
-          : () {
-              Navigator.pop(context);
-              widget.onSelected?.call(id);
-            },
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      onTap:
+          isCurrent
+              ? null
+              : () {
+                Navigator.pop(context);
+                widget.onSelected?.call(id);
+              },
       title: Row(
         children: [
           Expanded(
-            child: Text(title,
-                style: GoogleFonts.fraunces(
-                    fontSize: 16, color: VoyoColors.ink),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis),
+            child: Text(
+              title,
+              style: GoogleFonts.fraunces(fontSize: 16, color: VoyoColors.ink),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           if (isCurrent)
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 color: VoyoColors.terra.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text('Active',
-                  style: GoogleFonts.instrumentSans(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: VoyoColors.terra)),
+              child: Text(
+                'Active',
+                style: GoogleFonts.instrumentSans(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: VoyoColors.terra,
+                ),
+              ),
             )
           else if (status == 'completed')
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 color: VoyoColors.verified.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text('Done',
-                  style: GoogleFonts.instrumentSans(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: VoyoColors.verified)),
+              child: Text(
+                'Done',
+                style: GoogleFonts.instrumentSans(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: VoyoColors.verified,
+                ),
+              ),
             ),
         ],
       ),
@@ -1150,13 +1494,21 @@ class _TripsHistorySheetState extends State<_TripsHistorySheet> {
         padding: const EdgeInsets.only(top: 3),
         child: Row(
           children: [
-            Text(dateStr,
-                style: GoogleFonts.instrumentSans(
-                    fontSize: 11, color: VoyoColors.stone)),
+            Text(
+              dateStr,
+              style: GoogleFonts.instrumentSans(
+                fontSize: 11,
+                color: VoyoColors.stone,
+              ),
+            ),
             const SizedBox(width: 10),
-            Text('$stopCount stop${stopCount == 1 ? '' : 's'}',
-                style: GoogleFonts.jetBrainsMono(
-                    fontSize: 11, color: VoyoColors.stone)),
+            Text(
+              '$stopCount stop${stopCount == 1 ? '' : 's'}',
+              style: GoogleFonts.jetBrainsMono(
+                fontSize: 11,
+                color: VoyoColors.stone,
+              ),
+            ),
           ],
         ),
       ),
@@ -1169,8 +1521,11 @@ class _TripsHistorySheetState extends State<_TripsHistorySheet> {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: const Color(0x20D94040)),
           ),
-          child: const Icon(Icons.delete_outline,
-              size: 16, color: Color(0xFFD94040)),
+          child: const Icon(
+            Icons.delete_outline,
+            size: 16,
+            color: Color(0xFFD94040),
+          ),
         ),
       ),
     );
@@ -1232,10 +1587,15 @@ class _AddStopSheetState extends State<_AddStopSheet> {
   Future<void> _search(String q) async {
     setState(() => _searching = true);
     try {
-      final results = q.trim().isEmpty
-          ? await widget.service.getFeaturedPois(limit: 15)
-          : await widget.service.searchPois(q.trim());
-      if (mounted) setState(() { _results = results; _searching = false; });
+      final results =
+          q.trim().isEmpty
+              ? await widget.service.getFeaturedPois(limit: 15)
+              : await widget.service.searchPois(q.trim());
+      if (mounted)
+        setState(() {
+          _results = results;
+          _searching = false;
+        });
     } catch (_) {
       if (mounted) setState(() => _searching = false);
     }
@@ -1245,22 +1605,26 @@ class _AddStopSheetState extends State<_AddStopSheet> {
     final picked = await showTimePicker(
       context: context,
       initialTime: _selectedTime,
-      builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: VoyoColors.terra,
-            onSurface: VoyoColors.ink,
+      builder:
+          (ctx, child) => Theme(
+            data: Theme.of(ctx).copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: VoyoColors.terra,
+                onSurface: VoyoColors.ink,
+              ),
+            ),
+            child: child!,
           ),
-        ),
-        child: child!,
-      ),
     );
     if (picked != null) setState(() => _selectedTime = picked);
   }
 
   Future<void> _save() async {
     if (_selectedPoi == null) return;
-    setState(() { _saving = true; _error = null; });
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
     try {
       final h = _selectedTime.hour.toString().padLeft(2, '0');
       final m = _selectedTime.minute.toString().padLeft(2, '0');
@@ -1275,7 +1639,11 @@ class _AddStopSheetState extends State<_AddStopSheet> {
         widget.onAdded();
       }
     } catch (e) {
-      if (mounted) setState(() { _error = e.toString(); _saving = false; });
+      if (mounted)
+        setState(() {
+          _error = e.toString();
+          _saving = false;
+        });
     }
   }
 
@@ -1294,10 +1662,12 @@ class _AddStopSheetState extends State<_AddStopSheet> {
           Padding(
             padding: const EdgeInsets.only(top: 12, bottom: 4),
             child: Container(
-              width: 36, height: 4,
+              width: 36,
+              height: 4,
               decoration: BoxDecoration(
-                  color: VoyoColors.smoke,
-                  borderRadius: BorderRadius.circular(2)),
+                color: VoyoColors.smoke,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
           // Header
@@ -1310,22 +1680,29 @@ class _AddStopSheetState extends State<_AddStopSheet> {
                     onTap: () => setState(() => _selectedPoi = null),
                     child: const Padding(
                       padding: EdgeInsets.only(right: 10),
-                      child: Icon(Icons.arrow_back,
-                          size: 20, color: VoyoColors.stone),
+                      child: Icon(
+                        Icons.arrow_back,
+                        size: 20,
+                        color: VoyoColors.stone,
+                      ),
                     ),
                   ),
                 Text(
                   _selectedPoi == null ? 'Add a Stop' : 'Set Details',
                   style: GoogleFonts.fraunces(
-                      fontSize: 22,
-                      fontStyle: FontStyle.italic,
-                      color: VoyoColors.ink),
+                    fontSize: 22,
+                    fontStyle: FontStyle.italic,
+                    color: VoyoColors.ink,
+                  ),
                 ),
                 const Spacer(),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
-                  child: const Icon(Icons.close,
-                      size: 20, color: VoyoColors.stone),
+                  child: const Icon(
+                    Icons.close,
+                    size: 20,
+                    color: VoyoColors.stone,
+                  ),
                 ),
               ],
             ),
@@ -1333,9 +1710,10 @@ class _AddStopSheetState extends State<_AddStopSheet> {
           Divider(color: VoyoColors.smoke, height: 1),
           // Body — each step has its own independent scroll
           Expanded(
-            child: _selectedPoi == null
-                ? _buildSearchStep()
-                : _buildConfigStep(context),
+            child:
+                _selectedPoi == null
+                    ? _buildSearchStep()
+                    : _buildConfigStep(context),
           ),
         ],
       ),
@@ -1351,75 +1729,117 @@ class _AddStopSheetState extends State<_AddStopSheet> {
             controller: _searchCtrl,
             onChanged: _search,
             style: GoogleFonts.instrumentSans(
-                color: VoyoColors.ink, fontSize: 14),
+              color: VoyoColors.ink,
+              fontSize: 14,
+            ),
             decoration: InputDecoration(
               hintText: 'Search places…',
               hintStyle: GoogleFonts.instrumentSans(
-                  color: VoyoColors.stone, fontSize: 14),
-              prefixIcon: const Icon(Icons.search,
-                  color: VoyoColors.stone, size: 18),
-              suffixIcon: _searchCtrl.text.isNotEmpty
-                  ? GestureDetector(
-                      onTap: () { _searchCtrl.clear(); _search(''); },
-                      child: const Icon(Icons.close,
-                          color: VoyoColors.stone, size: 16),
-                    )
-                  : null,
+                color: VoyoColors.stone,
+                fontSize: 14,
+              ),
+              prefixIcon: const Icon(
+                Icons.search,
+                color: VoyoColors.stone,
+                size: 18,
+              ),
+              suffixIcon:
+                  _searchCtrl.text.isNotEmpty
+                      ? GestureDetector(
+                        onTap: () {
+                          _searchCtrl.clear();
+                          _search('');
+                        },
+                        child: const Icon(
+                          Icons.close,
+                          color: VoyoColors.stone,
+                          size: 16,
+                        ),
+                      )
+                      : null,
               filled: true,
               fillColor: VoyoColors.vellum,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 10,
+              ),
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(22),
-                  borderSide: BorderSide.none),
+                borderRadius: BorderRadius.circular(22),
+                borderSide: BorderSide.none,
+              ),
               enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(22),
-                  borderSide: BorderSide.none),
+                borderRadius: BorderRadius.circular(22),
+                borderSide: BorderSide.none,
+              ),
               focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(22),
-                  borderSide:
-                      const BorderSide(color: VoyoColors.terra, width: 1.5)),
+                borderRadius: BorderRadius.circular(22),
+                borderSide: const BorderSide(
+                  color: VoyoColors.terra,
+                  width: 1.5,
+                ),
+              ),
             ),
           ),
         ),
         Expanded(
-          child: _searching
-              ? const Center(
-                  child: CircularProgressIndicator(
-                      color: VoyoColors.terra, strokeWidth: 2))
-              : _results.isEmpty
-                  ? Center(
-                      child: Text('No places found.',
-                          style: GoogleFonts.instrumentSans(
-                              fontSize: 13, color: VoyoColors.stone)))
-                  : ListView.separated(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      itemCount: _results.length,
-                      separatorBuilder: (_, _) =>
-                          Divider(color: VoyoColors.smoke, height: 1),
-                      itemBuilder: (_, i) {
-                        final poi = _results[i];
-                        final name = poi.name as String;
-                        final cat = poi.category as String?;
-                        return ListTile(
-                          leading: Container(
-                            width: 40, height: 40,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                gradient: _gradient(cat)),
-                          ),
-                          title: Text(name,
-                              style: GoogleFonts.fraunces(
-                                  fontSize: 15, color: VoyoColors.ink)),
-                          subtitle: Text(cat ?? '',
-                              style: GoogleFonts.instrumentSans(
-                                  fontSize: 11, color: VoyoColors.stone)),
-                          trailing: const Icon(Icons.chevron_right,
-                              color: VoyoColors.smoke),
-                          onTap: () => setState(() => _selectedPoi = poi),
-                        );
-                      },
+          child:
+              _searching
+                  ? const Center(
+                    child: CircularProgressIndicator(
+                      color: VoyoColors.terra,
+                      strokeWidth: 2,
                     ),
+                  )
+                  : _results.isEmpty
+                  ? Center(
+                    child: Text(
+                      'No places found.',
+                      style: GoogleFonts.instrumentSans(
+                        fontSize: 13,
+                        color: VoyoColors.stone,
+                      ),
+                    ),
+                  )
+                  : ListView.separated(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    itemCount: _results.length,
+                    separatorBuilder:
+                        (_, _) => Divider(color: VoyoColors.smoke, height: 1),
+                    itemBuilder: (_, i) {
+                      final poi = _results[i];
+                      final name = poi.name as String;
+                      final cat = poi.category as String?;
+                      return ListTile(
+                        leading: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            gradient: _gradient(cat),
+                          ),
+                        ),
+                        title: Text(
+                          name,
+                          style: GoogleFonts.fraunces(
+                            fontSize: 15,
+                            color: VoyoColors.ink,
+                          ),
+                        ),
+                        subtitle: Text(
+                          cat ?? '',
+                          style: GoogleFonts.instrumentSans(
+                            fontSize: 11,
+                            color: VoyoColors.stone,
+                          ),
+                        ),
+                        trailing: const Icon(
+                          Icons.chevron_right,
+                          color: VoyoColors.smoke,
+                        ),
+                        onTap: () => setState(() => _selectedPoi = poi),
+                      );
+                    },
+                  ),
         ),
       ],
     );
@@ -1443,7 +1863,8 @@ class _AddStopSheetState extends State<_AddStopSheet> {
             child: Row(
               children: [
                 Container(
-                  width: 44, height: 44,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     gradient: _gradient(poi.category as String?),
@@ -1454,12 +1875,20 @@ class _AddStopSheetState extends State<_AddStopSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(poi.name as String,
-                          style: GoogleFonts.fraunces(
-                              fontSize: 16, color: VoyoColors.ink)),
-                      Text(poi.category as String? ?? '',
-                          style: GoogleFonts.instrumentSans(
-                              fontSize: 11, color: VoyoColors.stone)),
+                      Text(
+                        poi.name as String,
+                        style: GoogleFonts.fraunces(
+                          fontSize: 16,
+                          color: VoyoColors.ink,
+                        ),
+                      ),
+                      Text(
+                        poi.category as String? ?? '',
+                        style: GoogleFonts.instrumentSans(
+                          fontSize: 11,
+                          color: VoyoColors.stone,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -1469,20 +1898,22 @@ class _AddStopSheetState extends State<_AddStopSheet> {
           const SizedBox(height: 20),
 
           // Day selector
-          Text('Which day?',
-              style: GoogleFonts.instrumentSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: VoyoColors.ink)),
+          Text(
+            'Which day?',
+            style: GoogleFonts.instrumentSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: VoyoColors.ink,
+            ),
+          ),
           const SizedBox(height: 10),
           Wrap(
-            spacing: 8, runSpacing: 8,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               ...widget.existingDays.map(_dayChip),
               _dayChip(
-                (widget.existingDays.isEmpty
-                        ? 0
-                        : widget.existingDays.last) +
+                (widget.existingDays.isEmpty ? 0 : widget.existingDays.last) +
                     1,
                 label: 'New Day',
               ),
@@ -1491,17 +1922,19 @@ class _AddStopSheetState extends State<_AddStopSheet> {
           const SizedBox(height: 20),
 
           // Time picker
-          Text('What time?',
-              style: GoogleFonts.instrumentSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: VoyoColors.ink)),
+          Text(
+            'What time?',
+            style: GoogleFonts.instrumentSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: VoyoColors.ink,
+            ),
+          ),
           const SizedBox(height: 10),
           GestureDetector(
             onTap: _pickTime,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
                 color: VoyoColors.vellum,
                 borderRadius: BorderRadius.circular(12),
@@ -1509,18 +1942,28 @@ class _AddStopSheetState extends State<_AddStopSheet> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.access_time_outlined,
-                      color: VoyoColors.stone, size: 18),
+                  const Icon(
+                    Icons.access_time_outlined,
+                    color: VoyoColors.stone,
+                    size: 18,
+                  ),
                   const SizedBox(width: 10),
-                  Text(_selectedTime.format(context),
-                      style: GoogleFonts.jetBrainsMono(
-                          fontSize: 16,
-                          color: VoyoColors.terra,
-                          fontWeight: FontWeight.w600)),
+                  Text(
+                    _selectedTime.format(context),
+                    style: GoogleFonts.jetBrainsMono(
+                      fontSize: 16,
+                      color: VoyoColors.terra,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const Spacer(),
-                  Text('tap to change',
-                      style: GoogleFonts.instrumentSans(
-                          fontSize: 11, color: VoyoColors.stone)),
+                  Text(
+                    'tap to change',
+                    style: GoogleFonts.instrumentSans(
+                      fontSize: 11,
+                      color: VoyoColors.stone,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1528,9 +1971,13 @@ class _AddStopSheetState extends State<_AddStopSheet> {
 
           if (_error != null) ...[
             const SizedBox(height: 12),
-            Text(_error!,
-                style: GoogleFonts.instrumentSans(
-                    fontSize: 12, color: VoyoColors.expedition)),
+            Text(
+              _error!,
+              style: GoogleFonts.instrumentSans(
+                fontSize: 12,
+                color: VoyoColors.expedition,
+              ),
+            ),
           ],
           const SizedBox(height: 24),
 
@@ -1542,18 +1989,27 @@ class _AddStopSheetState extends State<_AddStopSheet> {
               style: FilledButton.styleFrom(
                 backgroundColor: VoyoColors.terra,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
-              child: _saving
-                  ? const SizedBox(
-                      width: 20, height: 20,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white))
-                  : Text('Add to Itinerary',
-                      style: GoogleFonts.instrumentSans(
+              child:
+                  _saving
+                      ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                      : Text(
+                        'Add to Itinerary',
+                        style: GoogleFonts.instrumentSans(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white)),
+                          color: Colors.white,
+                        ),
+                      ),
             ),
           ),
         ],
@@ -1572,29 +2028,33 @@ class _AddStopSheetState extends State<_AddStopSheet> {
           color: isSelected ? VoyoColors.terra : VoyoColors.paper,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-              color: isSelected ? VoyoColors.terra : VoyoColors.smoke),
+            color: isSelected ? VoyoColors.terra : VoyoColors.smoke,
+          ),
         ),
         child: Text(
           label ?? 'Day $day',
           style: GoogleFonts.instrumentSans(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: isSelected ? Colors.white : VoyoColors.stone),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: isSelected ? Colors.white : VoyoColors.stone,
+          ),
         ),
       ),
     );
   }
 
   LinearGradient _gradient(String? category) => switch (category) {
-        'historical' || 'religious' => const LinearGradient(
-            colors: [Color(0xFF3D2B1F), Color(0xFFC4622A)]),
-        'natural' => const LinearGradient(
-            colors: [Color(0xFF1A3A2A), Color(0xFF2A7A50)]),
-        'cultural' || 'entertainment' => const LinearGradient(
-            colors: [Color(0xFF1A2C40), Color(0xFF1C72B4)]),
-        _ => const LinearGradient(
-            colors: [Color(0xFF2C1A2E), Color(0xFF6040B0)]),
-      };
+    'historical' || 'religious' => const LinearGradient(
+      colors: [Color(0xFF3D2B1F), Color(0xFFC4622A)],
+    ),
+    'natural' => const LinearGradient(
+      colors: [Color(0xFF1A3A2A), Color(0xFF2A7A50)],
+    ),
+    'cultural' || 'entertainment' => const LinearGradient(
+      colors: [Color(0xFF1A2C40), Color(0xFF1C72B4)],
+    ),
+    _ => const LinearGradient(colors: [Color(0xFF2C1A2E), Color(0xFF6040B0)]),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -1630,9 +2090,11 @@ class _CreateTripSheetState extends State<_CreateTripSheet> {
   }
 
   Future<void> _pickDate(bool isStart) async {
-    final initial = isStart
-        ? (_startDate ?? DateTime.now())
-        : (_endDate ?? (_startDate ?? DateTime.now()).add(const Duration(days: 7)));
+    final initial =
+        isStart
+            ? (_startDate ?? DateTime.now())
+            : (_endDate ??
+                (_startDate ?? DateTime.now()).add(const Duration(days: 7)));
     final first = isStart ? DateTime.now() : (_startDate ?? DateTime.now());
 
     final picked = await showDatePicker(
@@ -1640,15 +2102,16 @@ class _CreateTripSheetState extends State<_CreateTripSheet> {
       initialDate: initial,
       firstDate: first,
       lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
-      builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: VoyoColors.expedition,
-            onSurface: VoyoColors.ink,
+      builder:
+          (ctx, child) => Theme(
+            data: Theme.of(ctx).copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: VoyoColors.expedition,
+                onSurface: VoyoColors.ink,
+              ),
+            ),
+            child: child!,
           ),
-        ),
-        child: child!,
-      ),
     );
     if (picked == null) return;
     setState(() {
@@ -1669,7 +2132,10 @@ class _CreateTripSheetState extends State<_CreateTripSheet> {
       setState(() => _error = 'Please enter a trip name.');
       return;
     }
-    setState(() { _saving = true; _error = null; });
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
     try {
       final itinerary = await widget.service.createItinerary(
         userId: widget.userId,
@@ -1684,9 +2150,10 @@ class _CreateTripSheetState extends State<_CreateTripSheet> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.toString().contains('foreign key')
-              ? 'Account setup incomplete. Try signing out and back in.'
-              : e.toString();
+          _error =
+              e.toString().contains('foreign key')
+                  ? 'Account setup incomplete. Try signing out and back in.'
+                  : e.toString();
           _saving = false;
         });
       }
@@ -1695,16 +2162,28 @@ class _CreateTripSheetState extends State<_CreateTripSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final months = ['Jan','Feb','Mar','Apr','May','Jun',
-                    'Jul','Aug','Sep','Oct','Nov','Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
 
-    String fmtDate(DateTime? d) => d == null
-        ? 'Pick date'
-        : '${months[d.month - 1]} ${d.day}, ${d.year}';
+    String fmtDate(DateTime? d) =>
+        d == null ? 'Pick date' : '${months[d.month - 1]} ${d.day}, ${d.year}';
 
     return Padding(
       padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom),
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Container(
         decoration: const BoxDecoration(
           color: VoyoColors.paper,
@@ -1717,18 +2196,23 @@ class _CreateTripSheetState extends State<_CreateTripSheet> {
           children: [
             Center(
               child: Container(
-                width: 36, height: 4,
+                width: 36,
+                height: 4,
                 decoration: BoxDecoration(
-                    color: VoyoColors.smoke,
-                    borderRadius: BorderRadius.circular(2)),
+                  color: VoyoColors.smoke,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
             const SizedBox(height: 16),
-            Text('Create a Trip',
-                style: GoogleFonts.fraunces(
-                    fontSize: 22,
-                    fontStyle: FontStyle.italic,
-                    color: VoyoColors.ink)),
+            Text(
+              'Create a Trip',
+              style: GoogleFonts.fraunces(
+                fontSize: 22,
+                fontStyle: FontStyle.italic,
+                color: VoyoColors.ink,
+              ),
+            ),
             const SizedBox(height: 16),
             TextField(
               controller: _titleCtrl,
@@ -1738,8 +2222,10 @@ class _CreateTripSheetState extends State<_CreateTripSheet> {
               decoration: const InputDecoration(
                 labelText: 'Trip name',
                 hintText: 'e.g. Egypt Adventure 2025',
-                prefixIcon: Icon(Icons.luggage_outlined,
-                    color: VoyoColors.stone),
+                prefixIcon: Icon(
+                  Icons.luggage_outlined,
+                  color: VoyoColors.stone,
+                ),
               ),
             ),
             const SizedBox(height: 14),
@@ -1764,9 +2250,13 @@ class _CreateTripSheetState extends State<_CreateTripSheet> {
             ),
             if (_error != null) ...[
               const SizedBox(height: 10),
-              Text(_error!,
-                  style: GoogleFonts.instrumentSans(
-                      fontSize: 12, color: VoyoColors.expedition)),
+              Text(
+                _error!,
+                style: GoogleFonts.instrumentSans(
+                  fontSize: 12,
+                  color: VoyoColors.expedition,
+                ),
+              ),
             ],
             const SizedBox(height: 20),
             SizedBox(
@@ -1777,18 +2267,27 @@ class _CreateTripSheetState extends State<_CreateTripSheet> {
                 style: FilledButton.styleFrom(
                   backgroundColor: VoyoColors.expedition,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
-                child: _saving
-                    ? const SizedBox(
-                        width: 20, height: 20,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white))
-                    : Text('Create Trip',
-                        style: GoogleFonts.instrumentSans(
+                child:
+                    _saving
+                        ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                        : Text(
+                          'Create Trip',
+                          style: GoogleFonts.instrumentSans(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white)),
+                            color: Colors.white,
+                          ),
+                        ),
               ),
             ),
           ],
@@ -1803,8 +2302,11 @@ class _DateTile extends StatelessWidget {
   final String value;
   final VoidCallback onTap;
 
-  const _DateTile(
-      {required this.label, required this.value, required this.onTap});
+  const _DateTile({
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1820,19 +2322,23 @@ class _DateTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label,
-                style: GoogleFonts.instrumentSans(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: VoyoColors.stone)),
+            Text(
+              label,
+              style: GoogleFonts.instrumentSans(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: VoyoColors.stone,
+              ),
+            ),
             const SizedBox(height: 2),
-            Text(value,
-                style: GoogleFonts.instrumentSans(
-                    fontSize: 13,
-                    color: value == 'Pick date'
-                        ? VoyoColors.stone
-                        : VoyoColors.ink,
-                    fontWeight: FontWeight.w500)),
+            Text(
+              value,
+              style: GoogleFonts.instrumentSans(
+                fontSize: 13,
+                color: value == 'Pick date' ? VoyoColors.stone : VoyoColors.ink,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
       ),

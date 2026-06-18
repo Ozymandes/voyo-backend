@@ -11,6 +11,7 @@ import '../services/chat_history_service.dart';
 import '../services/supabase_service.dart';
 import '../theme.dart';
 import '../widgets/cleo_owl.dart';
+import '../widgets/trip_profile_sheet.dart';
 
 /// Opens CLEO focused on a single POI: pushes [ChatScreen] with the POI id
 /// (so the backend receives `poi_id` + `intent: "poi_explain"`) and a preset
@@ -19,10 +20,11 @@ void openCleoForPoi(BuildContext context, Poi poi) {
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (_) => ChatScreen(
-        poiId: poi.id,
-        presetMessage: 'Tell me about ${poi.name}',
-      ),
+      builder:
+          (_) => ChatScreen(
+            poiId: poi.id,
+            presetMessage: 'Tell me about ${poi.name}',
+          ),
     ),
   );
 }
@@ -56,6 +58,9 @@ class _ChatScreenState extends State<ChatScreen> {
   final _scrollController = ScrollController();
 
   bool _isLoading = false;
+  // Intent label for the loading indicator (Tier 1 #2). Drives which status
+  // copy the typing indicator cycles while CLEO works.
+  String _loadingIntent = 'general';
   bool _sidebarOpen = false;
   bool _didAutoSend = false;
 
@@ -148,14 +153,24 @@ class _ChatScreenState extends State<ChatScreen> {
     _controller.clear();
     final uid = _userId ?? 'anonymous';
 
+    // Classify the message so the loading indicator can show intent-aware
+    // status copy (Tier 1 #2): itinerary prompts cycle through staged
+    // planning states, POI prompts hint at DB verification, etc. Purely a
+    // UI affordance — the backend classification is independent.
+    final intent = _classifyLoadingIntent(text);
+
     // Create session on first message
     _currentSessionId ??= _historyService.newSessionId();
 
-    final userMsg =
-        ChatMessage(role: 'user', text: text, timestamp: DateTime.now());
+    final userMsg = ChatMessage(
+      role: 'user',
+      text: text,
+      timestamp: DateTime.now(),
+    );
     setState(() {
       _messages.add(userMsg);
       _isLoading = true;
+      _loadingIntent = intent;
     });
     _scrollToBottom();
     if (uid != 'anonymous') {
@@ -164,17 +179,22 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     try {
-      final raw = await _cleoService.sendMessage(
+      final result = await _cleoService.sendMessage(
         text,
         userId: uid,
         poiId: widget.poiId,
         intent: widget.poiId != null ? 'poi_explain' : null,
       );
+      final raw = result.text;
       final hasPlanner = raw.contains('[PLANNER]');
       final reply = raw.replaceAll('[PLANNER]', '').trimRight();
       final stops = hasPlanner ? _parseItineraryStops(reply) : <_ParsedStop>[];
-      final cleoMsg =
-          ChatMessage(role: 'assistant', text: reply, timestamp: DateTime.now());
+      final cleoMsg = ChatMessage(
+        role: 'assistant',
+        text: reply,
+        timestamp: DateTime.now(),
+        sources: result.sources,
+      );
       setState(() {
         _messages.add(cleoMsg);
         if (hasPlanner) {
@@ -189,16 +209,108 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     } catch (e) {
       setState(() {
-        _messages.add(ChatMessage(
-          role: 'assistant',
-          text: 'Cleo is taking a moment. Is the backend running?\n\nError: $e',
-          timestamp: DateTime.now(),
-        ));
+        _messages.add(
+          ChatMessage(
+            role: 'assistant',
+            text:
+                'Cleo is taking a moment. Is the backend running?\n\nError: $e',
+            timestamp: DateTime.now(),
+          ),
+        );
         _isLoading = false;
       });
     }
     _scrollToBottom();
   }
+
+  // ── Loading-intent classification (Tier 1 #2) ──────────────────────────
+  // Lightweight keyword classifier that picks which staged status messages
+  // the typing indicator should cycle while CLEO works. Mirrors the backend
+  // itinerary trigger words so the UI feels in sync with what CLEO is doing.
+  String _classifyLoadingIntent(String text) {
+    final t = text.toLowerCase();
+    const itineraryWords = [
+      'itinerary',
+      'plan',
+      'schedule',
+      'trip',
+      'tour',
+      'days',
+      'day trip',
+      'route',
+      'optimize',
+    ];
+    const routeWords = [
+      'route',
+      'drive',
+      'get there',
+      'directions',
+      'distance',
+    ];
+    if (itineraryWords.any((w) => t.contains(w))) return 'itinerary';
+    if (routeWords.any((w) => t.contains(w))) return 'route';
+    if (widget.poiId != null) return 'poi';
+    return 'general';
+  }
+
+  /// Converts a structured [TripProfile] (from the Plan-a-trip sheet) into a
+  /// natural-language planning prompt and sends it through the normal CLEO
+  /// flow. Going through chat (rather than a raw JSON POST) keeps the request
+  /// visible in history, lets CLEO ask follow-ups, and reuses the existing
+  /// [PLANNER] → import-to-planner pipeline. The profile's structured fields
+  /// are listed explicitly so CLEO's curate_itinerary tool receives concrete
+  /// constraints to optimize against.
+  void _sendItineraryRequest(TripProfile profile) {
+    final days = profile.dayCount;
+    final buf = StringBuffer();
+    if (days > 0) {
+      buf.write('Plan a $days-day Egypt itinerary');
+      final start = profile.startDate;
+      final end = profile.endDate;
+      if (start != null && end != null) {
+        buf.write(
+          ' from ${start.day}/${start.month} to ${end.day}/${end.month}',
+        );
+      }
+      buf.write('. ');
+    } else {
+      buf.write('Plan an Egypt itinerary. ');
+    }
+    buf.write(
+      '${profile.travelers} traveller'
+      '${profile.travelers == 1 ? '' : 's'}, ',
+    );
+    buf.write('${_budgetLabel(profile.budgetTier)} budget, ');
+    buf.write('${_paceLabel(profile.pace)} pace, ');
+    buf.write('travelling as ${profile.companions}. ');
+    if (profile.interests.isNotEmpty) {
+      buf.write('Interests: ${profile.interests.join(', ')}. ');
+    }
+    if (profile.notes != null && profile.notes!.trim().isNotEmpty) {
+      buf.write('Additional notes: ${profile.notes!.trim()} ');
+    }
+    buf.write(
+      'Use real attractions from your database and optimize the '
+      'route so the days are geographically realistic.',
+    );
+    _send(buf.toString());
+  }
+
+  static String _budgetLabel(String tier) =>
+      const {
+        'budget': 'budget-conscious',
+        'moderate': 'moderate',
+        'luxury': 'luxury',
+      }[tier] ??
+      'moderate';
+
+  static String _paceLabel(String pace) =>
+      const {
+        'packed_schedule': 'packed',
+        'balanced': 'balanced',
+        'slow_flexible': 'relaxed',
+      }[pace] ??
+      'balanced';
 
   // ── Itinerary parsing ──────────────────────────────────────────────────────
 
@@ -209,22 +321,90 @@ class _ChatScreenState extends State<ChatScreen> {
 
     // Imperative verbs that start tips/guidelines, not place names
     const tipVerbs = {
-      'wear', 'pack', 'avoid', 'stay', 'drink', 'bring', 'book', 'check',
-      'note', 'consider', 'remember', 'tip', 'tips', 'try', 'use', 'take',
-      'get', 'be', 'make', 'do', "don't", 'always', 'never', 'ensure',
-      'plan', 'hire', 'head', 'walk', 'go', 'start', 'stop', 'keep',
-      'carry', 'watch', 'ask', 'buy', 'eat', 'have', 'grab', 'spend',
-      'enjoy', 'relax', 'explore', 'return', 'end', 'finish', 'begin',
-      'continue', 'haggle', 'bargain', 'negotiate', 'dress', 'cover',
-      'respect', 'travel', 'learn', 'visit', 'see', 'find', 'follow',
-      'opt', 'choose', 'select', 'pick', 'arrange', 'prepare',
+      'wear',
+      'pack',
+      'avoid',
+      'stay',
+      'drink',
+      'bring',
+      'book',
+      'check',
+      'note',
+      'consider',
+      'remember',
+      'tip',
+      'tips',
+      'try',
+      'use',
+      'take',
+      'get',
+      'be',
+      'make',
+      'do',
+      "don't",
+      'always',
+      'never',
+      'ensure',
+      'plan',
+      'hire',
+      'head',
+      'walk',
+      'go',
+      'start',
+      'stop',
+      'keep',
+      'carry',
+      'watch',
+      'ask',
+      'buy',
+      'eat',
+      'have',
+      'grab',
+      'spend',
+      'enjoy',
+      'relax',
+      'explore',
+      'return',
+      'end',
+      'finish',
+      'begin',
+      'continue',
+      'haggle',
+      'bargain',
+      'negotiate',
+      'dress',
+      'cover',
+      'respect',
+      'travel',
+      'learn',
+      'visit',
+      'see',
+      'find',
+      'follow',
+      'opt',
+      'choose',
+      'select',
+      'pick',
+      'arrange',
+      'prepare',
     };
 
     // Words that indicate dining/food rather than a site
     const skipWords = [
-      'restaurant', 'dinner', 'lunch', 'breakfast', 'café', 'cafe',
-      'street food', 'rooftop bar', 'hotel restaurant',
-      "ta'meya", 'ful ', 'shawarma', 'koshary', 'koshari',
+      'restaurant',
+      'dinner',
+      'lunch',
+      'breakfast',
+      'café',
+      'cafe',
+      'street food',
+      'rooftop bar',
+      'hotel restaurant',
+      "ta'meya",
+      'ful ',
+      'shawarma',
+      'koshary',
+      'koshari',
     ];
 
     for (final raw in text.split('\n')) {
@@ -240,17 +420,25 @@ class _ChatScreenState extends State<ChatScreen> {
 
       // Time slot
       final lower = line.toLowerCase();
-      if (lower.contains('morning'))        { currentTime = '09:00:00'; }
-      else if (lower.contains('lunch'))     { currentTime = '12:30:00'; }
-      else if (lower.contains('afternoon')) { currentTime = '13:00:00'; }
-      else if (lower.contains('evening'))   { currentTime = '18:30:00'; }
+      if (lower.contains('morning')) {
+        currentTime = '09:00:00';
+      } else if (lower.contains('lunch')) {
+        currentTime = '12:30:00';
+      } else if (lower.contains('afternoon')) {
+        currentTime = '13:00:00';
+      } else if (lower.contains('evening')) {
+        currentTime = '18:30:00';
+      }
 
       // Bullet point only — require a space after * so **Bold Headers** are not matched
-      final isBullet = line.startsWith('• ') ||
+      final isBullet =
+          line.startsWith('• ') ||
           line.startsWith('- ') ||
           line.startsWith('* ') ||
           line.startsWith('• ');
-      if (!isBullet) { continue; }
+      if (!isBullet) {
+        continue;
+      }
 
       final withoutBullet = line.replaceFirst(RegExp(r'^[•\-\*]\s*'), '');
       // Strip all asterisks and hashes (markdown bold/header remnants)
@@ -259,17 +447,24 @@ class _ChatScreenState extends State<ChatScreen> {
       final dashIdx = clean.indexOf(RegExp(r'[—–:(]'));
       final name = (dashIdx > 0 ? clean.substring(0, dashIdx) : clean).trim();
 
-      if (name.length <= 3) { continue; }
+      if (name.length <= 3) {
+        continue;
+      }
 
       // Must contain at least one capital letter — place names always do;
       // tip sentences that slipped through are usually all-lowercase.
-      if (!name.contains(RegExp(r'[A-Z]'))) { continue; }
+      if (!name.contains(RegExp(r'[A-Z]'))) {
+        continue;
+      }
 
       // Skip section labels like "Travel Tips", "Important Notes", "General Tips"
       final nameLower = name.toLowerCase();
-      if (nameLower.contains('tip') || nameLower.contains('note') ||
-          nameLower.contains('guideline') || nameLower.contains('advice') ||
-          nameLower.contains('reminder') || nameLower.contains('warning')) {
+      if (nameLower.contains('tip') ||
+          nameLower.contains('note') ||
+          nameLower.contains('guideline') ||
+          nameLower.contains('advice') ||
+          nameLower.contains('reminder') ||
+          nameLower.contains('warning')) {
         continue;
       }
 
@@ -279,10 +474,14 @@ class _ChatScreenState extends State<ChatScreen> {
           .first
           .toLowerCase()
           .replaceAll(RegExp(r"[^a-z']"), '');
-      if (tipVerbs.contains(firstWord)) { continue; }
+      if (tipVerbs.contains(firstWord)) {
+        continue;
+      }
 
       // Skip dining/food entries
-      if (skipWords.any((w) => name.toLowerCase().contains(w))) { continue; }
+      if (skipWords.any((w) => name.toLowerCase().contains(w))) {
+        continue;
+      }
 
       stops.add(_ParsedStop(day: currentDay, name: name, time: currentTime));
     }
@@ -300,11 +499,12 @@ class _ChatScreenState extends State<ChatScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _ImportStopsSheet(
-        stops: _parsedStops,
-        userId: _userId ?? '',
-        onImported: () => widget.onSwitchToPlanner?.call(),
-      ),
+      builder:
+          (_) => _ImportStopsSheet(
+            stops: _parsedStops,
+            userId: _userId ?? '',
+            onImported: () => widget.onSwitchToPlanner?.call(),
+          ),
     );
   }
 
@@ -333,11 +533,12 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               _buildAppBar(),
               Expanded(
-                child: _messages.isEmpty
-                    ? _buildEmptyState()
-                    : _buildMessageList(),
+                child:
+                    _messages.isEmpty
+                        ? _buildEmptyState()
+                        : _buildMessageList(),
               ),
-              if (_isLoading) const _TypingIndicator(),
+              if (_isLoading) _TypingIndicator(intent: _loadingIntent),
               if (_messages.length < 3) _buildStarterChips(),
               _buildInputBar(),
             ],
@@ -438,8 +639,11 @@ class _ChatScreenState extends State<ChatScreen> {
                         color: VoyoColors.expedition,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.add,
-                          color: Colors.white, size: 18),
+                      child: const Icon(
+                        Icons.add,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                     ),
                   ),
                 ],
@@ -502,8 +706,11 @@ class _ChatScreenState extends State<ChatScreen> {
                     const Spacer(),
                     GestureDetector(
                       onTap: () => setState(() => _sidebarOpen = false),
-                      child: const Icon(Icons.close,
-                          color: Color(0xFF6A6058), size: 20),
+                      child: const Icon(
+                        Icons.close,
+                        color: Color(0xFF6A6058),
+                        size: 20,
+                      ),
                     ),
                   ],
                 ),
@@ -542,37 +749,38 @@ class _ChatScreenState extends State<ChatScreen> {
 
               // Session list
               Expanded(
-                child: _sessions.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No conversations yet.',
-                          style: GoogleFonts.instrumentSans(
-                            fontSize: 13,
-                            color: const Color(0xFF6A6058),
+                child:
+                    _sessions.isEmpty
+                        ? Center(
+                          child: Text(
+                            'No conversations yet.',
+                            style: GoogleFonts.instrumentSans(
+                              fontSize: 13,
+                              color: const Color(0xFF6A6058),
+                            ),
                           ),
+                        )
+                        : ListView(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          children: [
+                            if (today.isNotEmpty) ...[
+                              _sectionLabel('Today'),
+                              ...today.map(_sessionTile),
+                            ],
+                            if (yesterday.isNotEmpty) ...[
+                              _sectionLabel('Yesterday'),
+                              ...yesterday.map(_sessionTile),
+                            ],
+                            if (week.isNotEmpty) ...[
+                              _sectionLabel('Last 7 days'),
+                              ...week.map(_sessionTile),
+                            ],
+                            if (older.isNotEmpty) ...[
+                              _sectionLabel('Older'),
+                              ...older.map(_sessionTile),
+                            ],
+                          ],
                         ),
-                      )
-                    : ListView(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        children: [
-                          if (today.isNotEmpty) ...[
-                            _sectionLabel('Today'),
-                            ...today.map(_sessionTile),
-                          ],
-                          if (yesterday.isNotEmpty) ...[
-                            _sectionLabel('Yesterday'),
-                            ...yesterday.map(_sessionTile),
-                          ],
-                          if (week.isNotEmpty) ...[
-                            _sectionLabel('Last 7 days'),
-                            ...week.map(_sessionTile),
-                          ],
-                          if (older.isNotEmpty) ...[
-                            _sectionLabel('Older'),
-                            ...older.map(_sessionTile),
-                          ],
-                        ],
-                      ),
               ),
             ],
           ),
@@ -604,9 +812,7 @@ class _ChatScreenState extends State<ChatScreen> {
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive
-              ? const Color(0xFF2A2420)
-              : Colors.transparent,
+          color: isActive ? const Color(0xFF2A2420) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -617,8 +823,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 style: GoogleFonts.instrumentSans(
                   fontSize: 13,
                   color: isActive ? Colors.white : const Color(0xFFB0A898),
-                  fontWeight:
-                      isActive ? FontWeight.w500 : FontWeight.w400,
+                  fontWeight: isActive ? FontWeight.w500 : FontWeight.w400,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -627,8 +832,11 @@ class _ChatScreenState extends State<ChatScreen> {
             const SizedBox(width: 6),
             GestureDetector(
               onTap: () => _deleteSession(session),
-              child: const Icon(Icons.close,
-                  size: 14, color: Color(0xFF4A4440)),
+              child: const Icon(
+                Icons.close,
+                size: 14,
+                color: Color(0xFF4A4440),
+              ),
             ),
           ],
         ),
@@ -666,6 +874,40 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 24),
+            // Primary CTA: opens the trip-profile sheet so CLEO can generate a
+            // grounded, route-optimized itinerary from structured inputs
+            // (dates, budget, style, pace) rather than a vague chat prompt.
+            FilledButton.icon(
+              onPressed: () async {
+                final profile = await showTripProfileSheet(context);
+                if (profile == null || !mounted) return;
+                _sendItineraryRequest(profile);
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: VoyoColors.expedition,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 22,
+                  vertical: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              icon: const Icon(
+                Icons.auto_awesome_rounded,
+                size: 18,
+                color: Colors.white,
+              ),
+              label: Text(
+                'Plan a trip',
+                style: GoogleFonts.instrumentSans(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -687,8 +929,7 @@ class _ChatScreenState extends State<ChatScreen> {
         alignment: Alignment.centerRight,
         child: Container(
           margin: const EdgeInsets.only(top: 12, left: 48),
-          padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: VoyoColors.vellum,
             borderRadius: BorderRadius.circular(16),
@@ -754,12 +995,18 @@ class _ChatScreenState extends State<ChatScreen> {
                       style: FilledButton.styleFrom(
                         backgroundColor: VoyoColors.terra,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                       ),
-                      icon: const Icon(Icons.calendar_today_rounded,
-                          size: 15, color: Colors.white),
+                      icon: const Icon(
+                        Icons.calendar_today_rounded,
+                        size: 15,
+                        color: Colors.white,
+                      ),
                       label: Text(
                         'Open Planner',
                         style: GoogleFonts.instrumentSans(
@@ -769,6 +1016,10 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                       ),
                     ),
+                  ],
+                  if (msg.sources.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    _buildSourcePills(msg.sources),
                   ],
                   if (followUps.isNotEmpty) ...[
                     const SizedBox(height: 12),
@@ -783,23 +1034,96 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  /// Provenance pills shown under a grounded CLEO answer (Tier 2 #3).
+  ///
+  /// Each pill reflects a tool/source that actually fed the answer — DB rows
+  /// (named POIs or "VOYO verified database"), live weather, or web search.
+  /// This is what makes CLEO's "verified" claim honest: the user can see the
+  /// basis. Empty for chitchat. The kind drives the icon + accent colour.
+  Widget _buildSourcePills(List<SourcePill> sources) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Text(
+          'Sources',
+          style: GoogleFonts.instrumentSans(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: VoyoColors.stone,
+            letterSpacing: 0.4,
+          ),
+        ),
+        ...sources.map(_sourcePill),
+      ],
+    );
+  }
+
+  Widget _sourcePill(SourcePill s) {
+    final (icon, accent) = _sourceStyle(s.kind);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: accent.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 11, color: accent),
+          const SizedBox(width: 4),
+          Text(
+            s.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.instrumentSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: VoyoColors.ink,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  (IconData, Color) _sourceStyle(String kind) {
+    switch (kind) {
+      case 'database':
+        return (Icons.verified_rounded, VoyoColors.verified);
+      case 'weather':
+        return (Icons.cloud_outlined, VoyoColors.sky);
+      case 'web':
+        return (Icons.language_rounded, VoyoColors.discovery);
+      case 'image':
+        return (Icons.image_outlined, VoyoColors.caution);
+      default:
+        return (Icons.source_outlined, VoyoColors.stone);
+    }
+  }
+
   /// Renders a single line with **bold** spans, stripping header prefixes.
   /// Used for the italic hook sentence so bold still shows inside Fraunces italic.
   Widget _buildInlineMarkdown(String text, TextStyle base) {
-    final cleaned = text
-        .replaceAll(RegExp(r'^#+\s*', multiLine: true), '')
-        .trim();
+    final cleaned =
+        text.replaceAll(RegExp(r'^#+\s*', multiLine: true), '').trim();
     final spans = <InlineSpan>[];
     final boldRe = RegExp(r'\*\*(.+?)\*\*');
     int cursor = 0;
     for (final m in boldRe.allMatches(cleaned)) {
       if (m.start > cursor) {
-        spans.add(TextSpan(text: cleaned.substring(cursor, m.start), style: base));
+        spans.add(
+          TextSpan(text: cleaned.substring(cursor, m.start), style: base),
+        );
       }
-      spans.add(TextSpan(
-        text: m.group(1),
-        style: base.copyWith(fontWeight: FontWeight.w700),
-      ));
+      spans.add(
+        TextSpan(
+          text: m.group(1),
+          style: base.copyWith(fontWeight: FontWeight.w700),
+        ),
+      );
       cursor = m.end;
     }
     if (cursor < cleaned.length) {
@@ -818,10 +1142,11 @@ class _ChatScreenState extends State<ChatScreen> {
       final obj = jsonDecode(m.group(1)!) as Map<String, dynamic>;
       final raw = obj['follow_ups'];
       if (raw is List) {
-        final ups = raw
-            .map((e) => e.toString().trim())
-            .where((s) => s.isNotEmpty)
-            .toList();
+        final ups =
+            raw
+                .map((e) => e.toString().trim())
+                .where((s) => s.isNotEmpty)
+                .toList();
         if (ups.isEmpty) return (<String>[], text);
         return (ups, text.substring(0, m.start).trimRight());
       }
@@ -852,13 +1177,13 @@ class _ChatScreenState extends State<ChatScreen> {
           GestureDetector(
             onTap: _isLoading ? null : () => _send(up),
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
               decoration: BoxDecoration(
                 color: VoyoColors.paper,
                 borderRadius: BorderRadius.circular(20),
-                border:
-                    Border.all(color: VoyoColors.sky.withValues(alpha: 0.4)),
+                border: Border.all(
+                  color: VoyoColors.sky.withValues(alpha: 0.4),
+                ),
               ),
               child: Text(
                 up,
@@ -884,7 +1209,10 @@ class _ChatScreenState extends State<ChatScreen> {
   /// Headers are the same size as body — only bold weight distinguishes them.
   static final _cleoMarkdownStyle = MarkdownStyleSheet(
     p: _bodyStyle,
-    strong: _bodyStyle.copyWith(fontWeight: FontWeight.w700, color: VoyoColors.ink),
+    strong: _bodyStyle.copyWith(
+      fontWeight: FontWeight.w700,
+      color: VoyoColors.ink,
+    ),
     em: _bodyStyle.copyWith(fontStyle: FontStyle.italic),
     // Headers same size as body — just bold, no visual hierarchy of sizes
     h1: _bodyStyle.copyWith(fontWeight: FontWeight.w700, color: VoyoColors.ink),
@@ -907,32 +1235,36 @@ class _ChatScreenState extends State<ChatScreen> {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: _starterChips.map((chip) {
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: GestureDetector(
-                onTap: () => _send(chip),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: VoyoColors.paper,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                        color: VoyoColors.sky.withValues(alpha: 0.4)),
-                  ),
-                  child: Text(
-                    chip,
-                    style: GoogleFonts.instrumentSans(
-                      fontSize: 13,
-                      color: VoyoColors.sky,
-                      fontWeight: FontWeight.w500,
+          children:
+              _starterChips.map((chip) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () => _send(chip),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: VoyoColors.paper,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: VoyoColors.sky.withValues(alpha: 0.4),
+                        ),
+                      ),
+                      child: Text(
+                        chip,
+                        style: GoogleFonts.instrumentSans(
+                          fontSize: 13,
+                          color: VoyoColors.sky,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            );
-          }).toList(),
+                );
+              }).toList(),
         ),
       ),
     );
@@ -952,15 +1284,21 @@ class _ChatScreenState extends State<ChatScreen> {
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => _send(),
                 style: GoogleFonts.instrumentSans(
-                    color: VoyoColors.ink, fontSize: 14),
+                  color: VoyoColors.ink,
+                  fontSize: 14,
+                ),
                 decoration: InputDecoration(
                   hintText: 'Ask Cleo anything…',
                   hintStyle: GoogleFonts.instrumentSans(
-                      color: VoyoColors.stone, fontSize: 14),
+                    color: VoyoColors.stone,
+                    fontSize: 14,
+                  ),
                   filled: true,
                   fillColor: VoyoColors.vellum,
                   contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 12),
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
                     borderSide: BorderSide.none,
@@ -971,8 +1309,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
-                    borderSide:
-                        const BorderSide(color: VoyoColors.sky, width: 1.5),
+                    borderSide: const BorderSide(
+                      color: VoyoColors.sky,
+                      width: 1.5,
+                    ),
                   ),
                 ),
               ),
@@ -1016,7 +1356,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (idx != -1 && idx < 160) {
       return (
         text.substring(0, idx + 1),
-        text.substring(idx + sep.length).trim()
+        text.substring(idx + sep.length).trim(),
       );
     }
   }
@@ -1030,7 +1370,11 @@ class _ParsedStop {
   final String name;
   final String time; // "HH:MM:00"
 
-  const _ParsedStop({required this.day, required this.name, required this.time});
+  const _ParsedStop({
+    required this.day,
+    required this.name,
+    required this.time,
+  });
 }
 
 // ── Import stops sheet ────────────────────────────────────────────────────
@@ -1059,8 +1403,10 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
   @override
   void initState() {
     super.initState();
-    final days = widget.stops.isEmpty ? 0
-        : widget.stops.map((s) => s.day).reduce((a, b) => a > b ? a : b);
+    final days =
+        widget.stops.isEmpty
+            ? 0
+            : widget.stops.map((s) => s.day).reduce((a, b) => a > b ? a : b);
     _titleCtrl = TextEditingController(text: '$days-Day Egypt Trip');
   }
 
@@ -1093,11 +1439,23 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
     final full = await _service.searchPois(name);
     if (full.isNotEmpty) return full.first.id as int?;
 
-    const stopWords = {'the', 'of', 'el', 'al', 'in', 'at', 'and', 'a', 'an', 'to'};
-    final words = name
-        .split(RegExp(r'\s+'))
-        .where((w) => w.length > 3 && !stopWords.contains(w.toLowerCase()))
-        .toList();
+    const stopWords = {
+      'the',
+      'of',
+      'el',
+      'al',
+      'in',
+      'at',
+      'and',
+      'a',
+      'an',
+      'to',
+    };
+    final words =
+        name
+            .split(RegExp(r'\s+'))
+            .where((w) => w.length > 3 && !stopWords.contains(w.toLowerCase()))
+            .toList();
 
     for (final word in words) {
       final results = await _service.searchPois(word);
@@ -1107,12 +1465,16 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
   }
 
   Future<void> _save() async {
-    setState(() { _saving = true; _error = null; });
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
     try {
       // Always create a new itinerary with the user-supplied name
-      final title = _titleCtrl.text.trim().isEmpty
-          ? '${widget.stops.map((s) => s.day).reduce((a, b) => a > b ? a : b)}-Day Egypt Trip'
-          : _titleCtrl.text.trim();
+      final title =
+          _titleCtrl.text.trim().isEmpty
+              ? '${widget.stops.map((s) => s.day).reduce((a, b) => a > b ? a : b)}-Day Egypt Trip'
+              : _titleCtrl.text.trim();
       Itinerary? itinerary = await _service.createItinerary(
         userId: widget.userId,
         title: title,
@@ -1137,7 +1499,11 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
         widget.onImported();
       }
     } catch (e) {
-      if (mounted) setState(() { _error = e.toString(); _saving = false; });
+      if (mounted)
+        setState(() {
+          _error = e.toString();
+          _saving = false;
+        });
     }
   }
 
@@ -1159,7 +1525,8 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
           Padding(
             padding: const EdgeInsets.only(top: 12, bottom: 4),
             child: Container(
-              width: 36, height: 4,
+              width: 36,
+              height: 4,
               decoration: BoxDecoration(
                 color: VoyoColors.smoke,
                 borderRadius: BorderRadius.circular(2),
@@ -1188,7 +1555,11 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
                 ),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
-                  child: const Icon(Icons.close, size: 20, color: VoyoColors.stone),
+                  child: const Icon(
+                    Icons.close,
+                    size: 20,
+                    color: VoyoColors.stone,
+                  ),
                 ),
               ],
             ),
@@ -1199,27 +1570,42 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
             padding: const EdgeInsets.fromLTRB(20, 14, 20, 4),
             child: TextField(
               controller: _titleCtrl,
-              style: GoogleFonts.instrumentSans(color: VoyoColors.ink, fontSize: 14),
+              style: GoogleFonts.instrumentSans(
+                color: VoyoColors.ink,
+                fontSize: 14,
+              ),
               decoration: InputDecoration(
                 labelText: 'Trip name',
                 labelStyle: GoogleFonts.instrumentSans(
-                    fontSize: 12, color: VoyoColors.stone),
-                prefixIcon: const Icon(Icons.luggage_outlined,
-                    color: VoyoColors.stone, size: 18),
+                  fontSize: 12,
+                  color: VoyoColors.stone,
+                ),
+                prefixIcon: const Icon(
+                  Icons.luggage_outlined,
+                  color: VoyoColors.stone,
+                  size: 18,
+                ),
                 filled: true,
                 fillColor: VoyoColors.vellum,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
                 enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
                 focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide:
-                        const BorderSide(color: VoyoColors.terra, width: 1.5)),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: VoyoColors.terra,
+                    width: 1.5,
+                  ),
+                ),
               ),
             ),
           ),
@@ -1230,7 +1616,9 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
               child: Text(
                 '${widget.stops.length} stops across ${_byDay.keys.length} days',
                 style: GoogleFonts.instrumentSans(
-                    fontSize: 12, color: VoyoColors.stone),
+                  fontSize: 12,
+                  color: VoyoColors.stone,
+                ),
               ),
             ),
           ),
@@ -1259,7 +1647,8 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
                       child: Row(
                         children: [
                           Container(
-                            width: 8, height: 8,
+                            width: 8,
+                            height: 8,
                             decoration: const BoxDecoration(
                               color: VoyoColors.sky,
                               shape: BoxShape.circle,
@@ -1270,13 +1659,17 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
                             child: Text(
                               stop.name,
                               style: GoogleFonts.instrumentSans(
-                                fontSize: 14, color: VoyoColors.ink),
+                                fontSize: 14,
+                                color: VoyoColors.ink,
+                              ),
                             ),
                           ),
                           Text(
                             _fmt(stop.time),
                             style: GoogleFonts.jetBrainsMono(
-                              fontSize: 11, color: VoyoColors.stone),
+                              fontSize: 11,
+                              color: VoyoColors.stone,
+                            ),
                           ),
                         ],
                       ),
@@ -1289,9 +1682,13 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
           if (_error != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
-              child: Text(_error!,
-                  style: GoogleFonts.instrumentSans(
-                      fontSize: 12, color: VoyoColors.expedition)),
+              child: Text(
+                _error!,
+                style: GoogleFonts.instrumentSans(
+                  fontSize: 12,
+                  color: VoyoColors.expedition,
+                ),
+              ),
             ),
           // Save button
           Padding(
@@ -1304,21 +1701,27 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
                 style: FilledButton.styleFrom(
                   backgroundColor: VoyoColors.terra,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
-                child: _saving
-                    ? const SizedBox(
-                        width: 20, height: 20,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white))
-                    : Text(
-                        'Save ${widget.stops.length} Stops to Planner',
-                        style: GoogleFonts.instrumentSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                child:
+                    _saving
+                        ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                        : Text(
+                          'Save ${widget.stops.length} Stops to Planner',
+                          style: GoogleFonts.instrumentSans(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
               ),
             ),
           ),
@@ -1331,7 +1734,8 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
 // ── Typing indicator ──────────────────────────────────────────────────────
 
 class _TypingIndicator extends StatefulWidget {
-  const _TypingIndicator();
+  final String intent; // 'general' | 'poi' | 'itinerary' | 'route'
+  const _TypingIndicator({this.intent = 'general'});
 
   @override
   State<_TypingIndicator> createState() => _TypingIndicatorState();
@@ -1340,6 +1744,33 @@ class _TypingIndicator extends StatefulWidget {
 class _TypingIndicatorState extends State<_TypingIndicator>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
+  int _statusIndex = 0;
+
+  // Staged status copy per intent. Calm/premium, not technical. Replaced by
+  // real backend `progress` events once streaming lands (Tier 2 #1a).
+  static const _statusByIntent = {
+    'general': [
+      'Thinking…',
+      'Checking VOYO places…',
+      'Looking for verified details…',
+    ],
+    'poi': [
+      'Checking VOYO places…',
+      'Looking for verified details…',
+      'Preparing answer…',
+    ],
+    'itinerary': [
+      'Checking VOYO places…',
+      'Building itinerary…',
+      'Checking the weather…',
+      'Optimizing route…',
+      'Preparing answer…',
+    ],
+    'route': ['Checking the route…', 'Optimizing…', 'Preparing answer…'],
+  };
+
+  List<String> get _statuses =>
+      _statusByIntent[widget.intent] ?? _statusByIntent['general']!;
 
   @override
   void initState() {
@@ -1348,6 +1779,17 @@ class _TypingIndicatorState extends State<_TypingIndicator>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..repeat();
+    // Cycle status copy every ~1.6s — slow enough to read, fast enough to
+    // feel alive. Stops at the last message so it doesn't loop noisily.
+    Future.delayed(const Duration(milliseconds: 1600), _advanceStatus);
+  }
+
+  void _advanceStatus() {
+    if (!mounted) return;
+    if (_statusIndex < _statuses.length - 1) {
+      setState(() => _statusIndex += 1);
+      Future.delayed(const Duration(milliseconds: 1600), _advanceStatus);
+    }
   }
 
   @override
@@ -1366,31 +1808,45 @@ class _TypingIndicatorState extends State<_TypingIndicator>
           const SizedBox(width: 10),
           AnimatedBuilder(
             animation: _ctrl,
-            builder: (_, _) => Row(
-              children: List.generate(3, (i) {
-                final offset = Tween<double>(begin: 0, end: -5).animate(
-                  CurvedAnimation(
-                    parent: _ctrl,
-                    curve: Interval(
-                      i * 0.15,
-                      0.5 + i * 0.15,
-                      curve: Curves.easeInOut,
-                    ),
-                  ),
-                );
-                return Transform.translate(
-                  offset: Offset(0, offset.value),
-                  child: Container(
-                    width: 7,
-                    height: 7,
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                    decoration: const BoxDecoration(
-                      color: VoyoColors.sky,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                );
-              }),
+            builder:
+                (_, _) => Row(
+                  children: List.generate(3, (i) {
+                    final offset = Tween<double>(begin: 0, end: -5).animate(
+                      CurvedAnimation(
+                        parent: _ctrl,
+                        curve: Interval(
+                          i * 0.15,
+                          0.5 + i * 0.15,
+                          curve: Curves.easeInOut,
+                        ),
+                      ),
+                    );
+                    return Transform.translate(
+                      offset: Offset(0, offset.value),
+                      child: Container(
+                        width: 7,
+                        height: 7,
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                        decoration: const BoxDecoration(
+                          color: VoyoColors.sky,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+          ),
+          const SizedBox(width: 10),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            child: Text(
+              _statuses[_statusIndex],
+              key: ValueKey(_statusIndex),
+              style: GoogleFonts.instrumentSans(
+                fontSize: 12,
+                color: VoyoColors.stone,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ),
         ],

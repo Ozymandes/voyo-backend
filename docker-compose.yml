@@ -57,39 +57,35 @@ services:
     image: osrm/osrm-backend
     container_name: voyo-osrm
     volumes:
-      - osrm_data:/data
+      - ./osrm-data:/data
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
         set -e
         if [ ! -f /data/egypt-latest.osrm ]; then
-          echo '=== OSRM first run: downloading Egypt OSM data (~400 MB) ==='
-          wget -q --show-progress \
-            -O /data/egypt-latest.osm.pbf \
-            https://download.geofabrik.de/africa/egypt-latest.osm.pbf
-          echo '=== Extracting routes (car profile)... ==='
+          echo '=== OSRM: data downloaded on host; extracting routes (car profile)... ==='
           osrm-extract -p /opt/car.lua /data/egypt-latest.osm.pbf
           echo '=== Partitioning (MLD algorithm)... ==='
           osrm-partition /data/egypt-latest.osrm
           echo '=== Customising... ==='
           osrm-customize /data/egypt-latest.osrm
-          rm -f /data/egypt-latest.osm.pbf
           echo '=== OSRM data ready. ==='
         fi
         exec osrm-routed \
           --algorithm mld \
           --max-table-size 2000 \
           --port 5000 \
-          --host 0.0.0.0 \
+          --ip 0.0.0.0 \
           /data/egypt-latest.osrm
     ports:
       - "5000:5000"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- 'http://localhost:5000/nearest/v1/driving/31.13,30.06' | grep -q 'waypoints' || exit 1"]
+      # The image lacks wget/curl; bash + /dev/tcp gives a pure TCP liveness check.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/5000"]
       interval: 15s
       timeout: 5s
-      retries: 20
-      start_period: 600s
+      retries: 30
+      start_period: 900s
     restart: unless-stopped
 
   # ── VROOM ───────────────────────────────────────────────────────────────────

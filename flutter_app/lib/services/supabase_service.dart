@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:http/http.dart' as http;
 import '../models/poi.dart';
 import '../models/itinerary_poi.dart';
 import '../models/itinerary.dart';
@@ -13,9 +16,16 @@ class SupabaseService {
     required double minLng,
     required double maxLng,
   }) async {
+    // Canonical column set (same as getFeaturedPois / searchPois) so a POI
+    // resolves to the identical enriched record everywhere — Explore,
+    // Planner, search, and Map Explore. The previous reduced select
+    // (id, name, lat, lng, category, rating, description) starved the map
+    // of `narrative`, `image_urls`, `ticket_prices`, `tags`, `city`, and
+    // `is_verified`, which is why map geotag cards showed stale legacy
+    // copy + gradient placeholders while Planner showed enriched data.
     final response = await _client
         .from('pois')
-        .select('id, name, latitude, longitude, category, average_rating, description')
+        .select(_poiColumns)
         .gte('latitude', minLat)
         .lte('latitude', maxLat)
         .gte('longitude', minLng)
@@ -31,8 +41,10 @@ class SupabaseService {
   /// Returns the POIs from the user's current (active) itinerary for map overlay.
   Future<List<ItineraryPoi>> getCurrentItineraryPois(String userId) async {
     try {
-      final response = await _client
-          .rpc('get_current_itinerary_pois', params: {'p_user_id': userId});
+      final response = await _client.rpc(
+        'get_current_itinerary_pois',
+        params: {'p_user_id': userId},
+      );
       return (response as List)
           .map((json) => ItineraryPoi.fromJson(json as Map<String, dynamic>))
           .toList();
@@ -67,9 +79,10 @@ class SupabaseService {
   static const _poiColumns =
       'id, name, latitude, longitude, category, city, average_rating, '
       'total_reviews, description, narrative, ticket_price, currency, '
+      'ticket_prices, travel_tips, '
       'is_active, is_verified, popularity_score, '
       'historical_significance, average_visit_duration, '
-      'image_urls, address, opening_hours, website_url';
+      'image_urls, address, opening_hours, website_url, phone_number, tags';
 
   /// Featured POIs ordered by rating. Throws on error so caller can handle.
   Future<List<Poi>> getFeaturedPois({int limit = 30}) async {
@@ -100,11 +113,12 @@ class SupabaseService {
 
   /// Returns all items for a given itinerary joined with POI name/category.
   Future<List<Map<String, dynamic>>> getItineraryItemsWithPois(
-      int itineraryId) async {
+    int itineraryId,
+  ) async {
     try {
       final response = await _client
           .from('itinerary_items')
-          .select('*, pois(name, category, city)')
+          .select('*, pois(name, category, city, latitude, longitude)')
           .eq('itinerary_id', itineraryId)
           .order('day_number')
           .order('sequence_order');
@@ -131,9 +145,10 @@ class SupabaseService {
         .eq('day_number', dayNumber)
         .order('sequence_order', ascending: false)
         .limit(1);
-    final nextSeq = existing.isEmpty
-        ? 1
-        : ((existing.first as Map)['sequence_order'] as int) + 1;
+    final nextSeq =
+        existing.isEmpty
+            ? 1
+            : ((existing.first as Map)['sequence_order'] as int) + 1;
 
     await _client.from('itinerary_items').insert({
       'itinerary_id': itineraryId,
@@ -249,23 +264,158 @@ class SupabaseService {
           .eq('user_id', userId)
           .eq('status', 'current');
 
-      final response = await _client
-          .from('itineraries')
-          .insert({
-            'user_id': userId,
-            'title': title,
-            'status': 'current',
-            if (startDate != null)
-              'start_date': startDate.toIso8601String().split('T').first,
-            if (endDate != null)
-              'end_date': endDate.toIso8601String().split('T').first,
-          })
-          .select()
-          .single();
+      final response =
+          await _client
+              .from('itineraries')
+              .insert({
+                'user_id': userId,
+                'title': title,
+                'status': 'current',
+                if (startDate != null)
+                  'start_date': startDate.toIso8601String().split('T').first,
+                if (endDate != null)
+                  'end_date': endDate.toIso8601String().split('T').first,
+              })
+              .select()
+              .single();
       return Itinerary.fromJson(response);
     } catch (e) {
       debugPrint('Error creating itinerary: $e');
       rethrow;
     }
   }
+
+  // ── Add-POI feasibility check (Tier 2 honest routing) ────────────────
+  // Mirrors the backend `preview_add` verdict. The Flutter flow uses this
+  // BEFORE the dumb Supabase insert so VROOM — not a guess — decides whether
+  // a POI fits, where it fits best, and whether anything gets displaced.
+
+  Future<FeasibilityVerdict?> previewAdd({
+    required int itineraryId,
+    required int candidatePoiId,
+    int? preferredDay,
+    int? days,
+  }) async {
+    final baseUrl = dotenv.env['CLEO_API_URL'] ?? 'http://10.0.2.2:8000';
+    final token = _client.auth.currentSession?.accessToken;
+    if (token == null)
+      return null; // not signed in — caller falls back gracefully
+
+    final uri = Uri.parse('$baseUrl/api/v1/itinerary/preview-add');
+    final body = <String, dynamic>{
+      'itinerary_id': itineraryId,
+      'candidate_poi_id': candidatePoiId,
+      if (preferredDay != null) 'preferred_day': preferredDay,
+      if (days != null) 'days': days,
+    };
+    try {
+      final resp = await http
+          .post(
+            uri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 30));
+      if (resp.statusCode != 200) {
+        debugPrint('preview-add HTTP ${resp.statusCode}: ${resp.body}');
+        return null;
+      }
+      return FeasibilityVerdict.fromJson(
+        jsonDecode(utf8.decode(resp.bodyBytes)) as Map<String, dynamic>,
+      );
+    } catch (e) {
+      debugPrint('preview-add unavailable: $e');
+      return null; // routing backend down → UI falls back to current dumb add
+    }
+  }
+}
+
+/// Verdict from the backend ``preview_add`` dry-run. Drives the add-to-trip
+/// UX: green (fits), amber (fits elsewhere / displaces), red (won't fit).
+class FeasibilityVerdict {
+  final bool feasible;
+  final bool alreadyOnTrip;
+  final int? recommendedDay;
+  final int? preferredDay;
+  final bool preferredDayFeasible;
+  final List<DisplacedPoi> displacedPois;
+  final String reason;
+
+  /// Path B: VROOM's deterministic placement for the candidate — the exact
+  /// clock slot the optimizer assigned, plus neighbouring stops so the UI
+  /// can render "CLEO suggests ~2:00 PM, between X and Y". Null when the
+  /// candidate was infeasible, the backend is unreachable, or VROOM didn't
+  /// place it.
+  final CandidatePlacement? candidatePlacement;
+
+  const FeasibilityVerdict({
+    required this.feasible,
+    required this.alreadyOnTrip,
+    required this.recommendedDay,
+    required this.preferredDay,
+    required this.preferredDayFeasible,
+    required this.displacedPois,
+    required this.reason,
+    this.candidatePlacement,
+  });
+
+  factory FeasibilityVerdict.fromJson(Map<String, dynamic> j) {
+    final disp = (j['displaced_pois'] as List? ?? []);
+    final placement = j['candidate_placement'];
+    return FeasibilityVerdict(
+      feasible: j['feasible'] as bool? ?? false,
+      alreadyOnTrip: j['already_on_trip'] as bool? ?? false,
+      recommendedDay: j['recommended_day'] as int?,
+      preferredDay: j['preferred_day'] as int?,
+      preferredDayFeasible: j['preferred_day_feasible'] as bool? ?? false,
+      displacedPois: disp
+          .map((d) => DisplacedPoi.fromJson(d as Map<String, dynamic>))
+          .toList(growable: false),
+      reason: j['reason'] as String? ?? '',
+      candidatePlacement: placement is Map<String, dynamic>
+          ? CandidatePlacement.fromJson(placement)
+          : null,
+    );
+  }
+}
+
+class DisplacedPoi {
+  final int poiId;
+  final int dayWas;
+  const DisplacedPoi({required this.poiId, required this.dayWas});
+  factory DisplacedPoi.fromJson(Map<String, dynamic> j) =>
+      DisplacedPoi(poiId: j['poi_id'] as int, dayWas: j['day_was'] as int);
+}
+
+/// VROOM's deterministic placement for a candidate POI (Path B).
+class CandidatePlacement {
+  /// "HH:MM:SS" — VROOM-assigned arrival time on the recommended day.
+  final String? arrivalTime;
+  final String? departureTime;
+  final int? sequence;
+  final String? previousName;
+  final String? nextName;
+  final int? dayStopsCount;
+
+  const CandidatePlacement({
+    required this.arrivalTime,
+    required this.departureTime,
+    required this.sequence,
+    required this.previousName,
+    required this.nextName,
+    required this.dayStopsCount,
+  });
+
+  factory CandidatePlacement.fromJson(Map<String, dynamic> j) =>
+      CandidatePlacement(
+        arrivalTime: j['arrival_time'] as String?,
+        departureTime: j['departure_time'] as String?,
+        sequence: j['sequence'] as int?,
+        previousName: j['previous_name'] as String?,
+        nextName: j['next_name'] as String?,
+        dayStopsCount: j['day_stops_count'] as int?,
+      );
 }

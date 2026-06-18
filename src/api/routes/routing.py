@@ -5,10 +5,11 @@ Endpoints:
     GET  /api/v1/routing/distance-matrix — NxN travel time/distance matrix
     POST /api/v1/routing/isochrone       — Reachable area polygons
     GET  /api/v1/routing/route           — Turn-by-turn route with polyline
+    POST /api/v1/routing/table           — Origin→destinations distance/duration matrix (OSRM)
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -38,6 +39,30 @@ class IsochroneRequest(BaseModel):
         default="auto",
         description="Travel profile: auto, pedestrian, bicycle",
     )
+
+
+class Coord(BaseModel):
+    """A geographic coordinate."""
+    lat: float = Field(..., ge=-90, le=90, description="Latitude")
+    lng: float = Field(..., ge=-180, le=180, description="Longitude")
+
+
+class TableRequest(BaseModel):
+    """Request body for the OSRM distance/duration table."""
+    origin: Coord = Field(..., description="Single origin point {lat, lng}")
+    destinations: List[Coord] = Field(
+        ..., min_length=1, description="Ordered destination points [{lat, lng}...]"
+    )
+    profile: Literal["auto", "pedestrian", "bicycle"] = Field(
+        default="auto", description="Travel profile: auto, pedestrian, bicycle"
+    )
+
+
+class TableRow(BaseModel):
+    """One row of the table response, aligned to the destinations order."""
+    index: int
+    distance_m: float
+    duration_s: float
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────
@@ -79,6 +104,45 @@ async def distance_matrix(
         )
 
     return {"matrix": matrix, "profile": profile}
+
+
+@router.post("/table", response_model=List[TableRow])
+async def routing_table(request: TableRequest):
+    """Compute a distance + duration matrix from one origin to N destinations.
+
+    Backed by Valhalla ``sources_to_targets`` (not OSRM). Valhalla is the
+    authoritative engine here because it loads all three profiles — auto /
+    pedestrian / bicycle — from a single tile set and returns realistic,
+    mode-aware durations. The OSRM container in this stack is built with the
+    car profile only, so its ``/foot`` and ``/bike`` paths silently return
+    car-scaled (or zero) times — which previously surfaced as impossible
+    ETAs like "2.6 km · 4 min walking" in the reachable list.
+
+    Returns a JSON array aligned to ``destinations`` order:
+    ``[{"index": 0, "distance_m": ..., "duration_s": ...}]``. Cells Valhalla
+    can't reach come back as ``0.0``; the Flutter consumer clamps a sensible
+    minimum so they never render as "0 km · 0 min".
+    """
+    try:
+        matrix = await valhalla.get_distance_matrix(
+            sources=[(request.origin.lat, request.origin.lng)],
+            targets=[(d.lat, d.lng) for d in request.destinations],
+            profile=request.profile,
+        )
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+    # Valhalla returns matrix[source][target] = {distance (m), time (s)}.
+    # Flatten the single-origin row into the TableRequest-shaped response.
+    origin_row = matrix[0] if matrix else []
+    return [
+        TableRow(
+            index=j,
+            distance_m=cell.get("distance", 0.0) or 0.0,
+            duration_s=cell.get("time", 0.0) or 0.0,
+        )
+        for j, cell in enumerate(origin_row)
+    ]
 
 
 @router.post("/isochrone")

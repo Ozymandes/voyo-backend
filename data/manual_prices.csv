@@ -1,0 +1,228 @@
+poi_name,poi_id,region,category,current_ticket_price,website_url,egyptian,foreigner,currency
+Bibliotheca Alexandrina,73,Alexandria,cultural,70.0,https://www.bibalex.org/ar/default,,,EGP
+Alexandria National Museum,77,Alexandria,cultural,100.0,http://www.alexandria.gov.eg/services/tourism/alextourism/museums/alexmusuem.html,,,EGP
+Royal Jewelry Museum,305,Alexandria,cultural,100.0,http://www.alexandria.gov.eg/services/tourism/alextourism/museums/jewlerymusuem.html,,,EGP
+Greco-Roman Museum,306,Alexandria,cultural,150.0,http://www.alexandria.gov.eg/Alex/english/Graeco%20Roman%20Museum.html,,,EGP
+Cavafy Museum,307,Alexandria,cultural,30.0,,,,EGP
+Museum of Fine Arts,308,Alexandria,cultural,20.0,https://m.facebook.com/MogamaaAlIskandareyaLelFnoon/?locale2=ar_AR,,,EGP
+Planetarium Science Center,309,Alexandria,cultural,50.0,https://www.bibalex.org/PSC,,,EGP
+Mahmoud Said Museum,310,Alexandria,cultural,40.0,http://www.alexandria.gov.eg/services/tourism/alextourism/museums/mahmoudsaid_mus.html,,,EGP
+Alexandria Aquarium,311,Alexandria,cultural,20.0,,,,EGP
+Manuscripts Museum,313,Alexandria,cultural,30.0,https://www.bibalex.org/ar/default,,,EGP
+San Stefano Mall,326,Alexandria,entertainment,,https://www.facebook.com/a2daysan?mibextid=ZbWKwL,,,EGP
+Greek Club,331,Alexandria,entertainment,,https://www.yellowpages.com.eg/ar/profile/%D8%A7%D9%84%D9%86%D8%A7%D8%AF%D9%89-%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%89-%D8%A7%D9%84%D9%8A%D9%88%D9%86%D8%A7%D9%86%D9%89/28810,,,EGP
+Smouha Club,332,Alexandria,entertainment,,http://www.smouhaclub.com/,,,EGP
+Citadel of Qaitbay,74,Alexandria,historical,60.0,,,,EGP
+Catacombs of Kom El Shoqafa,75,Alexandria,historical,80.0,,,,EGP
+Pompey's Pillar,78,Alexandria,historical,80.0,,,,EGP
+Qaitbay Citadel,115,Alexandria,historical,40.0,,,,EGP
+Roman Amphitheatre,297,Alexandria,historical,80.0,,,,EGP
+Villa of the Birds,298,Alexandria,historical,60.0,,,,EGP
+Serapeum of Alexandria,300,Alexandria,historical,80.0,,,,EGP
+Taposiris Magna,301,Alexandria,historical,50.0,,,,EGP
+El-Alamein War Cemetery,302,Alexandria,historical,,https://www.cwgc.org/find-a-cemetery/cemetery/2019000/EL%20ALAMEIN%20WAR%20CEMETERY,,,EGP
+Sunken City (Abukir),303,Alexandria,historical,500.0,,,,EGP
+Roman Baths (Kom El Deka),304,Alexandria,historical,80.0,http://www.alexandria.gov.eg/services/tourism/alextourism/museums/roman_th.html,,,EGP
+Montazah Palace Gardens,76,Alexandria,natural,20.0,,,,EGP
+Montaza Palace Gardens,321,Alexandria,natural,25.0,,,,EGP
+Antoniadis Gardens,324,Alexandria,natural,20.0,http://www.antoniads.com/,,,EGP
+Shallalat Gardens,325,Alexandria,natural,,http://www.shalalat.com/team-22.html,,,EGP
+Africano Park,328,Alexandria,natural,400.0,https://africasafaripark.com/,,,EGP
+Maamoura Beach,330,Alexandria,natural,50.0,,,,EGP
+Eliahu Hanavi Synagogue,316,Alexandria,religious,,https://www.etltravel.com/things-to-do/eliyahu-hanavi-synagogue-alexandria,,,EGP
+Monastery of Abu Mina,319,Alexandria,religious,,http://www.stmina.info/,,,EGP
+Greek Orthodox Patriarchate,320,Alexandria,religious,,https://www.patriarchateofalexandria.com/index.php/el,,,EGP
+Nubian Village,85,Aswan,cultural,50.0,https://nevwestaswan.wordpress.com/,,,EGP
+Nubia Museum,164,Aswan,cultural,140.0,,,,EGP
+Aswan Museum (Elephantine Island),165,Aswan,cultural,100.0,,,,EGP
+Crocodile Museum (Kom Ombo),166,Aswan,cultural,80.0,https://egymonuments.gov.eg/en/museums/crocodile-museum,,,EGP
+Gharb Soheil Nubian Village,178,Aswan,cultural,50.0,https://nevwestaswan.wordpress.com/,,,EGP
+Nubian House Museum,179,Aswan,cultural,100.0,https://nubianhouse.traveleto.com/,,,EGP
+Animalia Nubian Village,180,Aswan,cultural,150.0,,,,EGP
+Traditional Nubian Dinner Experience,188,Aswan,dining,400.0,https://www.facebook.com/NubianDreamsCafe?mibextid=kFxxJD,,,EGP
+Felucca Sailing Aswan,183,Aswan,entertainment,200.0,https://www.legendary-johncairo.com/,,,EGP
+Aswan Sound and Light Show (Philae),184,Aswan,entertainment,450.0,,,,EGP
+Lake Nasser Cruise,185,Aswan,entertainment,25000.0,https://egymonuments.gov.eg/ar/archaeological-sites/abu-simbel/,,,EGP
+Camel Ride to St. Simeon Monastery,186,Aswan,entertainment,300.0,,,,EGP
+Aswan to Abu Simbel Road Trip,187,Aswan,entertainment,800.0,https://bastettravel.com/categories/aswan-tours/,,,EGP
+Abu Simbel Temples,82,Aswan,historical,420.0,https://egymonuments.gov.eg/ar/archaeological-sites/abu-simbel/,,,EGP
+Philae Temple (Isis Temple),83,Aswan,historical,180.0,,,,EGP
+Aswan High Dam,84,Aswan,historical,80.0,http://en.egypt.travel/attraction/index/aswan-dam,,,EGP
+Philae Temple (Temple of Isis),153,Aswan,historical,230.0,,,,EGP
+Temple of Kom Ombo,154,Aswan,historical,160.0,https://egymonuments.gov.eg/ar/monuments/kom-ombo-temple,,,EGP
+Temple of Horus at Edfu,155,Aswan,historical,180.0,https://egymonuments.gov.eg/ar/monuments/temple-of-edfu,,,EGP
+Temple of Kalabsha,156,Aswan,historical,100.0,,,,EGP
+Unfinished Obelisk,157,Aswan,historical,100.0,https://egymonuments.gov.eg/en/monuments/the-unfinished-obelisk,,,EGP
+Old Aswan Dam,158,Aswan,historical,50.0,,,,EGP
+Tombs of the Nobles (Aswan),159,Aswan,historical,100.0,,,,EGP
+Elephantine Island,161,Aswan,historical,100.0,,,,EGP
+Temple of Wadi es-Sebua,167,Aswan,historical,150.0,,,,EGP
+Temple of Amada,168,Aswan,historical,150.0,https://egymonuments.gov.eg/en/monuments/amada-temple,,,EGP
+Temple of Dakka,169,Aswan,historical,100.0,,,,EGP
+Temple of Derr,170,Aswan,historical,100.0,https://egymonuments.gov.eg/ar/archaeological-sites/amada-temples,,,EGP
+Rock Temples of Beit el-Wali,171,Aswan,historical,100.0,,,,EGP
+Temple of Satet (Elephantine Island),173,Aswan,historical,100.0,,,,EGP
+Nilometer (Elephantine Island),174,Aswan,historical,100.0,,,,EGP
+Temple of Khnum (Elephantine),175,Aswan,historical,100.0,,,,EGP
+Sehel Island,176,Aswan,historical,80.0,,,,EGP
+Famine Stela (Sehel Island),177,Aswan,historical,80.0,,,,EGP
+Aswan Botanical Garden (Kitchener's Island),162,Aswan,natural,75.0,,,,EGP
+Monastery of St. Simeon,160,Aswan,religious,60.0,,,,EGP
+The Egyptian Museum,58,Cairo,cultural,200.0,https://egyptianmuseumcairo.eg/,,,EGP
+Coptic Museum,63,Cairo,cultural,40.0,https://egymonuments.gov.eg/en/museums/the-coptic-museum,,,EGP
+National Museum of Egyptian Civilization (NMEC),333,Cairo,cultural,200.0,http://www.nmec.gov.eg/,,,EGP
+Museum of Islamic Art,334,Cairo,cultural,80.0,http://www.miaegypt.org/,,,EGP
+Abdeen Palace Museum,335,Cairo,cultural,100.0,http://www.cairo.gov.eg/ar/Bank%20of%20Ideas/Pages/matahif-alqahra-_text.aspx?ID=15,,,EGP
+Manial Palace Museum,336,Cairo,cultural,80.0,https://egymonuments.gov.eg/en/museums/manial-palace-museum,,,EGP
+Gayer-Anderson Museum,337,Cairo,cultural,100.0,https://egymonuments.gov.eg/en/museums/gayer-anderson-museum,,,EGP
+Royal Carriages Museum,338,Cairo,cultural,60.0,https://www.facebook.com/RoyalCarriagesMuseum?mibextid=kFxxJD,,,EGP
+Cairo Tower,116,Cairo,entertainment,70.0,,,,EGP
+Cairo Opera House,340,Cairo,entertainment,,https://www.cairoopera.org/,,,EGP
+Citadel of Cairo (Saladin Citadel),57,Cairo,historical,60.0,https://egymonuments.gov.eg/ar/archaeological-sites/cairo-citadel,,,EGP
+Coptic Cairo,104,Cairo,historical,0.0,,,,EGP
+Baron Empain Palace,339,Cairo,historical,200.0,https://egymonuments.gov.eg/en/monuments/baron-empain-palace,,,EGP
+Bab al-Futuh,347,Cairo,historical,,http://archnet.org/sites/2180,,,EGP
+Bab al-Nasr,348,Cairo,historical,,https://egymonuments.gov.eg/en/monuments/bab-al-nasr,,,EGP
+Bab Zuweila,349,Cairo,historical,,https://www.archnet.org/sites/2728,,,EGP
+Qalawun Complex,350,Cairo,historical,40.0,,,,EGP
+Sultan Barquq Complex,351,Cairo,historical,,https://egymonuments.gov.eg/en/monuments/mosque-khanqa-and-madrasa-of-sultan-farag-ibn-barquq-in-the-mamluk-cemetery,,,EGP
+Wekalet El Ghouri,352,Cairo,historical,40.0,https://www.tripadvisor.es/Attraction_Review-g294201-d2481670-Reviews-Wekalet_El_Ghouri_Arts_Center-Cairo_Cairo_Governorate.html,,,EGP
+Al-Ghuri Complex,353,Cairo,historical,,https://egymonuments.gov.eg/en/monuments/dome-khanqa-and-seat-of-sultan-al-ghuri,,,EGP
+Nilometer (Rhoda Island),362,Cairo,historical,60.0,https://egymonuments.gov.eg/en/monuments/rawda-island-nilometer,,,EGP
+Al-Azhar Park,358,Cairo,natural,40.0,http://www.azharpark.com/,,,EGP
+Mosque of Sultan Hassan,56,Cairo,religious,40.0,https://egymonuments.gov.eg/en/monuments/mosque-and-madrasa-of-sultan-hasan,,,EGP
+Hanging Church,60,Cairo,religious,,http://www.coptic-cairo.com/oldcairo/church/mollaqa/mollaqa.html,,,EGP
+Ibn Tulun Mosque,62,Cairo,religious,,https://egymonuments.gov.eg/en/monuments/ahmad-ibn-tulun-mosque,,,EGP
+Mosque of Muhammad Ali,355,Cairo,religious,,https://egymonuments.gov.eg/en/monuments/muhammad-ali-mosque,,,EGP
+Al-Rifa'i Mosque,357,Cairo,religious,80.0,,,,EGP
+Saints Sergius and Bacchus Church (Abu Serga),359,Cairo,religious,,https://egymonuments.gov.eg/en/monuments/church-of-saint-sergius-and-bacchus,,,EGP
+Mosque of Amr ibn al-As,361,Cairo,religious,,https://egymonuments.gov.eg/monuments/the-mosque-of-amr-ibn-al-as/,,,EGP
+Grand Egyptian Museum (GEM),69,Giza,cultural,150.0,https://gem.eg/,,,EGP
+Imhotep Museum,386,Giza,cultural,80.0,https://egymonuments.gov.eg/en/museums/imhotep-museum,,,EGP
+Pyramids Sound and Light Show,376,Giza,entertainment,300.0,,,,EGP
+Great Pyramid of Giza (Khufu),64,Giza,historical,240.0,https://egymonuments.gov.eg/en/monuments/the-great-pyramid,,,EGP
+Great Sphinx of Giza,65,Giza,historical,240.0,https://egymonuments.gov.eg/ar/monuments/the-great-sphinx/,,,EGP
+Pyramid of Khafre,66,Giza,historical,240.0,https://egymonuments.gov.eg/en/monuments/pyramid-complex-of-khafre-khefren,,,EGP
+Pyramid of Menkaure,67,Giza,historical,100.0,,,,EGP
+Giza Plateau,68,Giza,historical,240.0,,,,EGP
+Saqqara (Step Pyramid),70,Giza,historical,120.0,https://egymonuments.gov.eg/ar/archaeological-sites/saqqara,,,EGP
+Memphis (Mit Rahina),71,Giza,historical,80.0,http://sitioshistoricos.com/esfinge-de-alabastro/,,,EGP
+Dahshur Pyramids,72,Giza,historical,80.0,,,,EGP
+Valley Temple of Khafre,363,Giza,historical,240.0,https://www.memphistours.com/Egypt/WikiTravel/Attractions-Cairo/wiki/Valley-Temple,,,EGP
+Khafre Mortuary Temple,365,Giza,historical,,http://egymonuments.gov.eg/,,,EGP
+Tomb of Meresankh III,369,Giza,historical,100.0,https://egymonuments.com/locations/tickets/Pyramids,,,EGP
+Tomb of Qar,370,Giza,historical,100.0,,,,EGP
+Tomb of Idu,371,Giza,historical,100.0,,,,EGP
+Tomb of Queen Hetepheres I,372,Giza,historical,100.0,,,,EGP
+Queen's Pyramids of Khufu,373,Giza,historical,,https://egymonuments.gov.eg/en/monuments/the-great-pyramid,,,EGP
+Mena House Hotel,377,Giza,historical,,https://www.marriott.com/en-us/hotels/caimn-marriott-mena-house-cairo/overview/?scid=f2ae0541-1279-4f24-b197-a979c79310b0,,,EGP
+Djoser Funerary Complex,378,Giza,historical,120.0,,,,EGP
+Pyramid of Unas,379,Giza,historical,120.0,https://egymonuments.gov.eg/en/monuments/pyramid-of-unas,,,EGP
+Pyramid of Teti,380,Giza,historical,120.0,,,,EGP
+Serapeum of Saqqara,381,Giza,historical,120.0,https://egymonuments.gov.eg/en/monuments/serapeum,,,EGP
+Mastaba of Mereruka,382,Giza,historical,120.0,https://egymonuments.gov.eg/en/monuments/tomb-of-mereruka,,,EGP
+Tomb of Kagemni,383,Giza,historical,120.0,,,,EGP
+Tomb of Ti,384,Giza,historical,120.0,,,,EGP
+Tomb of Mehu,385,Giza,historical,120.0,,,,EGP
+Colossus of Ramesses II (Memphis),387,Giza,historical,80.0,,,,EGP
+Alabaster Sphinx of Memphis,388,Giza,historical,80.0,http://sitioshistoricos.com/esfinge-de-alabastro/,,,EGP
+Bent Pyramid,389,Giza,historical,80.0,,,,EGP
+Red Pyramid,390,Giza,historical,80.0,,,,EGP
+Abusir Pyramid Field,391,Giza,historical,80.0,,,,EGP
+Abu Rawash (Pyramid of Djedefre),392,Giza,historical,80.0,,,,EGP
+Port Said National Museum,193,Hurghada,cultural,100.0,https://www.facebook.com/profile.php?id=61550797870005&mibextid=ZbWKwL,,,EGP
+Desert Breath (Land Art),205,Hurghada,cultural,,http://www.danaestratou.com/,,,EGP
+Hurghada Marina,87,Hurghada,entertainment,,http://www.hurghada-marina.com/,,,EGP
+Galala Mountain Cable Car,200,Hurghada,entertainment,300.0,,,,EGP
+Porto Sokhna Marina,201,Hurghada,entertainment,,https://vacations-time.com/porto-sokhna-beach-resort-details/,,,EGP
+Il Monte Galala Adventure Park,202,Hurghada,entertainment,400.0,https://ilmontegalala.co/,,,EGP
+El Gouna Golf Club,207,Hurghada,entertainment,2500.0,,,,EGP
+Sahl Hasheesh Piazza,211,Hurghada,entertainment,,http://sahlhasheesh.com/,,,EGP
+Port Said Lighthouse,192,Hurghada,historical,50.0,https://en.wikipedia.org/wiki/Port_Said_Lighthouse,,,EGP
+Suez Canal Authority Building,194,Hurghada,historical,,http://www.suezcanal.gov.eg/,,,EGP
+Mons Claudianus,213,Hurghada,historical,80.0,,,,EGP
+Safaga Ghost Town (Umm el-Howeitat),214,Hurghada,historical,200.0,,,,EGP
+Giftun Islands,86,Hurghada,natural,300.0,,,,EGP
+Salt Mountains (Port Fuad),195,Hurghada,natural,10.0,,,,EGP
+Mangroovy Beach,206,Hurghada,natural,,https://www.kiteboarding-club.com/el-gouna/?L=1,,,EGP
+Abu Minqar Island,208,Hurghada,natural,300.0,,,,EGP
+Magawish Island,209,Hurghada,natural,400.0,https://magawishisland.com/,,,EGP
+Moses' Springs (Oyun Musa),198,Hurghada,religious,60.0,,,,EGP
+Port Said Fish Market,197,Hurghada,shopping,,https://www.facebook.com/AkletSAMAkPortSaid/,,,EGP
+Luxor Museum,119,Luxor,cultural,140.0,,,,EGP
+Mummification Museum,120,Luxor,cultural,100.0,https://egymonuments.gov.eg/en/museums/mummification-museum,,,EGP
+Hot Air Balloon Rides Luxor,149,Luxor,entertainment,2500.0,https://hodhodsolimanballoons.com/,,,EGP
+Luxor to Aswan Nile Cruise,150,Luxor,entertainment,15000.0,https://www.thingstodoinegypt.com/egypt-nile-cruise-packages,,,EGP
+West Bank Bicycle Tour,151,Luxor,entertainment,400.0,,,,EGP
+Sunrise at Karnak Temple,152,Luxor,entertainment,500.0,https://egymonuments.gov.eg/ar/archaeological-sites/karnak,,,EGP
+Luxor Temple,79,Luxor,historical,160.0,https://egymonuments.gov.eg/ar/monuments/luxor-temple/,,,EGP
+Valley of the Kings,110,Luxor,historical,300.0,https://egymonuments.gov.eg/ar/archaeological-sites/valley-of-the-kings/,,,EGP
+Karnak Temple Complex,117,Luxor,historical,220.0,https://egymonuments.gov.eg/ar/archaeological-sites/karnak,,,EGP
+Avenue of Sphinxes,118,Luxor,historical,,https://en.m.wikipedia.org/wiki/Avenue_of_Sphinxes,,,EGP
+Tomb of Tutankhamun (KV62),121,Luxor,historical,400.0,,,,EGP
+Tomb of Seti I (KV17),122,Luxor,historical,1400.0,https://egymonuments.gov.eg/en/monuments/tomb-of-sety-i-kv17,,,EGP
+Tomb of Ramesses VI (KV9),123,Luxor,historical,160.0,https://egymonuments.gov.eg/en/monuments/tomb-of-ramesses-vi-kv9,,,EGP
+Tomb of Ramesses III (KV11),124,Luxor,historical,160.0,,,,EGP
+Valley of the Queens,125,Luxor,historical,140.0,,,,EGP
+Tomb of Nefertari (QV66),126,Luxor,historical,1400.0,,,,EGP
+Temple of Hatshepsut (Deir el-Bahari),127,Luxor,historical,140.0,https://egymonuments.gov.eg/ar/monuments/hatshepsut-temple,,,EGP
+Ramesseum (Mortuary Temple of Ramesses II),128,Luxor,historical,100.0,,,,EGP
+Medinet Habu (Mortuary Temple of Ramesses III),129,Luxor,historical,100.0,,,,EGP
+Temple of Seti I,130,Luxor,historical,60.0,,,,EGP
+Deir el-Medina,131,Luxor,historical,100.0,,,,EGP
+Tombs of the Nobles,132,Luxor,historical,100.0,,,,EGP
+Tomb of Sennefer (TT96),133,Luxor,historical,100.0,,,,EGP
+Tomb of Rekhmire (TT100),134,Luxor,historical,100.0,,,,EGP
+Tomb of Ramose (TT55),135,Luxor,historical,100.0,,,,EGP
+Dendera Temple Complex (Temple of Hathor),136,Luxor,historical,200.0,https://egymonuments.gov.eg/,,,EGP
+Temple of Hathor at Dendera,137,Luxor,historical,200.0,https://egymonuments.gov.eg/,,,EGP
+Dendera Zodiac,138,Luxor,historical,200.0,https://egymonuments.gov.eg/,,,EGP
+Abydos Temple Complex,139,Luxor,historical,100.0,,,,EGP
+Temple of Seti I at Abydos,140,Luxor,historical,100.0,,,,EGP
+Osireion at Abydos,141,Luxor,historical,100.0,,,,EGP
+Temple of Ramesses II at Abydos,142,Luxor,historical,100.0,,,,EGP
+Temple of Khnum at Esna,143,Luxor,historical,100.0,,,,EGP
+El-Kab (Nekheb),144,Luxor,historical,80.0,,,,EGP
+Rock Tombs of El-Kab,145,Luxor,historical,80.0,,,,EGP
+Banana Island,148,Luxor,natural,50.0,http://facebook.com/bananaislandsara22,,,EGP
+Red Sea Wonders Museum,227,Marsa Alam,cultural,120.0,http://www.hepca.org/,,,EGP
+Al-Quseir Ottoman Fortress,225,Marsa Alam,historical,80.0,,,,EGP
+Mons Smaragdus (Emerald Mines),226,Marsa Alam,historical,150.0,http://www.emeraldhollowmine.com/,,,EGP
+Berenice Troglodytica (Ancient Port),244,Marsa Alam,historical,100.0,,,,EGP
+Temple of Semiramis (Berenice),245,Marsa Alam,historical,50.0,https://egymonuments.gov.eg/en/monuments/serapeum,,,EGP
+Wadi Sakait (Temple of Isis),246,Marsa Alam,historical,100.0,http://wadisabarah.com/,,,EGP
+Wadi El Gemal National Park,89,Marsa Alam,natural,150.0,https://www.sis.gov.eg/Story/1073,,,EGP
+Sataya Reef (Dolphin House),90,Marsa Alam,natural,350.0,,,,EGP
+Abu Dabbab Bay,219,Marsa Alam,natural,200.0,http://www.abudabbab.com/,,,EGP
+Sha'ab Samadai (Dolphin House),220,Marsa Alam,natural,450.0,https://www.facebook.com/SE.Divers/,,,EGP
+Sharm El Luli (Ras Hankorab),221,Marsa Alam,natural,100.0,http://www.marsaalam.com/Sharm_El_Luli.html,,,EGP
+Sataya Reef (Dolphin Reef),223,Marsa Alam,natural,600.0,,,,EGP
+Gebel Elba National Park,234,Marsa Alam,natural,300.0,,,,EGP
+Qulaan Lagoon,235,Marsa Alam,natural,50.0,,,,EGP
+Hamata Islands,236,Marsa Alam,natural,400.0,,,,EGP
+El Nayzak Beach,237,Marsa Alam,natural,,https://www.egypttoday.com/Article/9/7977/Al-Nayzak-One-of-Egypt%E2%80%99s-most-scenic-spots,,,EGP
+Hankorab Beach,240,Marsa Alam,natural,100.0,https://www.facebook.com/hankorab/,,,EGP
+Wadi El Quraan,251,Marsa Alam,natural,,https://www.sis.gov.eg/Story/1073,,,EGP
+Habili Nakari,254,Marsa Alam,natural,,https://www.redsea-divingsafari.com/Villages/marsa-nakari,,,EGP
+Temple Lagoon Reef,255,Marsa Alam,natural,,http://bluelagoonsnorkeling.com/,,,EGP
+Old Market,279,Sinai,cultural,,https://egyptra.pro/old-market-sharm-el-sheikh,,,EGP
+Taba Heights,287,Sinai,cultural,,https://tabaheights.com/strand-beach-and-golf-resort/?utm_source=Google_My_Business&utm_medium=GMB,,,EGP
+SOHO Square,277,Sinai,entertainment,,http://www.soho-sharm.com/?utm_source=google&utm_medium=mybusiness&utm_campaign=mybusiness&utm_content=soho,,,EGP
+Hollywood Sharm,280,Sinai,entertainment,50.0,,,,EGP
+Cleo Park,281,Sinai,entertainment,400.0,,,,EGP
+Aqua Blue Water Park,282,Sinai,entertainment,500.0,,,,EGP
+Genena City,284,Sinai,entertainment,,http://www.genenacity.com/,,,EGP
+Lighthouse Reef,288,Sinai,entertainment,,http://dahabdive.com/,,,EGP
+Castle Zaman,289,Sinai,entertainment,600.0,http://orders.castlezaman.com/,,,EGP
+Pharaoh's Island,257,Sinai,historical,50.0,,,,EGP
+Serabit el-Khadim,258,Sinai,historical,40.0,,,,EGP
+Ras Mohammed,264,Sinai,natural,150.0,https://www.eeaa.gov.eg/Topics/85/36/65/Details,,,EGP
+Nabq Protectorate,265,Sinai,natural,80.0,,,,EGP
+Blue Hole,267,Sinai,natural,100.0,,,,EGP
+Mount Catherine,270,Sinai,natural,,http://www.wta.org/go-hiking/hikes/mount-catherine,,,EGP
+Ras El Shitan,290,Sinai,natural,,https://bedouinstar.org/,,,EGP
+Saint Catherine's Monastery,92,Sinai,religious,,https://www.sinaimonastery.com/index.php/ar/,,,EGP
+Al-Sahaba Mosque,259,Sinai,religious,,https://egyptra.pro/al-sahaba-mosque,,,EGP
+Moses Springs,260,Sinai,religious,20.0,,,,EGP
+Burning Bush,261,Sinai,religious,,https://www.sinaimonastery.com/index.php/ar/,,,EGP
+Steps of Penitence,296,Sinai,religious,,https://www.sinaimonastery.com/index.php/ar/,,,EGP

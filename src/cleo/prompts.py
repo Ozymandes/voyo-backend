@@ -19,7 +19,11 @@ RESPONSE_STYLE_INSTRUCTIONS = {
     "standard": (
         "RESPONSE LENGTH — STANDARD: 2–4 short paragraphs or a focused bullet list "
         "(whichever is clearer). Light markdown only where it genuinely helps. "
-        "Include one practical tip. A brief follow-up question at the end is fine."
+        "Lead with the most useful verified fact, then add practical context "
+        "(history, why it matters, what to expect). Include one practical tip. "
+        "When the answer draws on the VOYO database, ground it in the retrieved "
+        "details rather than giving a surface summary. A brief follow-up question "
+        "at the end is fine."
     ),
     "detailed": (
         "RESPONSE LENGTH — DETAILED: Use full structured formatting suited to the request "

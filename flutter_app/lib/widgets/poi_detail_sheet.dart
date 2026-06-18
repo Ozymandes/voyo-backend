@@ -54,7 +54,7 @@ class PoiDetailSheet extends StatelessWidget {
                     SliverPadding(
                       padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
                       sliver: SliverList(
-                        delegate: SliverChildListDelegate(_body()),
+                        delegate: SliverChildListDelegate(_body(context)),
                       ),
                     ),
                   ],
@@ -82,7 +82,7 @@ class PoiDetailSheet extends StatelessWidget {
     );
   }
 
-  List<Widget> _body() {
+  List<Widget> _body(BuildContext context) {
     final children = <Widget>[];
 
     // Quick facts (only the ones we actually have data for).
@@ -102,7 +102,7 @@ class PoiDetailSheet extends StatelessWidget {
     if (poi.historicalSignificance != null &&
         poi.historicalSignificance!.trim().isNotEmpty) {
       children.addAll(
-          _section('Historical Significance', poi.historicalSignificance!));
+          _section(_significanceLabel(), poi.historicalSignificance!));
     }
 
     final tips = _goodToKnowTips();
@@ -143,12 +143,48 @@ class PoiDetailSheet extends StatelessWidget {
         label: 'Visit',
       ));
     }
-    if (poi.ticketPrice != null) {
+    // Dual-tier pricing: when the structured ticket_prices field is
+    // populated, show both Egyptian and foreigner rates. Fall back to the
+    // single legacy ticket_price otherwise. When neither is known, render an
+    // explicit 'Not available' pill rather than silently omitting entry info
+    // (so missing data is never confused with free entry).
+    //
+    // Free logic: egyptian==0 AND foreigner==0 means genuinely free.
+    // Asymmetric zeros (one tier free, one paid) render the real numbers.
+    final tp = poi.ticketPrices;
+    final hasTp = tp != null &&
+        tp['egyptian'] is num &&
+        tp['foreigner'] is num;
+    if (hasTp) {
+      final e = (tp['egyptian'] as num).toDouble();
+      final f = (tp['foreigner'] as num).toDouble();
+      final bothFree = e == 0 && f == 0;
+      pills.add(_FactPill(
+        icon: Icons.confirmation_number_outlined,
+        value: bothFree
+            ? 'Free'
+            : 'Egyptian ${e.toStringAsFixed(0)} EGP\nForeigner ${f.toStringAsFixed(0)} EGP',
+        label: 'Entry',
+        valueMaxLines: bothFree ? 1 : 2,
+        valueFontSize: bothFree ? 16 : 13,
+      ));
+    } else if (poi.ticketPrice != null) {
       final free = poi.ticketPrice == 0;
       pills.add(_FactPill(
         icon: Icons.confirmation_number_outlined,
         value: free ? 'Free' : '${poi.ticketPrice!.toStringAsFixed(0)} ${poi.currency ?? 'EGP'}',
         label: 'Entry',
+      ));
+    } else {
+      // Neither structured nor legacy price known. Honest 'Not available' so
+      // the absence of data isn't misread as free entry. (Many POIs are
+      // genuinely free, but we can't assert that without a source.)
+      pills.add(_FactPill(
+        icon: Icons.confirmation_number_outlined,
+        value: 'Not available',
+        label: 'Entry',
+        valueMaxLines: 1,
+        valueFontSize: 13,
       ));
     }
     if (poi.averageRating != null) {
@@ -171,9 +207,19 @@ class PoiDetailSheet extends StatelessWidget {
   }
 
   /// Honest, data-derived practical notes — replaces a previously hardcoded
-  /// "Cleo's Take" anecdote that was identical for every POI.
+  /// "Cleo's Take" anecdote that was identical for every POI. Expert guidance
+  /// from the enriched `travel_tips` field is shown first (highest value);
+  /// mechanical data-derived tips follow.
   List<(IconData, String)> _goodToKnowTips() {
     final tips = <(IconData, String)>[];
+    // Enrichment-sourced expert tips (take up to 4 so the card stays scannable).
+    if (poi.travelTips != null && poi.travelTips!.isNotEmpty) {
+      for (final t in poi.travelTips!.take(4)) {
+        if (t.trim().isNotEmpty) {
+          tips.add((Icons.tips_and_updates_outlined, t.trim()));
+        }
+      }
+    }
     if (poi.averageVisitDuration != null) {
       tips.add((
         Icons.schedule_outlined,
@@ -213,6 +259,28 @@ class PoiDetailSheet extends StatelessWidget {
         ),
       ),
     ];
+  }
+
+  /// Category-aware label for the significance section, so reefs, mosques
+  /// and bazaars no longer read as "Historical Significance".
+  String _significanceLabel() {
+    switch (poi.category?.toLowerCase()) {
+      case 'historical':
+        return 'Historical significance';
+      case 'natural':
+        return 'What makes it special';
+      case 'religious':
+        return 'Spiritual context';
+      case 'cultural':
+        return 'Cultural context';
+      case 'entertainment':
+        return "Why it's worth a visit";
+      case 'dining':
+      case 'shopping':
+        return 'What to expect';
+      default:
+        return 'Significance';
+    }
   }
 
   Widget _label(String text) {
@@ -345,21 +413,55 @@ class PoiDetailSheet extends StatelessWidget {
 // Hero
 // ---------------------------------------------------------------------------
 
-class _Hero extends StatelessWidget {
+class _Hero extends StatefulWidget {
   final Poi poi;
   const _Hero({required this.poi});
 
   @override
+  State<_Hero> createState() => _HeroState();
+}
+
+class _HeroState extends State<_Hero> {
+  int _page = 0;
+
+  @override
   Widget build(BuildContext context) {
+    final poi = widget.poi;
     final style = poiCategoryStyle(poi.category);
+    final images = (poi.imageUrls ?? const <String>[])
+        .where((u) => !isUndecodableImage(u))
+        .toList(growable: false);
+    final hasCarousel = images.length > 1;
+
+    // Category-tinted scrim: blend the POI's category colour into the ink base
+    // so the bottom of the hero carries a hint of the category hue while
+    // staying dark enough for the white title to stay legible.
+    final categoryColor = style.gradient.colors.last;
+    final scrim = Color.lerp(VoyoColors.ink, categoryColor, 0.4)!;
+
     return SizedBox(
       height: 312,
       width: double.infinity,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          PoiImage(poi: poi, height: 312, borderRadius: BorderRadius.zero),
-          // Bottom scrim for title legibility.
+          // Image layer: horizontal carousel, single image, or gradient
+          // fallback (0 images). Top corners stay rounded via the parent
+          // ClipRRect.
+          if (images.length > 1)
+            PageView.builder(
+              itemCount: images.length,
+              onPageChanged: (i) => setState(() => _page = i),
+              itemBuilder: (context, i) => _CarouselImage(
+                url: images[i],
+                style: style,
+              ),
+            )
+          else if (images.length == 1)
+            _CarouselImage(url: images.first, style: style)
+          else
+            _HeroGradientFallback(style: style),
+          // Category-tinted bottom scrim for title legibility.
           Positioned(
             left: 0,
             right: 0,
@@ -373,8 +475,8 @@ class _Hero extends StatelessWidget {
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      VoyoColors.ink.withValues(alpha: 0.55),
-                      VoyoColors.ink.withValues(alpha: 0.86),
+                      scrim.withValues(alpha: 0.55),
+                      scrim.withValues(alpha: 0.88),
                     ],
                     stops: const [0.0, 0.6, 1.0],
                   ),
@@ -398,7 +500,7 @@ class _Hero extends StatelessWidget {
               ),
             ),
           ),
-          // Title block.
+          // Title block, with page-indicator dots above it when carousel.
           Positioned(
             left: 20,
             right: 20,
@@ -407,6 +509,10 @@ class _Hero extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (hasCarousel) ...[
+                  _PageDots(count: images.length, current: _page),
+                  const SizedBox(height: 10),
+                ],
                 Wrap(
                   spacing: 8,
                   runSpacing: 6,
@@ -487,6 +593,84 @@ class _Hero extends StatelessWidget {
   }
 }
 
+/// A single network image in the hero carousel. Falls back to the category
+/// gradient on load error or while loading, mirroring [PoiImage]'s
+/// robustness so the UI never throws on a bad URL.
+class _CarouselImage extends StatelessWidget {
+  final String url;
+  final PoiCategoryStyle style;
+
+  const _CarouselImage({required this.url, required this.style});
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.network(
+      url,
+      fit: BoxFit.cover,
+      headers: voyoImageHttpHeaders,
+      filterQuality: FilterQuality.high,
+      loadingBuilder: (context, image, progress) {
+        if (progress == null) return image;
+        return _HeroGradientFallback(style: style);
+      },
+      errorBuilder: (_, __, ___) => _HeroGradientFallback(style: style),
+    );
+  }
+}
+
+/// Gradient fallback for the hero (0 images, or an image that failed to
+/// load). Mirrors [PoiImage]'s fallback so the empty state stays on-brand.
+class _HeroGradientFallback extends StatelessWidget {
+  final PoiCategoryStyle style;
+  const _HeroGradientFallback({required this.style});
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(gradient: style.gradient),
+      child: Center(
+        child: Icon(
+          style.icon,
+          size: 36,
+          color: Colors.white.withValues(alpha: 0.30),
+        ),
+      ),
+    );
+  }
+}
+
+/// Expanding-dot page indicator for the hero carousel. Only rendered when
+/// more than one image is present.
+class _PageDots extends StatelessWidget {
+  final int count;
+  final int current;
+  const _PageDots({required this.count, required this.current});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (var i = 0; i < count; i++) ...[
+          if (i > 0) const SizedBox(width: 6),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            width: i == current ? 16 : 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: i == current
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: 0.45),
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
 class _HeroChip extends StatelessWidget {
   final Color color;
   final IconData icon;
@@ -533,11 +717,15 @@ class _FactPill extends StatelessWidget {
   final IconData icon;
   final String value;
   final String label;
+  final int valueMaxLines;
+  final double valueFontSize;
 
   const _FactPill({
     required this.icon,
     required this.value,
     required this.label,
+    this.valueMaxLines = 1,
+    this.valueFontSize = 16,
   });
 
   @override
@@ -556,10 +744,10 @@ class _FactPill extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             value,
-            maxLines: 1,
+            maxLines: valueMaxLines,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.fraunces(
-              fontSize: 16,
+              fontSize: valueFontSize,
               fontWeight: FontWeight.w600,
               color: VoyoColors.ink,
             ),

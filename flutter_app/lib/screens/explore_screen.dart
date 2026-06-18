@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/poi.dart';
 import '../services/recommendation_service.dart';
 import '../services/supabase_service.dart';
+import '../services/weather_service.dart';
 import '../theme.dart';
 import '../widgets/add_to_itinerary_sheet.dart';
 import '../widgets/poi_card.dart';
@@ -15,27 +16,30 @@ import 'chat_screen.dart';
 import 'recommendations_screen.dart';
 import 'settings_sheets.dart';
 
-const _categories = [
-  'All',
-  'Historical',
-  'Religious',
-  'Nature',
-  'Dining',
-  'Shopping',
-  'Hidden Gems',
-];
+// Categories are derived from the data (see _buildCategoryRow) so the row
+// never silently drops categories that exist in the DB (it previously missed
+// Entertainment + Cultural because it was hardcoded). 'All' and 'Hidden Gems'
+// are synthetic and always present.
 
-// Fallback sample data shown when the DB has no POIs yet.
-final _fallbackPois = [
-  Poi(id: 1, name: 'Khan el-Khalili', latitude: 30.0478, longitude: 31.2625, category: 'shopping', city: 'Cairo', averageRating: 4.6, totalReviews: 2840, isVerified: true, popularityScore: 85, ticketPrice: 0, currency: 'EGP', historicalSignificance: 'One of the oldest bazaars in the world, dating back to 1382. A hub of commerce and culture in Islamic Cairo.'),
-  Poi(id: 2, name: 'Egyptian Museum', latitude: 30.0478, longitude: 31.2336, category: 'historical', city: 'Cairo', averageRating: 4.7, totalReviews: 5200, isVerified: true, popularityScore: 92, ticketPrice: 200, currency: 'EGP', historicalSignificance: 'Home to the world\'s largest collection of ancient Egyptian artifacts, including the treasures of Tutankhamun.'),
-  Poi(id: 3, name: 'Coptic Cairo', latitude: 30.0054, longitude: 31.2296, category: 'historical', city: 'Cairo', averageRating: 4.5, totalReviews: 1100, isVerified: true, popularityScore: 60, ticketPrice: 0, currency: 'EGP', historicalSignificance: 'The oldest part of Cairo, containing some of the earliest Christian churches in Egypt.'),
-  Poi(id: 4, name: 'Karnak Temple', latitude: 25.7188, longitude: 32.6573, category: 'historical', city: 'Luxor', averageRating: 4.9, totalReviews: 6800, isVerified: true, popularityScore: 97, ticketPrice: 220, currency: 'EGP', historicalSignificance: 'The largest ancient religious site in the world, built over 2,000 years by successive pharaohs.'),
-  Poi(id: 5, name: 'Luxor Temple', latitude: 25.6997, longitude: 32.6390, category: 'historical', city: 'Luxor', averageRating: 4.8, totalReviews: 4200, isVerified: true, popularityScore: 88, ticketPrice: 160, currency: 'EGP'),
-  Poi(id: 6, name: 'Medinet Habu', latitude: 25.7197, longitude: 32.6016, category: 'historical', city: 'Luxor', averageRating: 4.8, totalReviews: 820, isVerified: true, popularityScore: 22, historicalSignificance: 'The mortuary temple of Ramesses III, one of the best-preserved temples in Egypt — and far less crowded than Karnak.'),
-  Poi(id: 7, name: 'Philae Temple', latitude: 24.0247, longitude: 32.8836, category: 'historical', city: 'Aswan', averageRating: 4.8, totalReviews: 3100, isVerified: true, popularityScore: 78, ticketPrice: 180, currency: 'EGP', historicalSignificance: 'An island temple complex dedicated to Isis, relocated to save it from the rising waters of Lake Nasser.'),
-  Poi(id: 8, name: 'Bibliotheca Alexandrina', latitude: 31.2089, longitude: 29.9085, category: 'cultural', city: 'Alexandria', averageRating: 4.6, totalReviews: 1900, isVerified: true, popularityScore: 65, ticketPrice: 70, currency: 'EGP'),
-];
+// Display label -> canonical DB category enum value.
+const _categoryEnum = {
+  'Historical': 'historical',
+  'Cultural': 'cultural',
+  'Religious': 'religious',
+  'Nature': 'natural',
+  'Entertainment': 'entertainment',
+  'Dining': 'dining',
+  'Shopping': 'shopping',
+};
+
+// Human-readable label for a raw category enum value (reverse map).
+String? _categoryLabel(String? cat) {
+  if (cat == null) return null;
+  for (final e in _categoryEnum.entries) {
+    if (e.value == cat.toLowerCase()) return e.key;
+  }
+  return null;
+}
 
 // ---------------------------------------------------------------------------
 // ExploreScreen
@@ -60,8 +64,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
   String _selectedCategory = 'All';
   bool _loadingPois = true;
   bool _profileOpen = false;
-  bool _usingFallback = false;
   String? _poisError;
+
+  // Discovery weather widget (D3/D6): current conditions for the device
+  // location (or Cairo fallback). Null = still loading.
+  WeatherResult? _weather;
 
   final _recService = RecommendationService();
   List<Poi> _recommendations = [];
@@ -75,13 +82,16 @@ class _ExploreScreenState extends State<ExploreScreen> {
   Future<void> _loadData() async {
     final userId = _supabase.auth.currentUser?.id;
 
-    // Load POIs — fall back to sample data if DB is empty or unavailable
+    // Load POIs from Supabase. There is intentionally NO mock fallback —
+    // stale seed data caused 'Discover Egypt' to show fabricated POIs while
+    // 'Your Destinations' showed real enriched ones. On failure we surface an
+    // honest error/empty state instead of inventing data.
     try {
       final pois = await _supabaseService.getFeaturedPois(limit: 500);
       if (mounted) {
         setState(() {
-          _pois = pois.isNotEmpty ? pois : _fallbackPois;
-          _usingFallback = pois.isEmpty;
+          _pois = pois;
+          _poisError = null;
           _loadingPois = false;
         });
       }
@@ -89,15 +99,23 @@ class _ExploreScreenState extends State<ExploreScreen> {
       debugPrint('ExploreScreen: POI load failed — $e');
       if (mounted) {
         setState(() {
-          _pois = _fallbackPois;
-          _usingFallback = true;
+          _pois = [];
           _poisError = e.toString();
           _loadingPois = false;
         });
       }
     }
 
-    if (userId != null) _loadRecommendations();
+    // Recommendations power 'Your Destinations'. When signed out the API
+    // returns nothing, so we fall back to the already-loaded POIs (same
+    // canonical source — no second stale dataset).
+    await _loadRecommendations();
+    if (_recommendations.isEmpty) _recommendations = _pois;
+    if (mounted) setState(() {});
+
+    // Discovery weather widget (D3/D6) — fire-and-forget; failure resolves to
+    // an Unavailable result the widget renders gracefully.
+    _loadWeather();
 
     if (userId == null) return;
 
@@ -130,14 +148,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return '🌙';
   }
 
-  static const _categoryEnum = {
-    'Historical': 'historical',
-    'Religious': 'religious',
-    'Nature': 'natural',
-    'Dining': 'dining',
-    'Shopping': 'shopping',
-  };
-
   List<Poi> get _filteredPois {
     if (_selectedCategory == 'All') return _pois;
     if (_selectedCategory == 'Hidden Gems') {
@@ -147,10 +157,28 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return _pois.where((p) => p.category?.toLowerCase() == cat).toList();
   }
 
+  /// Category chips: always lead with All + Hidden Gems, then every category
+  /// that actually has at least one active POI in the loaded data. Derived
+  /// from data so we never silently hide Entertainment/Cultural/etc.
+  List<String> get _categoryChips {
+    final present = <String, int>{};
+    for (final p in _pois) {
+      final label = _categoryLabel(p.category);
+      if (label != null) present[label] = (present[label] ?? 0) + 1;
+    }
+    final ordered = present.keys.toList()..sort();
+    return ['All', ...ordered, 'Hidden Gems'];
+  }
+
   Future<void> _loadRecommendations() async {
     if (!mounted) return;
     final recs = await _recService.getRecommendations(limit: 24);
     if (mounted) setState(() => _recommendations = recs);
+  }
+
+  Future<void> _loadWeather() async {
+    final w = await WeatherService.instance.getCurrent();
+    if (mounted) setState(() => _weather = w);
   }
 
   @override
@@ -163,6 +191,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           CustomScrollView(
             slivers: [
               SliverToBoxAdapter(child: _buildHeader(top)),
+              SliverToBoxAdapter(child: _buildWeatherWidget()),
               SliverToBoxAdapter(child: _buildMapZone()),
               SliverToBoxAdapter(child: _buildCategoryRow()),
               SliverToBoxAdapter(child: _buildDiscoverSection()),
@@ -198,6 +227,111 @@ class _ExploreScreenState extends State<ExploreScreen> {
   }
 
   // ── Header ────────────────────────────────────────────────────────────────
+
+  // ── Discovery weather widget (D3/D6) ─────────────────────────────────────
+  // Travel-actionable current conditions in VOYO voice. Collapses to a slim
+  // skeleton while loading and a graceful note on failure — weather is a
+  // nicety, never blocks the rest of the screen.
+  Widget _buildWeatherWidget() {
+    final w = _weather;
+    final body = switch (w) {
+      null => Row(children: [
+          _weatherIconPlaceholder(),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                    width: 90, height: 12,
+                    color: VoyoColors.vellum),
+                const SizedBox(height: 6),
+                Container(
+                    width: 160, height: 10,
+                    color: VoyoColors.vellum),
+              ],
+            ),
+          ),
+        ]),
+      Unavailable() => Row(children: [
+          Icon(Icons.cloud_off_outlined,
+              size: 20, color: VoyoColors.stone.withValues(alpha: 0.6)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+                'Weather unavailable — check back later.',
+                style: GoogleFonts.instrumentSans(
+                    fontSize: 12, color: VoyoColors.stone)),
+          ),
+        ]),
+      CurrentWeather() => _weatherContent(w),
+    };
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      decoration: BoxDecoration(
+        color: VoyoColors.paper,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: VoyoColors.smoke),
+      ),
+      child: body,
+    );
+  }
+
+  Widget _weatherIconPlaceholder() =>
+      Container(width: 28, height: 28, decoration: const BoxDecoration(
+          color: VoyoColors.vellum, shape: BoxShape.circle));
+
+  Widget _weatherContent(CurrentWeather w) {
+    return Row(
+      children: [
+        Text(_weatherEmoji(w),
+            style: const TextStyle(fontSize: 22)),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${w.city} now · ${w.tempC}°C · ${_titleCase(w.conditionLabel)}',
+                style: GoogleFonts.fraunces(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: VoyoColors.ink),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                weatherSuggestion(w),
+                style: GoogleFonts.instrumentSans(
+                    fontSize: 12, color: VoyoColors.stone, height: 1.4),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _weatherEmoji(CurrentWeather w) {
+    final icon = w.icon;
+    // OpenWeather icon codes: 01=clear, 02-04=clouds, 09/10=rain,
+    // 11=thunder, 13=snow, 50=mist/dust.
+    if (icon.startsWith('01')) return '☀️';
+    if (icon.startsWith('02') || icon.startsWith('03')) return '⛅';
+    if (icon.startsWith('04')) return '☁️';
+    if (icon.startsWith('09') || icon.startsWith('10')) return '🌧️';
+    if (icon.startsWith('11')) return '⛈️';
+    if (icon.startsWith('13')) return '❄️';
+    return '🌫️'; // 50:* mist / dust / haze
+  }
+
+  static String _titleCase(String s) {
+    if (s.isEmpty) return s;
+    return s[0].toUpperCase() + s.substring(1);
+  }
 
   Widget _buildHeader(double topPadding) {
     final initial =
@@ -475,15 +609,16 @@ class _ExploreScreenState extends State<ExploreScreen> {
   // ── Category row ──────────────────────────────────────────────────────────
 
   Widget _buildCategoryRow() {
+    final chips = _categoryChips;
     return SizedBox(
       height: 44,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _categories.length,
+        itemCount: chips.length,
         separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (_, i) {
-          final cat = _categories[i];
+          final cat = chips[i];
           final isSelected = cat == _selectedCategory;
           return GestureDetector(
             onTap: () => setState(() => _selectedCategory = cat),
@@ -530,38 +665,60 @@ class _ExploreScreenState extends State<ExploreScreen> {
               style: GoogleFonts.fraunces(
                   fontSize: 24, color: VoyoColors.ink)),
         ),
-        if (_usingFallback)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.info_outline,
-                        size: 13, color: VoyoColors.caution),
-                    const SizedBox(width: 5),
-                    Expanded(
-                      child: Text(
-                        _poisError != null
-                            ? 'DB error: $_poisError'
-                            : 'Showing sample data — run the seed SQL in Supabase to see real places.',
-                        style: GoogleFonts.instrumentSans(
-                            fontSize: 11, color: VoyoColors.caution),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
         if (_loadingPois)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 40),
             child: Center(
               child: CircularProgressIndicator(
                   color: VoyoColors.expedition, strokeWidth: 2),
+            ),
+          )
+        else if (_poisError != null && _pois.isEmpty)
+          // Honest error state: the DB/refresh fetch failed AND we have no
+          // cached POIs. We never substitute mock data — the user needs to
+          // know the real source is unreachable.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.cloud_off_outlined,
+                    size: 16, color: VoyoColors.caution),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Couldn\'t load places right now.',
+                          style: GoogleFonts.instrumentSans(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: VoyoColors.ink)),
+                      const SizedBox(height: 4),
+                      Text(
+                          'Check your connection and pull down to retry.\nDetails: $_poisError',
+                          style: GoogleFonts.instrumentSans(
+                              fontSize: 11, color: VoyoColors.stone)),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: _loadData,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: VoyoColors.expedition,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Text('Retry',
+                        style: GoogleFonts.instrumentSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white)),
+                  ),
+                ),
+              ],
             ),
           )
         else if (pois.isEmpty)

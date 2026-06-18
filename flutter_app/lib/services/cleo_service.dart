@@ -3,18 +3,32 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import '../models/chat_message.dart';
 
+/// Enriched CLEO reply: the answer text plus optional provenance pills and a
+/// coarse confidence label. Older callers that only need the text use `.text`.
+/// `SourcePill` is imported from chat_message.dart (shared model layer).
+class CleoReply {
+  final String text;
+  final List<SourcePill> sources;
+  final String? confidence; // "high" | "medium" | "low" | null
+  const CleoReply({
+    required this.text,
+    this.sources = const [],
+    this.confidence,
+  });
+}
+
 class CleoService {
   final String _baseUrl;
 
   CleoService()
       : _baseUrl = dotenv.env['CLEO_API_URL'] ?? 'http://10.0.2.2:8000';
 
-  /// Send a message to CLEO and return the assistant's response text.
+  /// Send a message to CLEO and return the assistant's reply with provenance.
   ///
   /// [poiId] + [intent] ("poi_explain") are sent when the message originates
   /// from a POI "Ask Cleo" entry point, giving the agent place context per the
   /// MASTER_PLAN chat contract.
-  Future<String> sendMessage(
+  Future<CleoReply> sendMessage(
     String message, {
     String? userId,
     int? poiId,
@@ -24,7 +38,7 @@ class CleoService {
     // chat UI is testable before the CLEO `poi_explain` path ships. Enable by
     // setting CLEO_STUB=1 in flutter_app/.env. Off → real network call.
     if (dotenv.env['CLEO_STUB'] == '1') {
-      return _stubResponse(message, poiId: poiId, intent: intent);
+      return CleoReply(text: _stubResponse(message, poiId: poiId, intent: intent));
     }
 
     final uri = Uri.parse('$_baseUrl/api/v1/chat');
@@ -41,7 +55,16 @@ class CleoService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(utf8.decode(response.bodyBytes));
-      return data['response'] as String;
+      final rawSources = data['sources'] as List<dynamic>?;
+      return CleoReply(
+        text: data['response'] as String,
+        sources: rawSources == null
+            ? const []
+            : rawSources
+                .map((s) => SourcePill.fromJson(s as Map<String, dynamic>))
+                .toList(growable: false),
+        confidence: data['confidence'] as String?,
+      );
     } else {
       throw Exception('CLEO API error ${response.statusCode}: ${response.body}');
     }

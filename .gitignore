@@ -4,6 +4,17 @@ venv
 __pycache__/
 *.log
 
+# Python test / coverage artifacts
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
 # Pi Agent Tasks
 docs/devlog
 docs/phase-reports
@@ -45,3 +56,19 @@ design-system/FULL_UI_GENERATION_PROMPT.md
 # Pipeline run artifacts (regenerable)
 voyo.db
 rebuild_report.json
+
+# Scrape HTML/JSON disk cache (regenerable; ~10MB + embeds source sites'
+# own public API keys, e.g. egymonuments.gov.eg's Bing Maps key)
+scripts/scrape/cache/
+
+# User-provided source PDFs for the thesis citation evidence base.
+# These are copyrighted academic papers — local reference only, NEVER commit.
+thesis/citations/pdfs/
+
+# OSRM routing data volume (3.6 GB; docker-compose rebuilds from Geofabrik
+# Egypt PBF on first run). Direct analog to config/valhalla/custom_files/.
+osrm-data/
+
+# Pipeline / session scratch: one-off scripts, DB backups (with content),
+# review JSONLs, logs. Regenerable; not meant to be shared via the repo.
+work/

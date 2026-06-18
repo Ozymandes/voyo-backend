@@ -13,8 +13,9 @@ import '../services/supabase_service.dart';
 import '../services/routing_service.dart';
 import '../theme.dart';
 import '../widgets/map_isochrone_overlay.dart';
-import '../widgets/map_region_overlay.dart';
+import '../widgets/map_poi_preview_card.dart';
 import '../widgets/poi_detail_sheet.dart';
+import '../widgets/add_to_itinerary_sheet.dart';
 import 'chat_screen.dart';
 
 // Day-slot colors (cycle for day 6+)
@@ -28,6 +29,9 @@ const _kDayColors = [
 
 Color _dayColor(int dayNumber) =>
     _kDayColors[(dayNumber - 1) % _kDayColors.length];
+
+/// Map zoom at/above which POI name labels appear beside markers.
+const _kPoiLabelZoomThreshold = 12.0;
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -47,6 +51,10 @@ class _MapScreenState extends State<MapScreen> {
   List<ItineraryPoi> _itineraryPois = [];
   Timer? _debounceTimer;
   bool _isLoading = false;
+  // Non-fatal POI/network error surfaced as a dismissible banner so the user
+  // sees the real problem (DNS fail, offline, Supabase down) instead of a
+  // silent debugPrint + blank map.
+  String? _poisError;
 
   // ── Routing state ───────────────────────────────────────────────────────────
   Map<int, List<LatLng>> _routesByDay = {};
@@ -55,12 +63,14 @@ class _MapScreenState extends State<MapScreen> {
 
   // ── Isochrone ("Explore from here") ───────────────────────────────────────
   // Owned entirely by widgets/map_isochrone_overlay.dart. Slider / profile
-  // controls live there too — not here (avoids colliding with region work).
+  // controls live there too — not here.
   final _isochrone = IsochroneController();
 
-  // ── Region outlines ("Explore Egypt by region") ──────────────────────────
-  // Owned entirely by widgets/map_region_overlay.dart.
-  final _regions = RegionController();
+  // ── Zoom-aware POI name labels ──────────────────────────────────────────────
+  // When the map zooms in past [_kPoiLabelZoomThreshold], each POI's name is
+  // shown as a small label beside its marker (Google-Maps-style). Toggled only
+  // on threshold crossing to avoid rebuilds on every frame of a pan/zoom.
+  bool _labelsVisible = false;
 
   // ── Day filter ──────────────────────────────────────────────────────────────
   int? _selectedDay; // null = show all days
@@ -100,7 +110,6 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
-    _regions.load();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadPoisForBounds(
         LatLngBounds(const LatLng(22.0, 24.0), const LatLng(32.0, 37.0)),
@@ -114,13 +123,17 @@ class _MapScreenState extends State<MapScreen> {
     _debounceTimer?.cancel();
     _mapController.dispose();
     _isochrone.dispose();
-    _regions.dispose();
     super.dispose();
   }
 
   // ── Data loading ─────────────────────────────────────────────────────────────
 
   void _onPositionChanged(MapCamera camera, bool hasGesture) {
+    // Toggle zoom-aware POI labels only on threshold crossing.
+    final labelsVisible = camera.zoom >= _kPoiLabelZoomThreshold;
+    if (labelsVisible != _labelsVisible) {
+      setState(() => _labelsVisible = labelsVisible);
+    }
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
       _loadPoisForBounds(camera.visibleBounds);
@@ -137,14 +150,22 @@ class _MapScreenState extends State<MapScreen> {
         minLng: bounds.southWest.longitude,
         maxLng: bounds.northEast.longitude,
       );
-      if (mounted)
+      if (mounted) {
         setState(() {
           _pois = pois;
           _isLoading = false;
         });
+      }
     } catch (e) {
       debugPrint('Error loading POIs: $e');
-      if (mounted) setState(() => _isLoading = false);
+      // Keep any POIs already loaded (don't blank the map on a transient
+      // failure) but surface the error as a banner so the user knows.
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _poisError = e.toString();
+        });
+      }
     }
   }
 
@@ -178,35 +199,7 @@ class _MapScreenState extends State<MapScreen> {
   // All state/logic/presentation live in widgets/map_isochrone_overlay.dart.
   // This helper just feeds the loaded POI coordinates in for the reach count.
   Future<void> _onMapLongPress(LatLng point) async {
-    await _isochrone.explore(
-      point,
-      [for (final p in _pois) LatLng(p.latitude, p.longitude)],
-      mapController: _mapController,
-      context: context,
-    );
-  }
-
-  // ── Region tap ───────────────────────────────────────────────────────────
-  // flutter_map writes the tapped polygon(s) into the region layer's hit
-  // notifier during the gesture; we read it here to resolve which region was
-  // tapped (if any), then focus it. A tap on empty map area dismisses the
-  // card. (POI markers consume their own taps, so they still open normally.)
-  void _onMapTap(TapPosition tapPosition, LatLng point) {
-    final hits = _regions.hitNotifier.value?.hitValues;
-    if (hits != null && hits.isNotEmpty) {
-      final f = _regions.byId(hits.first);
-      if (f != null) {
-        _regions.select(f.id);
-        _mapController.move(
-          LatLng(f.centerLat, f.centerLng),
-          f.zoom,
-          // Lift the center up so it clears the bottom info card.
-          offset: const Offset(0, -120),
-        );
-        return;
-      }
-    }
-    _regions.dismiss();
+    await _isochrone.explore(point, _pois, mapController: _mapController);
   }
 
   void _fitRouteBounds(List<ItineraryPoi> pois) {
@@ -225,6 +218,38 @@ class _MapScreenState extends State<MapScreen> {
   // ── Bottom sheets ────────────────────────────────────────────────────────────
 
   void _showPoiBottomSheet(Poi poi) {
+    // Geotag tap → compact preview card (canonical enriched POI, truncated
+    // copy, two actions). The full `PoiDetailSheet` opens only when the user
+    // taps 'View details'. Keeps the map interaction light while preserving
+    // the same data source as Planner/Explore.
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (sheetCtx) => Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(sheetCtx).viewInsets.bottom,
+            ),
+            child: MapPoiPreviewCard(
+              poi: poi,
+              onViewDetails: () {
+                Navigator.pop(sheetCtx); // close preview
+                _showPoiDetailSheet(poi);
+              },
+              onAddToTrip: () {
+                Navigator.pop(sheetCtx); // close preview, then run add flow
+                _addPoiToItinerary(poi);
+              },
+            ),
+          ),
+    );
+  }
+
+  /// Full enriched detail modal. Opened from the map preview's 'View details'
+  /// action — identical sheet used across the app, so the detail view is the
+  /// single canonical deep-dive.
+  void _showPoiDetailSheet(Poi poi) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -238,6 +263,38 @@ class _MapScreenState extends State<MapScreen> {
             },
           ),
     );
+  }
+
+  /// Opens the shared add-to-itinerary flow for a POI. Used by the isochrone
+  /// top-5 ranked rows. Mirrors the pattern in explore_screen.dart.
+  Future<void> _addPoiToItinerary(Poi poi) async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sign in to save places to your trip.')),
+      );
+      return;
+    }
+    final added = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (_) => AddToItineraryFlow(
+            poi: poi,
+            service: _supabaseService,
+            userId: userId,
+          ),
+    );
+    if (added == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${poi.name} added to your itinerary!'),
+          backgroundColor: VoyoColors.terra,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   void _showRoutePanel() {
@@ -278,307 +335,365 @@ class _MapScreenState extends State<MapScreen> {
     final topPad = MediaQuery.of(context).padding.top;
     final hasRoute = _itineraryPois.isNotEmpty;
 
-    return PopScope(
-      canPop: _regions.selectedId == null && Navigator.of(context).canPop(),
-      onPopInvokedWithResult: (didPop, _) {
-        // System/back gesture dismisses an open region card before popping.
-        if (!didPop && _regions.selectedId != null) _regions.dismiss();
-      },
-      child: Scaffold(
-        body: Stack(
-          children: [
-            // ── Map ──────────────────────────────────────────────────────────
-            FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                initialCenter: const LatLng(30.0444, 31.2357),
-                initialZoom: 7.0,
-                onPositionChanged: _onPositionChanged,
-                onTap: _onMapTap,
-                onLongPress: (tapPosition, point) => _onMapLongPress(point),
+    return Scaffold(
+      body: Stack(
+        children: [
+          // ── Map ──────────────────────────────────────────────────────────
+          FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
+              initialCenter: const LatLng(30.0444, 31.2357),
+              initialZoom: 7.0,
+              onPositionChanged: _onPositionChanged,
+              onLongPress: (tapPosition, point) => _onMapLongPress(point),
+            ),
+            children: [
+              TileLayer(
+                // CartoDB Voyager tiles — the same VOYO-styled basemap the
+                // Explore home uses. The bare OSM tile server is rate-limited
+                // and frequently 403s from mobile clients; this subdomain-
+                // load-balanced source is far more reliable.
+                urlTemplate:
+                    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+                subdomains: const ['a', 'b', 'c', 'd'],
+                userAgentPackageName: 'com.voyo.app',
+                // Soft fallback: a failed tile (DNS/offline/403) logs a
+                // debug message and renders a transparent tile instead of
+                // throwing into the console as an uncaught exception.
+                errorTileCallback: (tile, error, stackTrace) {
+                  debugPrint('Map tile load failed: $error');
+                },
               ),
-              children: [
-                TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.voyo.app',
+              // Isochrone reachable-area rings + center marker
+              // (long-press the map to generate). Self-contained widgets:
+              // logic + future sliders live in map_isochrone_overlay.dart.
+              IsochronePolygons(controller: _isochrone),
+              IsochroneCenterMarker(controller: _isochrone),
+              if (_routeVisible && _visibleRoutes.isNotEmpty)
+                PolylineLayer(
+                  polylines: [
+                    for (final e in _visibleRoutes.entries)
+                      Polyline(
+                        points: e.value,
+                        color: Colors.white.withValues(alpha: 0.7),
+                        strokeWidth: 6,
+                      ),
+                    for (final e in _visibleRoutes.entries)
+                      Polyline(
+                        points: e.value,
+                        color: _dayColor(e.key),
+                        strokeWidth: 3.5,
+                      ),
+                  ],
                 ),
-                // Isochrone reachable-area rings + center marker
-                // (long-press the map to generate). Self-contained widgets:
-                // logic + future sliders live in map_isochrone_overlay.dart.
-                IsochronePolygons(controller: _isochrone),
-                IsochroneCenterMarker(controller: _isochrone),
-                // Region outlines — tap to focus a region + slide in its info
-                // card. Sits above isochrone rings, below routes & markers.
-                RegionPolygons(controller: _regions),
-                if (_routeVisible && _visibleRoutes.isNotEmpty)
-                  PolylineLayer(
-                    polylines: [
-                      for (final e in _visibleRoutes.entries)
-                        Polyline(
-                          points: e.value,
-                          color: Colors.white.withValues(alpha: 0.7),
-                          strokeWidth: 6,
-                        ),
-                      for (final e in _visibleRoutes.entries)
-                        Polyline(
-                          points: e.value,
-                          color: _dayColor(e.key),
-                          strokeWidth: 3.5,
-                        ),
-                    ],
-                  ),
+              MarkerLayer(
+                markers:
+                    _pois
+                        .map(
+                          (poi) => Marker(
+                            point: LatLng(poi.latitude, poi.longitude),
+                            width: 28,
+                            height: 28,
+                            child: GestureDetector(
+                              onTap: () => _showPoiBottomSheet(poi),
+                              child: Container(
+                                width: 22,
+                                height: 22,
+                                decoration: BoxDecoration(
+                                  color: VoyoColors.expedition,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: VoyoColors.expedition.withValues(
+                                        alpha: 0.35,
+                                      ),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Container(
+                                    width: 5,
+                                    height: 5,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+              ),
+              // Zoom-aware POI name labels — appear beside markers once the
+              // map zooms in past the threshold (Google-Maps-style).
+              if (_labelsVisible)
                 MarkerLayer(
                   markers:
                       _pois
                           .map(
                             (poi) => Marker(
                               point: LatLng(poi.latitude, poi.longitude),
-                              width: 28,
-                              height: 28,
-                              child: GestureDetector(
+                              width: 112,
+                              height: 24,
+                              alignment: Alignment.centerLeft,
+                              child: _PoiLabel(
+                                text: poi.name,
                                 onTap: () => _showPoiBottomSheet(poi),
-                                child: Container(
-                                  width: 22,
-                                  height: 22,
-                                  decoration: BoxDecoration(
-                                    color: VoyoColors.expedition,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 2.5,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: VoyoColors.expedition.withValues(
-                                          alpha: 0.35,
-                                        ),
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: Container(
-                                      width: 5,
-                                      height: 5,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                                ),
                               ),
                             ),
                           )
                           .toList(),
                 ),
-                if (_itineraryPois.isNotEmpty)
-                  MarkerLayer(
-                    markers:
-                        _visiblePois.map((poi) {
-                          final c = _dayColor(poi.dayNumber);
-                          return Marker(
-                            point: LatLng(poi.latitude, poi.longitude),
-                            width: 48,
-                            height: 48,
-                            child: GestureDetector(
-                              onTap: () => _showStopInfo(poi),
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Container(
-                                    width: 36,
-                                    height: 36,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: c.withValues(alpha: 0.18),
-                                    ),
+              if (_itineraryPois.isNotEmpty)
+                MarkerLayer(
+                  markers:
+                      _visiblePois.map((poi) {
+                        final c = _dayColor(poi.dayNumber);
+                        return Marker(
+                          point: LatLng(poi.latitude, poi.longitude),
+                          width: 48,
+                          height: 48,
+                          child: GestureDetector(
+                            onTap: () => _showStopInfo(poi),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: c.withValues(alpha: 0.18),
                                   ),
-                                  Container(
-                                    width: 28,
-                                    height: 28,
-                                    decoration: BoxDecoration(
-                                      color: c,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
+                                ),
+                                Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color: c,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: c.withValues(alpha: 0.4),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '${poi.sequenceOrder}',
+                                      style: GoogleFonts.instrumentSans(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
                                         color: Colors.white,
-                                        width: 2,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: c.withValues(alpha: 0.4),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        '${poi.sequenceOrder}',
-                                        style: GoogleFonts.instrumentSans(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.white,
-                                          height: 1,
-                                        ),
+                                        height: 1,
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          );
-                        }).toList(),
-                  ),
-              ],
+                          ),
+                        );
+                      }).toList(),
+                ),
+            ],
+          ),
+
+          // ── Back button ───────────────────────────────────────────────────
+          if (Navigator.of(context).canPop())
+            Positioned(
+              top: topPad + 12,
+              left: 12,
+              child: _MapIconButton(
+                icon: Icons.arrow_back,
+                onTap: () => Navigator.of(context).pop(),
+              ),
             ),
 
-            // ── Back button ───────────────────────────────────────────────────
-            if (Navigator.of(context).canPop())
-              Positioned(
-                top: topPad + 12,
-                left: 12,
-                child: _MapIconButton(
-                  icon: Icons.arrow_back,
-                  onTap: () {
-                    // Dismiss the region card first if one is open.
-                    if (_regions.selectedId != null) {
-                      _regions.dismiss();
-                    } else {
-                      Navigator.of(context).pop();
-                    }
-                  },
-                ),
-              ),
-
-            // ── Day filter chips (bottom of map) ─────────────────────────────
-            if (_days.length > 1)
-              Positioned(
-                bottom: MediaQuery.of(context).padding.bottom + 16,
-                left: 0,
-                right: 0,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
+          // ── Day filter chips (bottom of map) ─────────────────────────────
+          if (_days.length > 1)
+            Positioned(
+              bottom: MediaQuery.of(context).padding.bottom + 16,
+              left: 0,
+              right: 0,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    _DayChip(
+                      label: 'All',
+                      color: VoyoColors.stone,
+                      selected: _selectedDay == null,
+                      onTap: () {
+                        setState(() => _selectedDay = null);
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted) _fitRouteBounds(_itineraryPois);
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    for (final day in _days) ...[
                       _DayChip(
-                        label: 'All',
-                        color: VoyoColors.stone,
-                        selected: _selectedDay == null,
+                        label: 'Day $day',
+                        color: _dayColor(day),
+                        selected: _selectedDay == day,
                         onTap: () {
-                          setState(() => _selectedDay = null);
+                          final dayPois =
+                              _itineraryPois
+                                  .where((p) => p.dayNumber == day)
+                                  .toList();
+                          setState(() => _selectedDay = day);
                           WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (mounted) _fitRouteBounds(_itineraryPois);
+                            if (mounted) _fitRouteBounds(dayPois);
                           });
                         },
                       ),
                       const SizedBox(width: 8),
-                      for (final day in _days) ...[
-                        _DayChip(
-                          label: 'Day $day',
-                          color: _dayColor(day),
-                          selected: _selectedDay == day,
-                          onTap: () {
-                            final dayPois =
-                                _itineraryPois
-                                    .where((p) => p.dayNumber == day)
-                                    .toList();
-                            setState(() => _selectedDay = day);
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (mounted) _fitRouteBounds(dayPois);
-                            });
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                      ],
                     ],
-                  ),
+                  ],
                 ),
               ),
-
-            // ── Top-right controls ────────────────────────────────────────────
-            // ── "Explore from here" hint (empty state only) ───────────────────
-            if (_isochrone.isEmpty && _itineraryPois.isEmpty)
-              Positioned(
-                bottom: MediaQuery.of(context).padding.bottom + 16,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: IsochroneHintPill(
-                    icon: Icons.touch_app_rounded,
-                    text: "Long-press the map to explore what's reachable",
-                  ),
-                ),
-              ),
-
-            // Isochrone clear button (+ future sliders). Self-positioning widget
-            // owned by map_isochrone_overlay.dart.
-            // Region info card — slides up when a region is tapped.
-            RegionInfoCard(
-              controller: _regions,
-              bottomInset: _days.length > 1 ? 60 : 0,
             ),
-            IsochroneControls(controller: _isochrone, topPad: topPad),
 
+          // ── Top-right controls ────────────────────────────────────────────
+          // ── "Explore from here" hint (empty state only) ───────────────────
+          if (_isochrone.isEmpty && _itineraryPois.isEmpty)
+            Positioned(
+              bottom: MediaQuery.of(context).padding.bottom + 16,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: IsochroneHintPill(
+                  icon: Icons.touch_app_rounded,
+                  text: "Long-press the map to explore what's reachable",
+                ),
+              ),
+            ),
+
+          // Isochrone reachability panel: travel-mode chips + time-budget
+          // slider + clear. Positioned directly under the Stack — a
+          // ParentDataWidget can't live inside the widget's own
+          // ListenableBuilder (causes "Incorrect use of ParentDataWidget").
+          // Top-centred so it reads like Google Maps' travel-mode selector and
+          // leaves the ranked-POI summary card clear at the bottom.
+          Positioned(
+            top: topPad + 12,
+            left: 12,
+            right: 72,
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 320),
+                child: IsochroneControls(
+                  controller: _isochrone,
+                  mapController: _mapController,
+                ),
+              ),
+            ),
+          ),
+
+          // Non-modal reachable-area summary card: slides up over the map with
+          // no scrim so the isochrone bloom stays visible beside the ranked
+          // top-5 POI list. Positioned directly under the Stack.
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom:
+                MediaQuery.of(context).padding.bottom +
+                (_days.length > 1 ? 56 : 12),
+            child: IsochroneSummaryCard(
+              controller: _isochrone,
+              onPoiTap: _addPoiToItinerary,
+            ),
+          ),
+
+          Positioned(
+            top: topPad + 12,
+            right: 12,
+            child: ListenableBuilder(
+              listenable: _isochrone,
+              builder: (ctx, _) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (_isLoading || _routeLoading || _isochrone.isLoading)
+                      _LoadingPill(
+                        routeLoading: _routeLoading,
+                        isochroneLoading: _isochrone.isLoading,
+                      ),
+                    if (hasRoute) ...[
+                      const SizedBox(height: 8),
+                      _MapIconButton(
+                        icon:
+                            _routeVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off_outlined,
+                        onTap:
+                            () =>
+                                setState(() => _routeVisible = !_routeVisible),
+                        color:
+                            _routeVisible ? VoyoColors.sky : VoyoColors.stone,
+                      ),
+                      const SizedBox(height: 8),
+                      _MapIconButton(
+                        icon: Icons.fit_screen,
+                        onTap: () => _fitRouteBounds(_itineraryPois),
+                      ),
+                      const SizedBox(height: 8),
+                      // Navigate button — opens Google Maps for the selected day (or all)
+                      _MapIconButton(
+                        icon: Icons.navigation_rounded,
+                        color: VoyoColors.sky,
+                        onTap:
+                            () =>
+                                _routingService.openInGoogleMaps(_visiblePois),
+                      ),
+                      const SizedBox(height: 8),
+                      // Route details panel
+                      _MapIconButton(
+                        icon: Icons.list_alt_rounded,
+                        onTap: _showRoutePanel,
+                      ),
+                    ],
+                  ],
+                );
+              },
+            ),
+          ),
+          // ── Offline / error banner ────────────────────────────────────────────
+          // When POIs fail to load (DNS down, offline, Supabase unreachable)
+          // we surface a warm VOYO-styled banner with a retry, instead of
+          // leaving the user staring at a blank map with raw console errors.
+          if (_poisError != null && _pois.isEmpty)
             Positioned(
               top: topPad + 12,
-              right: 12,
-              child: ListenableBuilder(
-                listenable: _isochrone,
-                builder: (ctx, _) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      if (_isLoading || _routeLoading || _isochrone.isLoading)
-                        _LoadingPill(
-                          routeLoading: _routeLoading,
-                          isochroneLoading: _isochrone.isLoading,
-                        ),
-                      if (hasRoute) ...[
-                        const SizedBox(height: 8),
-                        _MapIconButton(
-                          icon:
-                              _routeVisible
-                                  ? Icons.visibility
-                                  : Icons.visibility_off_outlined,
-                          onTap:
-                              () => setState(
-                                () => _routeVisible = !_routeVisible,
-                              ),
-                          color:
-                              _routeVisible ? VoyoColors.sky : VoyoColors.stone,
-                        ),
-                        const SizedBox(height: 8),
-                        _MapIconButton(
-                          icon: Icons.fit_screen,
-                          onTap: () => _fitRouteBounds(_itineraryPois),
-                        ),
-                        const SizedBox(height: 8),
-                        // Navigate button — opens Google Maps for the selected day (or all)
-                        _MapIconButton(
-                          icon: Icons.navigation_rounded,
-                          color: VoyoColors.sky,
-                          onTap:
-                              () => _routingService.openInGoogleMaps(
-                                _visiblePois,
-                              ),
-                        ),
-                        const SizedBox(height: 8),
-                        // Route details panel
-                        _MapIconButton(
-                          icon: Icons.list_alt_rounded,
-                          onTap: _showRoutePanel,
-                        ),
-                      ],
-                    ],
-                  );
+              left: 16,
+              right: 16,
+              child: _OfflineBanner(
+                message: _poisError!,
+                onRetry: () {
+                  setState(() => _poisError = null);
+                  _loadPoisForBounds(_mapController.camera.visibleBounds);
                 },
+                onDismiss: () => setState(() => _poisError = null),
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -596,6 +711,94 @@ class _MapScreenState extends State<MapScreen> {
 }
 
 // ── Small shared widgets ────────────────────────────────────────────────────────
+
+class _OfflineBanner extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+  final VoidCallback onDismiss;
+
+  const _OfflineBanner({
+    required this.message,
+    required this.onRetry,
+    required this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      elevation: 6,
+      borderRadius: BorderRadius.circular(14),
+      color: VoyoColors.paper,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.cloud_off_outlined,
+              size: 22,
+              color: VoyoColors.caution,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Map offline',
+                    style: GoogleFonts.fraunces(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: VoyoColors.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'We couldn\'t reach the map or places. Check your connection and retry.',
+                    style: GoogleFonts.instrumentSans(
+                      fontSize: 11,
+                      color: VoyoColors.stone,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: onRetry,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: VoyoColors.expedition,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Text(
+                  'Retry',
+                  style: GoogleFonts.instrumentSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close, size: 16, color: VoyoColors.stone),
+              onPressed: onDismiss,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              visualDensity: VisualDensity.compact,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _MapIconButton extends StatelessWidget {
   final IconData icon;
@@ -627,6 +830,92 @@ class _MapIconButton extends StatelessWidget {
           ],
         ),
         child: Icon(icon, color: color, size: 20),
+      ),
+    );
+  }
+}
+
+/// Small Google-Maps-style name label rendered beside a POI marker when the
+/// map is zoomed in. Anchored via `Marker(alignment: Alignment.centerLeft)` so
+/// its left edge sits at the POI coordinate; the internal left padding clears
+/// the dot marker drawn by the layer below.
+///
+/// Transparent (no white pillbox) — legibility comes from a text stroke +
+/// soft shadow, like Google Maps. Tappable: opens the same POI preview as the
+/// marker dot. Color shifts to the VOYO accent on press for feedback. Does
+/// NOT block the long-press isochrone gesture (no onLongPress defined → the
+/// map's long-press recognizer wins the gesture arena).
+class _PoiLabel extends StatefulWidget {
+  final String text;
+  final VoidCallback onTap;
+  const _PoiLabel({required this.text, required this.onTap});
+
+  @override
+  State<_PoiLabel> createState() => _PoiLabelState();
+}
+
+class _PoiLabelState extends State<_PoiLabel> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    // Transparent label: no fill, no border. Legibility on any basemap comes
+    // from a white stroke (drawn by stacking two shadows) + a soft drop
+    // shadow — the same trick Google Maps uses for its POI labels.
+    final color = _pressed ? VoyoColors.expedition : VoyoColors.ink;
+    return GestureDetector(
+      onTap: widget.onTap,
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      // translucent so the label still receives taps inside its padded box,
+      // but doesn't claim a long-press (no onLongPress → map wins isochrone).
+      behavior: HitTestBehavior.translucent,
+      child: Padding(
+        // Clear the marker dot (radius ~11) plus a small gap.
+        padding: const EdgeInsets.only(left: 15),
+        child: Stack(
+          children: [
+            // Stroke layer: white text with an outline, drawn underneath for
+            // legibility on any basemap (Google Maps uses the same trick).
+            // Implemented via 4-direction white shadows rather than a Paint
+            // cascade so the TextStyle composes cleanly.
+            Text(
+              widget.text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.instrumentSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                height: 1.2,
+                color: Colors.white,
+                shadows: const [
+                  Shadow(color: Colors.white, offset: Offset(-0.8, -0.8)),
+                  Shadow(color: Colors.white, offset: Offset(0.8, -0.8)),
+                  Shadow(color: Colors.white, offset: Offset(-0.8, 0.8)),
+                  Shadow(color: Colors.white, offset: Offset(0.8, 0.8)),
+                  Shadow(
+                    color: Colors.black26,
+                    offset: Offset(0, 1),
+                    blurRadius: 2,
+                  ),
+                ],
+              ),
+            ),
+            // Fill layer: the label colour; pressed-state shifts to accent.
+            Text(
+              widget.text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.instrumentSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                height: 1.2,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1118,11 +1407,12 @@ class _StopInfoSheetState extends State<_StopInfoSheet> {
   void initState() {
     super.initState();
     _MapWikiService.instance.fetch(widget.poi.name).then((data) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _wiki = data;
           _loading = false;
         });
+      }
     });
   }
 

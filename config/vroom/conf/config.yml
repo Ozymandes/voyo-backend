@@ -1,21 +1,34 @@
 # VROOM configuration for voyo-vroom container (vroomvrp/vroom-docker:v1.13.0)
 #
-# VROOM uses the OSRM HTTP API protocol for routing — NOT Valhalla.
-# The osrm service below provides that endpoint at http://osrm:5000.
+# Schema follows vroom-express@0.11's config.js contract:
+#   - cliArgs:        express + vroom-binary CLI flags (incl. log rotation + body size)
+#   - routingServers: object keyed by router -> profile -> {host, port}
+# This file is mounted at /conf/config.yml and used by vroom-express at startup.
+#
+# VROOM talks to the OSRM HTTP API (NOT Valhalla). The osrm service on the
+# compose network is reachable at host `osrm` on port 5000.
+# Express listens on 8081, matching the compose port map and the backend's
+# DEFAULT_VROOM_URL (http://localhost:8081).
 
-access:
-  host: "0.0.0.0"
-  port: 8081
-  timeout: 60
-
-# cliArgs.baseurl is required by the vroom-docker server.js — missing this
-# field causes the container to crash with "Cannot read property 'baseurl'".
 cliArgs:
-  baseurl: "http://osrm:5000/"
-  router: "osrm"
+  geometry: true          # return route geometry (polylines) for map display
+  planmode: false         # standard solve mode
+  threads: 4              # optimization threads
+  explore: 5              # exploration level (0..5) — max quality
+  limit: '10mb'           # max request body size (generous for large tours)
+  logdir: '/tmp'          # writable log dir (rfs.createStream requires this)
+  logsize: '100M'         # rotating-file-stream size (must be set, not undefined)
+  maxlocations: 1000      # max jobs/shipments locations
+  maxvehicles: 200        # max vehicles
+  override: true          # allow per-request cli override
+  path: ''                # vroom binary is in $PATH (/usr/local/bin/vroom)
+  port: 8081              # express port — matches compose map + backend client
+  router: 'osrm'          # routing backend (must be a routingServers key)
+  timeout: 300000         # 5 min request timeout (ms)
+  baseurl: '/'            # express API base URL
 
-routers:
-  - name: osrm
-    baseurl: "http://osrm:5000/"
-    profiles:
-      - name: driving
+routingServers:
+  osrm:
+    car:                  # driving profile
+      host: 'osrm'        # OSRM container hostname on the compose network
+      port: '5000'

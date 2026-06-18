@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- Location usage description for the Discovery weather widget.
+	     iOS crashes the app if a GPS read happens without this key. -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>VOYO uses your location to show current weather for your trip destination.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

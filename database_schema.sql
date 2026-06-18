@@ -40,21 +40,17 @@ CREATE TABLE IF NOT EXISTS pois (
     name VARCHAR(200) NOT NULL,
     name_arabic VARCHAR(200),
     description TEXT,
-    description_arabic TEXT,
     category poi_category_enum NOT NULL,
 
     -- Location information
     address VARCHAR(500),
-    address_arabic VARCHAR(500),
     latitude DECIMAL(10, 8),
     longitude DECIMAL(11, 8),
     city VARCHAR(100),
-    postal_code VARCHAR(20),
 
     -- Contact information
     phone_number VARCHAR(30),
     website_url VARCHAR(500),
-    email_address VARCHAR(255),
 
     -- Operating information
     opening_hours JSONB,
@@ -70,13 +66,10 @@ CREATE TABLE IF NOT EXISTS pois (
 
     -- Media
     image_urls JSONB,
-    video_urls JSONB,
 
     -- Metadata
     historical_significance TEXT,
-    historical_significance_arabic TEXT,
     tags JSONB,
-    near_by_pois JSONB,
 
     -- Status
     is_active BOOLEAN DEFAULT true,

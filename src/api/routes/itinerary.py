@@ -20,6 +20,7 @@ from pydantic import BaseModel, Field
 from src.api.routes.auth import get_current_user
 from src.itinerary.engine import ItineraryEngine
 from src.itinerary.persistence import ItineraryPersistence
+from src.itinerary.safarny_planner import SafarnyPlanner
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,26 @@ class OptimizeRequest(BaseModel):
     pace: str = Field(default="balanced")
 
 
+class PlanTripRequest(BaseModel):
+    """Structured trip profile for the grounded Safarny planner.
+
+    Mirrors the Flutter ``TripProfile``. All scheduling intelligence is
+    deterministic (recommendation engine + VROOM); the LLM only selects +
+    writes copy from a DB-filtered candidate set — so this endpoint never
+    fabricates POIs, prices, or times.
+    """
+    title: Optional[str] = None
+    start_date: Optional[str] = Field(default=None, description="YYYY-MM-DD")
+    end_date: Optional[str] = Field(default=None, description="YYYY-MM-DD")
+    travelers: int = Field(default=2, ge=1, le=20)
+    budget_tier: str = Field(default="moderate")  # budget|moderate|luxury
+    pace: str = Field(default="balanced")  # packed_schedule|balanced|slow_flexible
+    companions: str = Field(default="couple")  # solo|couple|family|friends
+    interests: List[str] = Field(default_factory=list)
+    notes: Optional[str] = None
+    hotel_location: Optional[List[float]] = None
+
+
 class CreateItineraryRequest(BaseModel):
     """Request to save an optimized itinerary."""
     title: str = Field(..., min_length=1, max_length=200)
@@ -66,6 +87,27 @@ class ReoptimizeRequest(BaseModel):
     pace: str = Field(default="balanced")
 
 
+class PreviewAddRequest(BaseModel):
+    """Request for a dry-run feasibility check before adding a POI.
+
+    The user wants to add ``candidate_poi_id`` to an existing itinerary.
+    We run the real VROOM solver on (existing + candidate) and report
+    whether it fits, where it fits best, and whether anything gets displaced.
+    Nothing is persisted — the caller saves via the normal flow on confirm.
+    """
+    itinerary_id: int
+    candidate_poi_id: int
+    preferred_day: Optional[int] = Field(
+        default=None, ge=1, description="Day the user picked, if any"
+    )
+    hotel_location: Optional[List[float]] = None
+    days: Optional[int] = Field(default=None, ge=1, le=14)
+    daily_start: str = "09:00"
+    daily_end: str = "18:00"
+    travel_profile: str = "auto"
+    pace: str = "balanced"
+
+
 # ── Endpoints ─────────────────────────────────────────────────────────
 
 
@@ -80,13 +122,13 @@ async def curate_pois(request: CurateRequest, user=Depends(get_current_user)):
 
     agent = CleoAgent()
     # Ask CLEO to curate — it uses its tools to search POIs and pick relevant ones
-    cleo_response = await agent.process_message(
+    cleo_result = await agent.process_message(
         user_message=request.message,
         user_id=user["user_id"],
     )
 
     return {
-        "message": cleo_response,
+        "message": cleo_result.text,
         "request": {
             "region": request.region,
             "days": request.days,
@@ -120,6 +162,77 @@ async def optimize(request: OptimizeRequest, user=Depends(get_current_user)):
         )
     except RuntimeError as e:
         logger.error(f"Optimization failed: {e}")
+        raise HTTPException(status_code=503, detail=str(e))
+
+    return result
+
+
+@router.post("/plan")
+async def plan_trip(request: PlanTripRequest, user=Depends(get_current_user)):
+    """Grounded Safarny itinerary planner.
+
+    The deterministic trip-planning endpoint: takes a structured trip profile
+    (dates, budget, pace, interests, companions, notes) and returns a
+    Safarny-shaped JSON itinerary where every POI, price, and time traces to
+    either the database or the VROOM optimizer — never the LLM's training
+    data. The LLM's only role is selection + vivid copy.
+
+    Pipeline: recommendation engine pre-filters POIs → LLM selects per-day
+    from that set + writes copy → VROOM assigns real arrival/departure times.
+    Each stage degrades gracefully (Groq down → recommendation-engine
+    fallback; VROOM down → unscheduled stops with null times).
+    """
+    planner = SafarnyPlanner()
+    profile = request.model_dump()
+    try:
+        result = await planner.plan(
+            profile=profile,
+            user_id=user["user_id"],
+            hotel_location=request.hotel_location,
+        )
+    except Exception as e:
+        logger.error(f"/itinerary/plan failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=503,
+            detail=f"Could not generate itinerary: {e}",
+        )
+    return result
+
+
+@router.post("/preview-add")
+async def preview_add(request: PreviewAddRequest, user=Depends(get_current_user)):
+    """Dry-run feasibility check: can this POI be added to the trip, and where?
+
+    Runs the real VROOM solver on the existing itinerary + candidate (no
+    persistence). Returns a verdict — feasible / recommended day / displaced
+    POIs / human reason — so the client can say so, recommend placement, or
+    turn the add down honestly instead of silently over-packing a day.
+    """
+    engine = ItineraryEngine()
+
+    hotel = None
+    if request.hotel_location and len(request.hotel_location) == 2:
+        hotel = (request.hotel_location[0], request.hotel_location[1])
+
+    try:
+        result = await engine.preview_add(
+            itinerary_id=request.itinerary_id,
+            user_id=user["user_id"],
+            candidate_poi_id=request.candidate_poi_id,
+            preferred_day=request.preferred_day,
+            hotel_location=hotel,
+            days=request.days,
+            daily_start=request.daily_start,
+            daily_end=request.daily_end,
+            travel_profile=request.travel_profile,
+            pace=request.pace,
+        )
+    except ValueError as e:
+        # Itinerary not found / doesn't belong to the user.
+        raise HTTPException(status_code=404, detail=str(e))
+    except RuntimeError as e:
+        # Routing backend (VROOM/OSRM) unreachable.
+        logger.error(f"preview-add failed: {e}")
         raise HTTPException(status_code=503, detail=str(e))
 
     return result

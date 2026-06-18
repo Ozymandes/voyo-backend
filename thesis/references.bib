@@ -1,15 +1,84 @@
 % =====================================================================
-% VOYO Thesis — Verified Reference List (15 works)
-% Verified by the orchestrator via web_search against arXiv/venues/publishers,
-%   2026-06-15. The thesis-researcher async agent died (systemic async-runner
-%   failure on this install); the orchestrator performed verification directly.
-% Every entry below was checked against a real source (URL in the note field).
-% Corrections to the original PDF draft are marked. Confidence: all HIGH.
+% VOYO Thesis — Verified Reference List
+% Generated 2026-06-17 by the VOYO Thesis Citation Librarian to encode the
+%   citation-admissibility tier policy in
+%   `thesis/criteria/thesis-criteria.md` §2 + `thesis/citations/INDEX.md`.
+%
+% Every entry below is sourced from real fetched text (arXiv/ar5iv/OpenAlex/
+% Crossref/Wayback/OpenReview/DSpace/MDPI via S2). Metadata fields were
+% verified against Crossref + DBLP + S2 + OpenAlex where possible.
+%
+% Tier key (criterion.md §2):
+%   A = load-bearing primary-academic     (may ground core contribution claims)
+%   B = supporting                         (may reinforce, may NOT carry a core claim alone)
+%   C = software-infrastructure           (NOT in this .bib; cited in-text with GitHub/docs URL)
+%   D = preprint-only, deprioritized       (footnote use only, never core)
+%
+% Software (VROOM, Valhalla, OSRM tool) is intentionally ABSENT from this .bib:
+%   per criterion.md §2 they are Tier C and must be cited in-text as software
+%   with their GitHub/docs permalinks (see thesis/citations/software/*.md).
+%
 % =====================================================================
 
-% [1] CORRECTION: PDF reference list said "R. Gupta et al." — WRONG.
-%     The Compound AI Systems paper is Matei Zaharia et al. (confirmed via the
-%     BAIR blog's own BibTeX). Body text "Zaharia et al." was correct.
+
+% ----------------------------------------------------------------------
+% TIER A — PRIMARY-ACADEMIC (load-bearing)
+% ----------------------------------------------------------------------
+
+% [A1] ItiNera — closest direct precedent for the LLM+optimizer hybrid.
+%      EMNLP 2024 Industry Track; Best Paper Award at KDD UrbComp 2024.
+%      Verbatim quote bank: thesis/citations/new-route-opt/itinera/quotes.md.
+@inproceedings{itinera_tang_2024,
+  title     = {{ITINERA}: Integrating Spatial Optimization with Large Language Models for Open-domain Urban Itinerary Planning},
+  author    = {Yihong Tang and Zhaokai Wang and Ao Qu and Yihao Yan and Zhaofeng Wu and Dingyi Zhuang and Jushi Kai and Kebing Hou and Xiaotong Guo and Han Zheng and Tiange Luo and Jinhua Zhao and Zhan Zhao and Wei Ma},
+  booktitle = {Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing (EMNLP): Industry Track},
+  year      = {2024},
+  url       = {https://arxiv.org/abs/2402.07204},
+  note      = {verified: HIGH (arXiv PDF + ACL Anthology 2024.emnlp-industry.104 + repo README). Tier A. Also received Best Paper Award at the KDD 2024 Workshop on Urban Computing (UrbComp). Argues pure LLMs "lack the optimization capabilities required for planning tasks"; bolts a cluster-aware spatial optimization (hierarchical TSP) stage onto an LLM pipeline. Ablation: removing CSO worsens Average Margin 86.0 -> 242.8.}
+}
+
+% [A2] PyVRP — OR-problem-family anchor for VRP/VRPTW.
+%      Published in INFORMS Journal on Computing.
+%      Verbatim quote bank: thesis/citations/new-route-opt/pyvrp/quotes.md.
+@article{pyvrp_wouda_2024,
+  title   = {{PyVRP}: a high-performance {VRP} solver package},
+  author  = {Niels A. Wouda and Leon Lan and Wouter Kool},
+  journal = {INFORMS Journal on Computing},
+  year    = {2024},
+  doi     = {10.1287/ijoc.2023.0055},
+  url     = {https://arxiv.org/abs/2403.13795},
+  note    = {verified: HIGH (arXiv:2403.13795 via ar5iv + INFORMS JoC companion DOI 10.1287/ijoc.2023.0055.cd, code at github.com/INFORMSJoC/2023.0055). Tier A. Hybrid genetic search for CVRP/VRPTW; ranked 1st in the 2021 DIMACS VRPTW challenge and 1st on the static variant of the EURO meets NeurIPS 2022 VRP competition. Mean gap 0.22\% (CVRP) / 0.40\% (VRPTW). Related-Work section gives the verbatim academic characterisation of VROOM used to honestly frame VOYO's tool choice.}
+}
+
+% [A3] OSRM-PAPER — the academic routing reference for OSM-based CH routing.
+%      ACM SIGSPATIAL GIS 2011. 4-page conference paper.
+%      Verbatim quote bank: thesis/citations/new-route-opt/osrm/quotes.md.
+%      Abstract + References fetched verbatim via Internet Archive Wayback
+%      Machine snapshot of the closed-access ACM dl.acm.org page.
+@inproceedings{luxen_vetter_2011,
+  title     = {Real-time routing with {OpenStreetMap} data},
+  author    = {Dennis Luxen and Christian Vetter},
+  booktitle = {Proceedings of the 19th {ACM} {SIGSPATIAL} International Conference on Advances in Geographic Information Systems ({GIS} '11)},
+  series    = {GIS '11},
+  pages     = {513--516},
+  publisher = {{ACM}},
+  address   = {New York, NY, USA},
+  year      = {2011},
+  isbn      = {978-1-4503-1031-4},
+  doi       = {10.1145/2093973.2094062},
+  url       = {https://doi.org/10.1145/2093973.2094062},
+  note      = {verified: HIGH (abstract + References fetched verbatim via Wayback Machine snapshot of the ACM page, 2026-06-17; cross-checked against OpenAlex abstract\_inverted\_index + Google Scholar snippet, which agree word-for-word on the opening paragraph). Tier A. BibTeX block matches the project's canonical citation in the OSRM README (master commit 1c66f8e). Body text remains paywalled; abstract + References list are the quotable surface.}
+}
+
+
+% ----------------------------------------------------------------------
+% ORIGINAL 15 — PRESERVED VERBATIM (with the 4 corrections from
+%   work/librarian_phase0.md §4 applied inline)
+% ----------------------------------------------------------------------
+
+% [1] Compound AI Systems. CORRECTION (prior phase): PDF reference list said
+%     "R. Gupta et al." --- WRONG. Author is Matei Zaharia et al. (confirmed
+%     via the BAIR blog's own BibTeX). Body text "Zaharia et al." was correct.
 @misc{compound_ai_systems,
   title        = {The Shift from Models to Compound {AI} Systems},
   author       = {Matei Zaharia and Omar Khattab and Lingjiao Chen and Jared Quincy Davis and Heather Miller and Chris Potts and James Zou and Michael Carbin and Jonathan Frankle and Naveen Rao and Ali Ghodsi},
@@ -19,8 +88,8 @@
   note         = {verified: HIGH (BAIR blog + own BibTeX). CORRECTED from draft's "R. Gupta et al."}
 }
 
-% [2] Minor: draft cited "vol 18 no 6, 2024"; the Springer record is
-%     vol 18, article 186345 (2024). Also on arXiv:2308.11432.
+% [2] Wang agent survey. Springer record: vol 18, article 186345 (2024).
+%     Also on arXiv:2308.11432.
 @article{wang_agent_survey,
   title   = {A Survey on Large Language Model Based Autonomous Agents},
   author  = {Lei Wang and Chen Ma and Xueyang Feng and Zeyu Zhang and Hao Yang and Jingsen Zhang and Zhiyuan Chen and Jiakai Tang and Xu Chen and Yankai Lin and Wayne Xin Zhao and Zhewei Wei and Ji-Rong Wen},
@@ -52,6 +121,10 @@
   note      = {verified: HIGH (arXiv:2402.01622 + proceedings.mlr.press/v235/xie24j.html). Real-world planning benchmark; ground-truth eval.}
 }
 
+% [5] Reflexion. CORRECTION (phase0 §4 #2): the prior lit-review stat
+%     "+22\% ALFWorld" does NOT exist in the paper --- it is FABRICATED.
+%     The verbatim ALFWorld result is "completing 130 out of 134 tasks".
+%     Do NOT quote "+22\% ALFWorld" anywhere in the thesis.
 @inproceedings{reflexion,
   title     = {{Reflexion}: Language Agents with Verbal Reinforcement Learning},
   author    = {Noah Shinn and Federico Cassano and Edward Berman and Ashwin Gopinath and Karthik Narasimhan and Shunyu Yao},
@@ -59,7 +132,7 @@
   volume    = {36},
   pages     = {8634--8652},
   year      = {2023},
-  note      = {verified: HIGH (NeurIPS 2023; arXiv:2303.11366). Actor/Evaluator/Self-Reflection; +22\% ALFWorld, 91\% HumanEval pass@1.}
+  note      = {verified: HIGH (NeurIPS 2023; arXiv:2303.11366). Actor/Evaluator/Self-Reflection. VERBATIM ALFWorld result: "completing 130 out of 134 tasks" (NOT "+22\% ALFWorld"). VERBATIM HumanEval: 91\% pass@1. WARNING: "+22\% ALFWorld" is FABRICATED --- do not cite it.}
 }
 
 % [6] Gorilla arXiv 2023; later appeared at NeurIPS 2024.
@@ -115,16 +188,20 @@
   note    = {verified: HIGH (thejbis.upy.ac.id). PLS-SEM, N=204 Tokopedia users; satisfaction fully mediates AI->engagement.}
 }
 
+% [11] Pang. CORRECTION (phase0 §4 #4): 2nd author is "Zhuyun Hu" per Crossref/
+%      Semantic Scholar DOI record, not "Zihan Hu" as the prior draft had.
+%      Crossref source-of-truth (10.3390/jtaer20030228) lists:
+%        Hua Pang, Zhuyun Hu, Lei Wang.
 @article{pang_chatbot_stickiness,
   title   = {How Perceived Motivations Influence User Stickiness and Sustainable Engagement with {AI}-Powered Chatbots---Unveiling the Pivotal Function of User Attitude},
-  author  = {Hua Pang and Zihan Hu and Lin Wang},
+  author  = {Hua Pang and Zhuyun Hu and Lei Wang},
   journal = {Journal of Theoretical and Applied Electronic Commerce Research},
   volume  = {20},
   number  = {3},
   pages   = {228},
   year    = {2025},
   doi     = {10.3390/jtaer20030228},
-  note    = {verified: HIGH (MDPI). SEM, N=735 chatbot users; U\&G+TAM+ECM+ISSM; tech motivation strongest driver.}
+  note    = {verified: HIGH (MDPI). SEM, N=735 chatbot users; U\&G+TAM+ECM+ISSM; tech motivation strongest driver. CORRECTION applied: 2nd author changed from "Zihan Hu" to "Zhuyun Hu" (Crossref DOI 10.3390/jtaer20030228, fetched 2026-06-17).}
 }
 
 @article{onuiri_itms,
@@ -149,6 +226,11 @@
   note    = {verified: HIGH (informatica.si). Client-server; item-item + user-user CF; SUS 87.75, 5.4s task time, N=10 UAT.}
 }
 
+% [14] Tsaih. CORRECTION (phase0 §4 #5): DOI is 10.1145/3568026 (not
+%      10.1145/3579366, which resolves to an unrelated IoT paper
+%      "LSR: Energy-Efficient Multi-Modulation Communication...").
+%      DOI 10.1145/3568026 verified via Crossref on 2026-06-17 as the
+%      correct "The AI Tech-Stack Model" record.
 @article{tsaih_ai_techstack,
   title   = {The {AI} Tech-Stack Model},
   author  = {Rua-Huan Tsaih and Hsin-Lu Chang and Chih-Chung Hsu and David C. Yen},
@@ -157,11 +239,14 @@
   number  = {3},
   pages   = {69--77},
   year    = {2023},
-  note    = {verified: HIGH (cacm.acm.org). Seven-layer loosely-coupled AI tech-stack; smart-tourism case studies.}
+  doi     = {10.1145/3568026},
+  note    = {verified: HIGH (cacm.acm.org). CORRECTION: DOI corrected to 10.1145/3568026 (the previously-used 10.1145/3579366 resolves to an unrelated IoT paper, per Crossref verification 2026-06-17). Seven-layer loosely-coupled AI tech-stack; smart-tourism case studies.}
 }
 
-% [15] CORRECTION: PDF draft said "Ph.D. dissertation" — WRONG. It is a
-%      MASTER of ENGINEERING (Industrial Engineering) thesis.
+% [15] Swanepoel. CORRECTION (phase0 §4 #6): correct DSpace handle is
+%      10019.1/125975 (NOT 10019.1/125451, which resolves to an unrelated
+%      Afrikaans art-history thesis). It is a MASTER OF ENGINEERING
+%      (Industrial Engineering) thesis, NOT a Ph.D. dissertation.
 @mastersthesis{swanepoel_arch,
   title  = {Development of an Architecture and Web-Based Demonstrator for Tourist Itinerary Planning},
   author = {Nita Swanepoel},
@@ -169,5 +254,50 @@
   year   = {2022},
   month  = dec,
   type   = {Master of Engineering (Industrial Engineering)},
-  note   = {verified: HIGH (scholar.sun.ac.za). CORRECTED from draft's "Ph.D." --- it is a Master's thesis. Layered service-oriented reference architecture for smart tourism.}
+  url    = {https://scholar.sun.ac.za/handle/10019.1/125975},
+  note   = {verified: HIGH (scholar.sun.ac.za, DSpace handle 10019.1/125975). CORRECTIONS: (a) handle corrected to 10019.1/125975 (the prior 10019.1/125451 resolves to an unrelated art-history thesis); (b) it is a Master of Engineering thesis, not a Ph.D. as the prior draft had. Layered service-oriented reference architecture for smart tourism.}
+}
+
+
+% ----------------------------------------------------------------------
+% TIER B — SUPPORTING (may reinforce; may NOT carry a core claim alone)
+% ----------------------------------------------------------------------
+
+% [B1] AgentTravel. Workshop paper; cite as such. OpenReview submission.
+%      ⚠️ Venue uncertainty: PDF carries only a [Regular Track] tag and no
+%      conference stamp. The orchestrator's re-tiering labels it as
+%      "NORA / CEUR workshop"; if a peer-reviewed venue is later confirmed,
+%      update this entry.
+@inproceedings{agenttravel_zhao_2024,
+  title     = {{AgentTravel}: Knowledge-Augmented {LLM} Agent Framework for Urban Travel Planning},
+  author    = {Jie Zhao and Jie Feng and Yong Li},
+  booktitle = {NORA / CEUR Workshop Series (OpenReview submission)},
+  year      = {2024},
+  url       = {https://openreview.net/forum?id=34kIv0YVNe},
+  note      = {verified: HIGH (OpenReview PDF id 34kIv0YVNe, fetched 2026-06-16; repo github.com/csjiezhao/AgentTravel). Tier B --- label as workshop paper. Three-component framework: TravelLLM (domain-adapted base) + TravelAgent (online agentic planner with retrieval + structured memory) + TravelBench (KnowEval + TripEval). Five-city Chinese benchmark. Use for EVAL-METHODOLOGY comparand, NOT as architecture precedent. ⚠️ Naming collision: this paper's "TravelAgent" *component* is distinct from the system named TravelAgent in tier D below.}
+}
+
+
+% ----------------------------------------------------------------------
+% TIER D — DEPRIORITIZED / PREPRINT-ONLY (footnote use only, never core)
+% ----------------------------------------------------------------------
+
+% [D1] TRIP-PAL. arXiv preprint, NOT peer-reviewed. Footnote use only.
+@misc{trippal_de_la_rosa_2024,
+  title        = {{TRIP-PAL}: Travel Planning with Guarantees by Combining Large Language Models and Automated Planners},
+  author       = {Tom{\'a}s de la Rosa and Sriram Gopalakrishnan and Alberto Pozanco and Zhen Zeng and Daniel Borrajo},
+  howpublished = {arXiv:2406.10196 preprint},
+  year         = {2024},
+  url          = {https://arxiv.org/abs/2406.10196},
+  note         = {Tier D --- arXiv preprint, not peer-reviewed; supporting footnote only. Hybrid GPT-4 + sound/optimal PDDL planner (Fast Downward, seq-opt-lmcut). GPT-4 alone: 14/100 valid plans; TRIP-PAL: 1.19x more utility on average. Prefer ItiNera (Tier A) for the same LLM-insufficiency argument in load-bearing prose. Prepared for informational purposes by JPMorgan Chase AI Research.}
+}
+
+% [D2] TravelAgent. arXiv preprint, NOT peer-reviewed. Footnote use only.
+@misc{travelagent_chen_2024,
+  title        = {{TravelAgent}: An {AI} Assistant for Personalized Travel Planning},
+  author       = {Aili Chen and Xuyang Ge and Ziquan Fu and Yanghua Xiao and Jiangjie Chen},
+  howpublished = {arXiv:2409.08069 preprint},
+  year         = {2024},
+  url          = {https://arxiv.org/abs/2409.08069},
+  note         = {Tier D --- arXiv preprint, not peer-reviewed; supporting footnote only. Four modules (Tool-usage, Recommendation, Planning, Memory) --- NOT five, as a prior task brief incorrectly claimed. Human eval (20 cases): Rationality 9.56 / Comprehensiveness 8.87 / Personalization 8.44 vs a GPT-4+ baseline at 8.16 / 6.25 / 4.31. Use only as a labelled-preprint footnote; do not rely on as core thesis evidence.}
 }

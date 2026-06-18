@@ -86,10 +86,18 @@ class ValhallaClient:
         for i, row in enumerate(raw_matrix):
             matrix_row: List[Dict[str, Any]] = []
             for j, cell in enumerate(row):
-                entry = cell.get("distance", cell) if isinstance(cell, dict) else {}
-                # Valhalla returns distance in km and time in seconds
-                dist_km = entry.get("distance", 0) or 0
-                time_sec = entry.get("time", 0) or 0
+                # Valhalla returns each cell as a dict {"distance": km,
+                # "time": seconds} when routable, or a non-dict (0/null) when
+                # the cell is unreachable. Read the fields directly off the
+                # dict; the previous `cell.get("distance", cell)` returned the
+                # float *value* of "distance" (not the dict) and then crashed
+                # on `.get`, which silently broke the /matrix endpoint.
+                if isinstance(cell, dict):
+                    dist_km = cell.get("distance", 0) or 0
+                    time_sec = cell.get("time", 0) or 0
+                else:
+                    dist_km = 0
+                    time_sec = 0
                 matrix_row.append({
                     "distance": round(dist_km * 1000, 1),  # km → meters
                     "time": round(time_sec, 1),

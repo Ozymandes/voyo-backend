@@ -149,6 +149,57 @@ def with_retry(fn, tries=4, base_delay=1.0):
     raise last
 
 
+# ── Google rate-limit awareness ──────────────────────────────────────────
+# Google Places signals throttling as HTTP 429/503 (with Retry-After) OR as a
+# 200 with body status OVER_QUERY_LIMIT / UNKNOWN_ERROR / RESOURCE_EXHAUSTED.
+# requests.get does NOT raise on either, so the old with_retry never backed
+# off — it silently dropped data and kept ramming. google_get fixes that.
+_last_google = 0.0
+GOOGLE_MIN_INTERVAL = 0.3  # ~3.3 QPS across all Google endpoints; tunable
+
+
+def _pace_google():
+    """Global pacer: never fire Google requests faster than GOOGLE_MIN_INTERVAL."""
+    global _last_google
+    dt = time.time() - _last_google
+    if dt < GOOGLE_MIN_INTERVAL:
+        time.sleep(GOOGLE_MIN_INTERVAL - dt)
+    _last_google = time.time()
+
+
+def google_get(url, params, attempts=6):
+    """GET a Google Places endpoint with real rate-limit detection + backoff.
+    Returns parsed JSON dict, or None if all attempts exhausted."""
+    for i in range(attempts):
+        _pace_google()
+        try:
+            r = requests.get(url, params=params, timeout=15)
+        except Exception as e:
+            log.warning(f"Google request error ({e}); backoff {2 ** i}s")
+            time.sleep(2 ** i)
+            continue
+        # Hard throttling: respect Retry-After if present
+        if r.status_code in (429, 503):
+            wait = int(r.headers.get("Retry-After", 2 ** i))
+            log.warning(f"Google HTTP {r.status_code}; sleeping {wait}s")
+            time.sleep(wait)
+            continue
+        try:
+            j = r.json()
+        except ValueError:
+            time.sleep(2 ** i)
+            continue
+        # Body-level throttling (the case the old code missed)
+        st = j.get("status")
+        if st in ("OVER_QUERY_LIMIT", "UNKNOWN_ERROR", "RESOURCE_EXHAUSTED"):
+            log.warning(f"Google body status={st}; backoff {2 ** i}s")
+            time.sleep(2 ** i)
+            continue
+        return j  # OK, or non-retriable (ZERO_RESULTS, INVALID_REQUEST, etc.)
+    log.error(f"Google endpoint exhausted retries: {url}")
+    return None
+
+
 # ── Source 1: Wikimedia (images + coordinates) ────────────────────────────
 def wikimedia_fetch(name: str, region: str, search_queries: list):
     """Return {images: [urls], coords: (lat,lng), significance, arabic} or {}."""
@@ -205,12 +256,11 @@ def google_fetch(name: str, region: str, search_queries: list):
     place_id = None
     for q in queries:
         try:
-            r = with_retry(lambda q=q: requests.get(GOOGLE_TEXT, params={
+            j = google_get(GOOGLE_TEXT, {
                 "query": q, "key": GOOGLE_KEY,
                 "fields": "place_id,name,rating,user_ratings_total,geometry,photos",
-            }, timeout=12))
-            j = r.json()
-            if j.get("status") == "OK" and j.get("results"):
+            })
+            if j and j.get("status") == "OK" and j.get("results"):
                 place_id = j["results"][0]["place_id"]
                 break
         except Exception:
@@ -219,13 +269,12 @@ def google_fetch(name: str, region: str, search_queries: list):
         return {}
 
     try:
-        r = with_retry(lambda: requests.get(GOOGLE_DETAILS, params={
+        j = google_get(GOOGLE_DETAILS, {
             "place_id": place_id, "key": GOOGLE_KEY,
             "fields": "name,formatted_address,geometry,rating,user_ratings_total,"
                       "opening_hours,website,formatted_phone_number,price_level,photos",
-        }, timeout=12))
-        j = r.json()
-        if j.get("status") != "OK":
+        })
+        if not j or j.get("status") != "OK":
             return {}
         d = j.get("result", {})
     except Exception as e:
@@ -246,7 +295,25 @@ def google_fetch(name: str, region: str, search_queries: list):
     }
     weekday = (d.get("opening_hours") or {}).get("weekday_text")
     if weekday:
-        out["opening_hours"] = {"weekday_text": weekday}
+        # Transform "Monday: 8:00 AM – 6:00 PM" format into lowercase day-keyed map
+        # Expected format: {"monday": "8:00 AM – 6:00 PM", ...}
+        hours_map = {}
+        day_mapping = {
+            "Monday": "monday",
+            "Tuesday": "tuesday", 
+            "Wednesday": "wednesday",
+            "Thursday": "thursday",
+            "Friday": "friday",
+            "Saturday": "saturday",
+            "Sunday": "sunday"
+        }
+        for entry in weekday:
+            for day_name, lowercase_key in day_mapping.items():
+                if entry.startswith(day_name + ": "):
+                    hours_map[lowercase_key] = entry.replace(day_name + ": ", "")
+                    break
+        if hours_map:
+            out["opening_hours"] = hours_map
     return out
 
 
@@ -269,9 +336,12 @@ def build_row(entry: dict, region: str) -> dict:
         import asyncio
         # Fetch and upload Google photos in parallel
         async def fetch_all_photos():
-            tasks = []
-            for i, ref in enumerate(photo_refs):
-                tasks.append(store_google_photo(ref, name, i))
+            sem = asyncio.Semaphore(2)  # cap concurrent Google Photo API calls (rate safety)
+            async def _one(i, ref):
+                async with sem:
+                    await asyncio.sleep(0.25 * i)  # stagger within the cap
+                    return await store_google_photo(ref, name, i)
+            tasks = [_one(i, ref) for i, ref in enumerate(photo_refs)]
             results = await asyncio.gather(*tasks, return_exceptions=True)
             valid_urls = [r for r in results if isinstance(r, str) and r.startswith("http")]
             return valid_urls

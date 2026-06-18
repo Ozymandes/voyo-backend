@@ -1,0 +1,4889 @@
+{
+  "generated_count": 316,
+  "grounded_count": 281,
+  "grounding_rate": "88%",
+  "model": "glm-4.7",
+  "pois": [
+    {
+      "name": "Khan el-Khalili",
+      "id": 55,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.experienceegypt.eg/en/city/1/cairo-giza",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Cairo"
+    },
+    {
+      "name": "Mosque of Sultan Hassan",
+      "id": 56,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/mosque-and-madrasa-of-sultan-hasan",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Cairo"
+    },
+    {
+      "name": "Citadel of Cairo (Saladin Citadel)",
+      "id": 57,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/archaeological-sites/cairo-citadel",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Cairo"
+    },
+    {
+      "name": "The Egyptian Museum",
+      "id": 58,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/museums/egyptian-museum",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Cairo"
+    },
+    {
+      "name": "Al-Azhar Mosque",
+      "id": 59,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Al-Azhar_Mosque",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Cairo"
+    },
+    {
+      "name": "Hanging Church",
+      "id": 60,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/the-hanging-church",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Cairo"
+    },
+    {
+      "name": "Al-Mu'izz Street",
+      "id": 61,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/archaeological-sites/al-muizz-street",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Cairo"
+    },
+    {
+      "name": "Ibn Tulun Mosque",
+      "id": 62,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/ahmad-ibn-tulun-mosque",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Cairo"
+    },
+    {
+      "name": "Coptic Museum",
+      "id": 63,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/museums/the-coptic-museum",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Cairo"
+    },
+    {
+      "name": "Great Pyramid of Giza (Khufu)",
+      "id": 64,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/the-great-pyramid",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Giza"
+    },
+    {
+      "name": "Great Sphinx of Giza",
+      "id": 65,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/the-great-sphinx",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Giza"
+    },
+    {
+      "name": "Pyramid of Khafre",
+      "id": 66,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/pyramid-complex-of-khafre-khefren",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Giza"
+    },
+    {
+      "name": "Pyramid of Menkaure",
+      "id": 67,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/pyramid-complex-of-menkaure",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Giza"
+    },
+    {
+      "name": "Giza Plateau",
+      "id": 68,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/archaeological-sites/giza-plateau",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Giza"
+    },
+    {
+      "name": "Grand Egyptian Museum (GEM)",
+      "id": 69,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.granadatravelagency.com/en/blog/visiting-the-grand-egyptian-museum-gem-egypt-guide",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Giza"
+    },
+    {
+      "name": "Saqqara (Step Pyramid)",
+      "id": 70,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/archaeological-sites/saqqara",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Giza"
+    },
+    {
+      "name": "Memphis (Mit Rahina)",
+      "id": 71,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.youregypttours.com/egypt-tours-blog/memphis-egypt",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Giza"
+    },
+    {
+      "name": "Dahshur Pyramids",
+      "id": 72,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/archaeological-sites/dahshur",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Giza"
+    },
+    {
+      "name": "Bibliotheca Alexandrina",
+      "id": 73,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Bibliotheca_Alexandrina",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Citadel of Qaitbay",
+      "id": 74,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/qaitbay-fort",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Catacombs of Kom El Shoqafa",
+      "id": 75,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Catacombs_of_Kom_El_Shoqafa",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Montazah Palace Gardens",
+      "id": 76,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Montaza_Palace",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Alexandria National Museum",
+      "id": 77,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/museums/alexandria-national-museum",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Pompey's Pillar",
+      "id": 78,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Pompey's_Pillar",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Luxor Temple",
+      "id": 79,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/luxor-temple",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Colossi of Memnon",
+      "id": 81,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Colossi_of_Memnon",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Abu Simbel Temples",
+      "id": 82,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/archaeological-sites/abu-simbel",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Aswan High Dam",
+      "id": 84,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Aswan_High_Dam",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Nubian Village",
+      "id": 85,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.experienceegypt.eg/en/city/9/aswan-abu-simbel",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Aswan"
+    },
+    {
+      "name": "Giftun Islands",
+      "id": 86,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://us.trip.com/moments/theme/poi-giftun-islands-23516190-thorough-guides-993136",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Hurghada Marina",
+      "id": 87,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Hurghada",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Hurghada"
+    },
+    {
+      "name": "El Gouna",
+      "id": 88,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/El_Gouna",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Wadi El Gemal National Park",
+      "id": 89,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.getyourguide.com/wadi-el-gemal-national-park-l186912",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Sataya Reef (Dolphin House)",
+      "id": 90,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.nextholidaytravel.com/blog/sataya-dolphin-reef",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Saint Catherine's Monastery",
+      "id": 92,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/archaeological-sites/saint-catherine-s-monastery",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Sinai"
+    },
+    {
+      "name": "Dahab",
+      "id": 94,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Dahab",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Sinai"
+    },
+    {
+      "name": "Coptic Cairo",
+      "id": 104,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Coptic_Orthodox_Church",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Cairo"
+    },
+    {
+      "name": "Valley of the Kings",
+      "id": 110,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/archaeological-sites/valley-of-the-kings",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Qaitbay Citadel",
+      "id": 115,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Citadel_of_Qaitbay",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Cairo Tower",
+      "id": 116,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Cairo",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Cairo"
+    },
+    {
+      "name": "Karnak Temple Complex",
+      "id": 117,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/archaeological-sites/karnak",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Avenue of Sphinxes",
+      "id": 118,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Avenue_of_Sphinxes",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Luxor Museum",
+      "id": 119,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Luxor",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Luxor"
+    },
+    {
+      "name": "Mummification Museum",
+      "id": 120,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/museums/mummification-museum",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Luxor"
+    },
+    {
+      "name": "Tomb of Tutankhamun (KV62)",
+      "id": 121,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/tomb-of-tutankhamun",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Tomb of Seti I (KV17)",
+      "id": 122,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/tomb-of-sety-i-kv17",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Tomb of Ramesses VI (KV9)",
+      "id": 123,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/tomb-of-ramesses-vi-kv9",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Tomb of Ramesses III (KV11)",
+      "id": 124,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Ramesses_I",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Valley of the Queens",
+      "id": 125,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.experienceegypt.eg/en/city/22/luxor",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Tomb of Nefertari (QV66)",
+      "id": 126,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Tomb_of_Nefertari",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Temple of Hatshepsut (Deir el-Bahari)",
+      "id": 127,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/hatshepsut-temple",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Ramesseum (Mortuary Temple of Ramesses II)",
+      "id": 128,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/the-ramesseum-the-temple-of-ramses-ii",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Medinet Habu (Mortuary Temple of Ramesses III)",
+      "id": 129,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/the-temple-of-medinet-habu",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Temple of Seti I",
+      "id": 130,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Seti_I",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Deir el-Medina",
+      "id": 131,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Deir_el-Medina",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Tombs of the Nobles",
+      "id": 132,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/List_of_Theban_tombs",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Tomb of Sennefer (TT96)",
+      "id": 133,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Sennefer",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Tomb of Rekhmire (TT100)",
+      "id": 134,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.etltravel.com/luxor/rekhmire-tomb-egypt",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Tomb of Ramose (TT55)",
+      "id": 135,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Ramose_(TT55)",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Dendera Temple Complex (Temple of Hathor)",
+      "id": 136,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/temple-of-dendera",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Temple of Hathor at Dendera",
+      "id": 137,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/temple-of-dendera",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Dendera Zodiac",
+      "id": 138,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Dendera",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Abydos Temple Complex",
+      "id": 139,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Temple_of_Montu_(Medamud)",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Temple of Seti I at Abydos",
+      "id": 140,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Seti_I",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Osireion at Abydos",
+      "id": 141,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://airial.travel/attractions/egypt/seti-i-temple-and-osireion-abydos-SXJ0HGyx",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Temple of Ramesses II at Abydos",
+      "id": 142,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Ramesses_I",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Temple of Khnum at Esna",
+      "id": 143,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Esna",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "El-Kab (Nekheb)",
+      "id": 144,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Rock Tombs of El-Kab",
+      "id": 145,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "historical",
+      "city": "Luxor"
+    },
+    {
+      "name": "Luxor Corniche",
+      "id": 146,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Luxor",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Luxor"
+    },
+    {
+      "name": "Luxor Souk",
+      "id": 147,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Luxor",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "shopping",
+      "city": "Luxor"
+    },
+    {
+      "name": "Banana Island",
+      "id": 148,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://egyptatours.com/banana-island",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Luxor"
+    },
+    {
+      "name": "Hot Air Balloon Rides Luxor",
+      "id": 149,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/2013_Luxor_hot_air_balloon_crash",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Luxor"
+    },
+    {
+      "name": "Luxor to Aswan Nile Cruise",
+      "id": 150,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Luxor",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Luxor"
+    },
+    {
+      "name": "West Bank Bicycle Tour",
+      "id": 151,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.tourhq.com/tours/63651/discover-luxor-s-west-bank-a-full-day-bike-tour-through-history-and-nature",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Luxor"
+    },
+    {
+      "name": "Sunrise at Karnak Temple",
+      "id": 152,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://carriereedtravels.com/2018/12/06/visiting-karnak-temple-in-luxor-egypt",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Luxor"
+    },
+    {
+      "name": "Philae Temple (Temple of Isis)",
+      "id": 153,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/archaeological-sites/philae",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Temple of Kom Ombo",
+      "id": 154,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/kom-ombo-temple",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Temple of Horus at Edfu",
+      "id": 155,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/temple-of-edfu",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Temple of Kalabsha",
+      "id": 156,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/kalabsha-temple",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Unfinished Obelisk",
+      "id": 157,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/the-unfinished-obelisk",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Old Aswan Dam",
+      "id": 158,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Aswan_High_Dam",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Tombs of the Nobles (Aswan)",
+      "id": 159,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://goluxortours.com/egypt-travel-guide/aswan-attractions/tombs-of-the-nobles-in-aswan",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Monastery of St. Simeon",
+      "id": 160,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/monastery-of-st-simeon",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Aswan"
+    },
+    {
+      "name": "Elephantine Island",
+      "id": 161,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/archaeological-sites/elephantine-1",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Aswan Botanical Garden (Kitchener's Island)",
+      "id": 162,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Aswan",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Aswan"
+    },
+    {
+      "name": "Lake Nasser",
+      "id": 163,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Lake_Nasser",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Aswan"
+    },
+    {
+      "name": "Nubia Museum",
+      "id": 164,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/museums/nubia-museum",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Aswan"
+    },
+    {
+      "name": "Aswan Museum (Elephantine Island)",
+      "id": 165,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Aswan_High_Dam",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Aswan"
+    },
+    {
+      "name": "Crocodile Museum (Kom Ombo)",
+      "id": 166,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/museums/crocodile-museum",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Aswan"
+    },
+    {
+      "name": "Temple of Wadi es-Sebua",
+      "id": 167,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/archaeological-sites/temples-of-wadi-al-sebua",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Temple of Amada",
+      "id": 168,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/amada-temple",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Temple of Dakka",
+      "id": 169,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Temple_of_Dakka",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Temple of Derr",
+      "id": 170,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/temple-of-al-derr",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Rock Temples of Beit el-Wali",
+      "id": 171,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Temple_of_Beit_el-Wali",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Qasr Ibrim",
+      "id": 172,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Qasr_Ibrim",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Temple of Satet (Elephantine Island)",
+      "id": 173,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Temple_of_Satet",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Nilometer (Elephantine Island)",
+      "id": 174,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Nilometer",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Temple of Khnum (Elephantine)",
+      "id": 175,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Khnum",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Sehel Island",
+      "id": 176,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/rock-inscriptions-of-sehel-island",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Famine Stela (Sehel Island)",
+      "id": 177,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Famine_Stela",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Aswan"
+    },
+    {
+      "name": "Gharb Soheil Nubian Village",
+      "id": 178,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.cairotoptours.com/en-za/egypt-day-tours-and-excursions/aswan-day-tours-and-excursions/trip-nubian-village-aswan",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Aswan"
+    },
+    {
+      "name": "Nubian House Museum",
+      "id": 179,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://sg.trip.com/moments/poi-nubian-museum-96437",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Aswan"
+    },
+    {
+      "name": "Animalia Nubian Village",
+      "id": 180,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.cairotoptours.com/us/egypt-travel-guide/aswan-attractions/nubian-village-aswan-colorful-houses",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Aswan"
+    },
+    {
+      "name": "Aswan Corniche",
+      "id": 181,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Aswan",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Aswan"
+    },
+    {
+      "name": "Aswan Souk",
+      "id": 182,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/New_Aswan",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "shopping",
+      "city": "Aswan"
+    },
+    {
+      "name": "Felucca Sailing Aswan",
+      "id": 183,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Felucca",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Aswan"
+    },
+    {
+      "name": "Aswan Sound and Light Show (Philae)",
+      "id": 184,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.egypttoursplus.com/philae-temple-sound-and-light-show",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Aswan"
+    },
+    {
+      "name": "Lake Nasser Cruise",
+      "id": 185,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Lake_Nasser",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Aswan"
+    },
+    {
+      "name": "Camel Ride to St. Simeon Monastery",
+      "id": 186,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.luxorandaswan.com/Egypt/tour/Trip-to-St.Simeon-Monastery",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Aswan"
+    },
+    {
+      "name": "Aswan to Abu Simbel Road Trip",
+      "id": 187,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Aswan",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Aswan"
+    },
+    {
+      "name": "Traditional Nubian Dinner Experience",
+      "id": 188,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.facebook.com/groups/egytraveltips/posts/818549537542979",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "dining",
+      "city": "Aswan"
+    },
+    {
+      "name": "Aswan Spice Market",
+      "id": 189,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.excursionmania.com/ttd/1152/aswan-market-blg-1152",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "shopping",
+      "city": "Aswan"
+    },
+    {
+      "name": "Nubian Handicraft Workshops",
+      "id": 190,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "shopping",
+      "city": "Aswan"
+    },
+    {
+      "name": "Daraw Camel Market",
+      "id": 191,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Daraw",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Aswan"
+    },
+    {
+      "name": "Port Said Lighthouse",
+      "id": 192,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://evendo.com/locations/egypt/damietta/landmark/the-lighthouse-of-port-said",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Port Said National Museum",
+      "id": 193,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Egyptian_National_Railways",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Suez Canal Authority Building",
+      "id": 194,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "historical",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Salt Mountains (Port Fuad)",
+      "id": 195,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "natural",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Lake Manzala",
+      "id": 196,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.expedia.com/Lake-Manzala-Damietta.d6112244.Vacation-Attraction",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Port Said Fish Market",
+      "id": 197,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.getyourguide.com/hurghada-fish-market-l180746",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "shopping",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Moses' Springs (Oyun Musa)",
+      "id": 198,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.flyingcarpettours.com/Attractions/Egypt-Attractions/Oyun-Musa",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Suez Corniche",
+      "id": 199,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.cairotoptours.com/Egypt-Travel-Guide/Red-Sea-Attractions/Suez-Canal",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Galala Mountain Cable Car",
+      "id": 200,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.peek.com/attaka-suez-governorate-egypt/r0xwjpm/el-galala-aquapark-day-tour-cable-car-package/a08azx8z",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Porto Sokhna Marina",
+      "id": 201,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://vacations-time.com/porto-sokhna-reservation",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Il Monte Galala Adventure Park",
+      "id": 202,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.crystal-lagoons.com/il-mount-galala-in-egypt-first-crystalline-lagoon-on-a-mountain-offers-year-round-activities",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Jabal el Sakka Reef",
+      "id": 203,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "natural",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Ras Ghareb Lighthouse",
+      "id": 204,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Ras_Ghareb",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Desert Breath (Land Art)",
+      "id": 205,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Desert_Breath",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Mangroovy Beach",
+      "id": 206,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://web.kite-and-windsurfing-guide.com/spots/kiteboarding-windsurfing-sup/mangroovy-beach-west-shore-red-sea-egypt.html",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Hurghada"
+    },
+    {
+      "name": "El Gouna Golf Club",
+      "id": 207,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.golfandmore.com/en/golf-holidays-egypt/hurghada/el-gouna-golf-club",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Abu Minqar Island",
+      "id": 208,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://airial.travel/attractions/egypt/abu-minqar-island-rHfyZbAA",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Magawish Island",
+      "id": 209,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.cairotoptours.com/en-au/egypt-travel-guide/red-sea-attractions/magawish-island",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Sha'ab Abu Nuhas (Shipwreck Reef)",
+      "id": 210,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/abu-nuhas-ghiannis-d/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Sahl Hasheesh Piazza",
+      "id": 211,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Sahl_Hasheesh",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Hurghada"
+    },
+    {
+      "name": "The Sunken City (Sahl Hasheesh)",
+      "id": 212,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "natural",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Mons Claudianus",
+      "id": 213,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Mons_Claudianus",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Safaga Ghost Town (Umm el-Howeitat)",
+      "id": 214,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://exploreegypttours.com/en/safaga-4-attractions-you-must-to-do",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Panorama Reef",
+      "id": 215,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/panorama-north-2/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Salem Express Shipwreck",
+      "id": 216,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/MV_Salem_Express",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Tobia Arba (The Seven Pillars)",
+      "id": 217,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/tobia-arbaa-7-pillars/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Safaga Grand Mosque",
+      "id": 218,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://exploreegypttours.com/en/safaga-4-attractions-you-must-to-do",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Hurghada"
+    },
+    {
+      "name": "Abu Dabbab Bay",
+      "id": 219,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/abu-dabbab-1-dive-site/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Sha'ab Samadai (Dolphin House)",
+      "id": 220,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/shaab-samadai-dolphin-house/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Sharm El Luli (Ras Hankorab)",
+      "id": 221,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.marsaalamtours.com/Egypt-Travel-Guide/Sharm-El-Luli.php",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Marsa Mubarak",
+      "id": 222,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/marsa-mubarak/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Sataya Reef (Dolphin Reef)",
+      "id": 223,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/sataya-reef-dolphin-house-marsa-alam-divesite/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Al-Quseir Old City",
+      "id": 224,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/List_of_Egyptian_castles,_forts,_fortifications_and_city_walls",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Al-Quseir Ottoman Fortress",
+      "id": 225,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "historical",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Mons Smaragdus (Emerald Mines)",
+      "id": 226,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Mons_Smaragdus",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Red Sea Wonders Museum",
+      "id": 227,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "cultural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Wadi Hammamat Inscriptions",
+      "id": 228,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.lonelyplanet.com/points-of-interest/wadi-hammamat/1499723",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Elphinstone Reef",
+      "id": 229,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/elphinstone-reef-3/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Daedalus Reef (Abu Kizan)",
+      "id": 230,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/daedalus-reef/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Hamada Wreck (Abu Ghusum)",
+      "id": 231,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://deepsouthdiverseg.com/tours/abu-ghusun-hamada-wreck",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Brother Islands (Al Ikhwan)",
+      "id": 232,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/brother-islands/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Shalateen Camel Market",
+      "id": 233,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Shalateen",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Gebel Elba National Park",
+      "id": 234,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://marsaalam.com/gebel_elba_national_park",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Qulaan Lagoon",
+      "id": 235,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Hamata Islands",
+      "id": 236,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "El Nayzak Beach",
+      "id": 237,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.egypttours.com/blog/al-nayzak-beach-in-egypt-secret-paradise-hidden-on-earth",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Marsa Egla",
+      "id": 238,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.egypttoursportal.com/en-us/marsa-alam-travel-guide",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Marsa Assalaya",
+      "id": 239,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/marsa-assalaia/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Hankorab Beach",
+      "id": 240,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.excursionmania.com/ttd/4277/hankorab-beach-blg-4277",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Marsa Shouna",
+      "id": 241,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.egypttoursportal.com/marsa-alam-travel-guide",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Gabal El Rosas (The Rose Garden)",
+      "id": 242,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Marsa Tondoba",
+      "id": 243,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.egypttoursportal.com/en-us/marsa-alam-travel-guide",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Berenice Troglodytica (Ancient Port)",
+      "id": 244,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Berenice_Troglodytica",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Temple of Semiramis (Berenice)",
+      "id": 245,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "historical",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Wadi Sakait (Temple of Isis)",
+      "id": 246,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "historical",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Zabargad Island (Peridot Hill)",
+      "id": 247,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Rocky Island",
+      "id": 248,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.lonelyplanet.com/points-of-interest/rocky-island/1453603",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Abu Safah Pharaonic Gate",
+      "id": 249,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "historical",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Shalateen Bazaar",
+      "id": 250,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "shopping",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Wadi El Quraan",
+      "id": 251,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Sha'ab Marsa Alam",
+      "id": 252,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/shaab-marsa-alam/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Abu Ghusum (Fury Shoals)",
+      "id": 253,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Habili Nakari",
+      "id": 254,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Temple Lagoon Reef",
+      "id": 255,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "natural",
+      "city": "Marsa Alam"
+    },
+    {
+      "name": "Mount Sinai",
+      "id": 256,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Mount_Sinai",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Sinai"
+    },
+    {
+      "name": "Pharaoh's Island",
+      "id": 257,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Pharaoh's_Island",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Sinai"
+    },
+    {
+      "name": "Serabit el-Khadim",
+      "id": 258,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Serabit_el-Khadim",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Sinai"
+    },
+    {
+      "name": "Al-Sahaba Mosque",
+      "id": 259,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "religious",
+      "city": "Sinai"
+    },
+    {
+      "name": "Moses Springs",
+      "id": 260,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.cleopatraegypttours.com/travel-guide/sinai-and-red-sea-attractions/ain-musa",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Sinai"
+    },
+    {
+      "name": "Burning Bush",
+      "id": 261,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Burning_bush",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Sinai"
+    },
+    {
+      "name": "Wadi Feiran Oasis",
+      "id": 262,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Wadi_Feiran",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Sinai"
+    },
+    {
+      "name": "Monastery of the Seven Nuns",
+      "id": 263,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "religious",
+      "city": "Sinai"
+    },
+    {
+      "name": "Ras Mohammed",
+      "id": 264,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/ras-muhammed-national-park/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Nabq Protectorate",
+      "id": 265,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Nabq_Protected_Area",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Colored Canyon",
+      "id": 266,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Coloured_Canyon",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Blue Hole",
+      "id": 267,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/blue-hole-3/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Wadi Wishwashi",
+      "id": 268,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.whynotsafari-tours.com/blog/wadi-el-wishwash-sinai-travel-guide",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Ain Khudra",
+      "id": 269,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://desertcruisetravel.com/ain-khudra-oasis",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Mount Catherine",
+      "id": 270,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://dahabsafari.com/trip-to-visit-mount-sinai-and-saint-catherine",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Sinai"
+    },
+    {
+      "name": "White Canyon",
+      "id": 271,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://airial.travel/attractions/egypt/white-canyon-sinai-0O8Ekkab",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Blue Lagoon",
+      "id": 272,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Blue_Hole_(Red_Sea)",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Ras Abu Galum",
+      "id": 273,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/ras-abu-galum-south/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Tiran Island",
+      "id": 274,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/thomas-reef-straits-of-tiran/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Wadi Gnai",
+      "id": 275,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "natural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Naama Bay",
+      "id": 276,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Naama_Bay",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Sinai"
+    },
+    {
+      "name": "SOHO Square",
+      "id": 277,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/SoHo,_Manhattan",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Sinai"
+    },
+    {
+      "name": "Farsha Mountain Lounge",
+      "id": 278,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "entertainment",
+      "city": "Sinai"
+    },
+    {
+      "name": "Old Market",
+      "id": 279,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.whynotsafari-tours.com/sharm-el-sheikh/nightlife/venues/old-market-sharm-el-sheikh",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Hollywood Sharm",
+      "id": 280,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.getyourguide.com/en-gb/hollywood-sharm-el-sheikh-l184497",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Sinai"
+    },
+    {
+      "name": "Cleo Park",
+      "id": 281,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "entertainment",
+      "city": "Sinai"
+    },
+    {
+      "name": "Aqua Blue Water Park",
+      "id": 282,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://airial.travel/attractions/egypt/aqua-blue-water-park-i4WqTNMl",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Sinai"
+    },
+    {
+      "name": "Dahab Promenade",
+      "id": 283,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Dahab",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Sinai"
+    },
+    {
+      "name": "Genena City",
+      "id": 284,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "entertainment",
+      "city": "Sinai"
+    },
+    {
+      "name": "Shark's Bay",
+      "id": 285,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "entertainment",
+      "city": "Sinai"
+    },
+    {
+      "name": "Al-Fanar Lighthouse",
+      "id": 286,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "cultural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Taba Heights",
+      "id": 287,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Taba,_Egypt",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Lighthouse Reef",
+      "id": 288,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Daedalus_Reef",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Sinai"
+    },
+    {
+      "name": "Castle Zaman",
+      "id": 289,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.touregypt.net/featurestories/castle-zaman.htm",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Sinai"
+    },
+    {
+      "name": "Ras El Shitan",
+      "id": 290,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.cairotoptours.com/uk/Egypt-Travel-Guide/Red-Sea-Attractions/ras-shitan",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Musical Fountain",
+      "id": 291,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "entertainment",
+      "city": "Sinai"
+    },
+    {
+      "name": "Wadi El-Weshwash",
+      "id": 292,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.facebook.com/friendsofegyptsupporttourismtoegypt/posts/wadi-el-washwash-is-a-hidden-natural-treasure-in-the-heart-of-south-sinaiegypt-i/533963909004682",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Three Pools",
+      "id": 293,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://cindrellatravel.com/blog/three-pools-dahab",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Sinai"
+    },
+    {
+      "name": "Straits of Tiran",
+      "id": 294,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/thomas-reef-straits-of-tiran/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Sinai"
+    },
+    {
+      "name": "The Canyon (Dahab)",
+      "id": 295,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://www.padi.com/dive-site/egypt/the-canyon-8/",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Sinai"
+    },
+    {
+      "name": "Steps of Penitence",
+      "id": 296,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "religious",
+      "city": "Sinai"
+    },
+    {
+      "name": "Roman Amphitheatre",
+      "id": 297,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Roman_amphitheatre",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Villa of the Birds",
+      "id": 298,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://airial.travel/attractions/egypt/villa-of-the-birds-UtR0r0ln",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Ras El Tin Palace",
+      "id": 299,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Ras_El_Tin_Palace",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Serapeum of Alexandria",
+      "id": 300,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Library_of_Alexandria",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Taposiris Magna",
+      "id": 301,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Taposiris_Magna",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Alexandria"
+    },
+    {
+      "name": "El-Alamein War Cemetery",
+      "id": 302,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.cairotoptours.com/Egypt-Travel-Guide/Alexandria-Attractions/El-Alamein-War-Cemetery",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Sunken City (Abukir)",
+      "id": 303,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.getyourguide.com/cairo-l92/from-cairo-alexandria-sunken-city-the-lost-treasures--t493134",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Roman Baths (Kom El Deka)",
+      "id": 304,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Roman_Carthage",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Royal Jewelry Museum",
+      "id": 305,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/museums/royal-jewelry-museum",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Greco-Roman Museum",
+      "id": 306,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/museums/graeco-roman-museum",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Cavafy Museum",
+      "id": 307,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Constantine_P._Cavafy",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Museum of Fine Arts",
+      "id": 308,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Alexandria_Museum_of_Fine_Arts",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Planetarium Science Center",
+      "id": 309,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Planetarium_Science_Center",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Mahmoud Said Museum",
+      "id": 310,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Mahmoud_Sa'id",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Alexandria Aquarium",
+      "id": 311,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Alexandria,_Louisiana",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Alexandria Opera House",
+      "id": 312,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Alexandria_Opera_House",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Manuscripts Museum",
+      "id": 313,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://airial.travel/attractions/egypt/bibliotheca-manuscripts-museum-v5FR1Cwa",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Abu al-Abbas al-Mursi Mosque",
+      "id": 314,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Abu_al-Abbas_al-Mursi_Mosque",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Saint Mark's Coptic Cathedral",
+      "id": 315,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Saint_Mark's_Coptic_Orthodox_Cathedral_(Alexandria)",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Eliahu Hanavi Synagogue",
+      "id": 316,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "religious",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Saint Catherine Cathedral",
+      "id": 317,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Catherine_of_Alexandria",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Attarine Mosque",
+      "id": 318,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Attarine_Mosque",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Monastery of Abu Mina",
+      "id": 319,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/archaeological-sites/abu-mina-1",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Greek Orthodox Patriarchate",
+      "id": 320,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Greek_Orthodox_Patriarchate_of_Alexandria",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Montaza Palace Gardens",
+      "id": 321,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Montaza_Palace",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Stanley Bridge",
+      "id": 322,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Stanley_(neighborhood)",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Alexandria Corniche",
+      "id": 323,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Alexandria_Corniche",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Antoniadis Gardens",
+      "id": 324,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://airial.travel/attractions/egypt/antoniadis-gardens-alexandria-p55-9jpV",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Shallalat Gardens",
+      "id": 325,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Shallalat_Gardens",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "San Stefano Mall",
+      "id": 326,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/San_Stefano_(neighborhood)",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Green Plaza Mall",
+      "id": 327,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Landmark_Mall",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Africano Park",
+      "id": 328,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.youtube.com/watch?v=jRjENMjQZHU",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Gleem Bay",
+      "id": 329,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://airial.travel/attractions/egypt/gleem-YMiExz26",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Maamoura Beach",
+      "id": 330,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.cairotoptours.com/Egypt-Travel-Guide/Alexandria-Attractions/Mamoura-Beach-Alexandria",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Greek Club",
+      "id": 331,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://jetsettimes.com/white-blue-greek-nautical-club",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Alexandria"
+    },
+    {
+      "name": "Smouha Club",
+      "id": 332,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Smouha_SC",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": "Alexandria"
+    },
+    {
+      "name": "National Museum of Egyptian Civilization (NMEC)",
+      "id": 333,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/museums/national-museum-of-egyptian-civilization-nmec",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": null
+    },
+    {
+      "name": "Museum of Islamic Art",
+      "id": 334,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/museums/museum-of-islamic-art",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": null
+    },
+    {
+      "name": "Abdeen Palace Museum",
+      "id": 335,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Abdeen_Palace",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": null
+    },
+    {
+      "name": "Manial Palace Museum",
+      "id": 336,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/museums/manial-palace-museum",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": null
+    },
+    {
+      "name": "Gayer-Anderson Museum",
+      "id": 337,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/museums/gayer-anderson-museum",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": null
+    },
+    {
+      "name": "Royal Carriages Museum",
+      "id": 338,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/museums/the-royal-carriages-museum",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": null
+    },
+    {
+      "name": "Baron Empain Palace",
+      "id": 339,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/baron-empain-palace",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Cairo Opera House",
+      "id": 340,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Cairo_Opera_House",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": null
+    },
+    {
+      "name": "Qasr El Nil Bridge",
+      "id": 341,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Qasr_El_Nil_Bridge",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Tahrir Square",
+      "id": 342,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Tahrir_Square",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Khedivial Cairo",
+      "id": 343,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Khedivial_Opera_House",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Nile Corniche",
+      "id": 344,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Nile_Corniche",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": null
+    },
+    {
+      "name": "Al-Hussein Mosque",
+      "id": 345,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Al-Hussein_Mosque",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": null
+    },
+    {
+      "name": "Al-Hakim bi-Amr Allah Mosque",
+      "id": 346,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/mosque-of-al-hakim-bi-amr-allah",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": null
+    },
+    {
+      "name": "Bab al-Futuh",
+      "id": 347,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/bab-al-futuh",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Bab al-Nasr",
+      "id": 348,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/bab-al-nasr",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Bab Zuweila",
+      "id": 349,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/bab-zuwayla",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Qalawun Complex",
+      "id": 350,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/madrasa-mausaleum-and-bimaristan-of-al-mansur-qalawun",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Sultan Barquq Complex",
+      "id": 351,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/madrasa-and-khanaqah-of-sultan-al-zahir-barquq",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Wekalet El Ghouri",
+      "id": 352,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/al-ghuri-s-wikala",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Al-Ghuri Complex",
+      "id": 353,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/sultan-al-ghuri-complex",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Tentmakers' Street",
+      "id": 354,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "shopping",
+      "city": null
+    },
+    {
+      "name": "Mosque of Muhammad Ali",
+      "id": 355,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/muhammad-ali-mosque",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": null
+    },
+    {
+      "name": "Al-Nasir Muhammad Mosque",
+      "id": 356,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/sultan-al-nasir-muhammad-mosque",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": null
+    },
+    {
+      "name": "Al-Rifa'i Mosque",
+      "id": 357,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/al-rifa-i-mosque",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": null
+    },
+    {
+      "name": "Al-Azhar Park",
+      "id": 358,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Al-Azhar_Park",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "natural",
+      "city": null
+    },
+    {
+      "name": "Saints Sergius and Bacchus Church (Abu Serga)",
+      "id": 359,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/church-of-saint-sergius-and-bacchus",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": null
+    },
+    {
+      "name": "Ben Ezra Synagogue",
+      "id": 360,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/ben-ezra-synagogue",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": null
+    },
+    {
+      "name": "Mosque of Amr ibn al-As",
+      "id": 361,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/the-mosque-of-amr-ibn-al-as",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "religious",
+      "city": null
+    },
+    {
+      "name": "Nilometer (Rhoda Island)",
+      "id": 362,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/rawda-island-nilometer",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Valley Temple of Khafre",
+      "id": 363,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Pyramid_of_Khafre",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Khufu Mortuary Temple",
+      "id": 364,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Mortuary_temple",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Khafre Mortuary Temple",
+      "id": 365,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Pyramid_of_Khafre",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Menkaure Mortuary Temple",
+      "id": 366,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Menkaure",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Eastern Cemetery of Giza",
+      "id": 367,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Giza_pyramid_complex",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Western Cemetery of Giza",
+      "id": 368,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Giza_pyramid_complex",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Tomb of Meresankh III",
+      "id": 369,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/tomb-of-queen-meresankh-iii",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Tomb of Qar",
+      "id": 370,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Tomb of Idu",
+      "id": 371,
+      "ok": true,
+      "grounded": false,
+      "grounding_kind": "none",
+      "sources": [],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Tomb of Queen Hetepheres I",
+      "id": 372,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Tomb_of_Hetepheres_I",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Queen's Pyramids of Khufu",
+      "id": 373,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.cairotoptours.com/us/egypt-travel-guide/egypt-information-about-egypt/facts-queen-pyramids-giza",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Queen's Pyramids of Menkaure",
+      "id": 374,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Pyramid_of_Menkaure",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Giza Plateau Panorama Point",
+      "id": 375,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://airial.travel/attractions/egypt/panorama-point-giza-plateau-4JVEV2NQ",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": null
+    },
+    {
+      "name": "Pyramids Sound and Light Show",
+      "id": 376,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Son_et_lumière_(show)",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "entertainment",
+      "city": null
+    },
+    {
+      "name": "Mena House Hotel",
+      "id": 377,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Mena_House_Hotel",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Djoser Funerary Complex",
+      "id": 378,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/the-step-pyramid-complex-of-djoser",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Pyramid of Unas",
+      "id": 379,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/pyramid-of-unas",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Pyramid of Teti",
+      "id": 380,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/pyramid-complex-of-teti",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Serapeum of Saqqara",
+      "id": 381,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/serapeum",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Mastaba of Mereruka",
+      "id": 382,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/tomb-of-mereruka",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Tomb of Kagemni",
+      "id": 383,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Kagemni",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Tomb of Ti",
+      "id": 384,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.cairotoptours.com/Egypt-Travel-Guide/Cairo-Travel-Guide/Ti-Tomb-Saqqara",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Tomb of Mehu",
+      "id": 385,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Mehu",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Imhotep Museum",
+      "id": 386,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/museums/imhotep-museum",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "cultural",
+      "city": null
+    },
+    {
+      "name": "Colossus of Ramesses II (Memphis)",
+      "id": 387,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "tavily",
+      "sources": [
+        {
+          "url": "https://www.getyourguide.com/colossus-of-ramesses-ii-l8434",
+          "kind": "tavily"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Alabaster Sphinx of Memphis",
+      "id": 388,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Sphinx_of_Memphis",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Bent Pyramid",
+      "id": 389,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/the-bent-pyramid",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Red Pyramid",
+      "id": 390,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "official",
+      "sources": [
+        {
+          "url": "https://egymonuments.gov.eg/en/monuments/the-red-pyramid",
+          "kind": "official"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Abusir Pyramid Field",
+      "id": 391,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Abusir",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    },
+    {
+      "name": "Abu Rawash (Pyramid of Djedefre)",
+      "id": 392,
+      "ok": true,
+      "grounded": true,
+      "grounding_kind": "wikipedia",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Abu_Rawash",
+          "kind": "wikipedia"
+        }
+      ],
+      "review": true,
+      "category": "historical",
+      "city": null
+    }
+  ]
+}
