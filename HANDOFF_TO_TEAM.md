@@ -122,7 +122,74 @@ These are genuine limitations, not bugs. Acknowledging them *strengthens* the th
 
 ---
 
-## 6. What's left, and who does what
+## 7. Screenshot checklist for the partner (Youssef)
+
+Every screen + state worth capturing for the thesis, with the **exact prompt / action** to trigger it. Work top-to-bottom. Restart Docker + the backend + the app fresh first (see §2). When a prompt is given, type it verbatim — these are the demo strings that reliably surface the feature.
+
+### Setup before shooting
+- [ ] Docker stack up: `docker-compose up -d` (Valhalla :8002, VROOM :8081, OSRM :5000 — all healthy)
+- [ ] Backend up: `uvicorn src.api.main:app --port 8000` → `curl localhost:8000/health` = `healthy`
+- [ ] Groq quota available (check `/chat` doesn't immediately hit the daily-limit fallback)
+- [ ] App launched on a device/emulator, signed in to a user with **at least one current itinerary** (so the Planner/Map/Journey have data)
+
+### A. Authentication & onboarding (the brand first impression)
+- [ ] **Login screen** — *automatic.* Shows the full-bleed `VOYO_login_Background.png` with `VOYO_Login_Logo.png` centred above the form. **This is the first proof the real brand assets are wired.**
+- [ ] **Login error state** — type a wrong password, capture the red snackbar.
+- [ ] **Register screen** — tap "Don't have an account? Register".
+- [ ] **Onboarding screen** — fresh install (or sign out + clear app data), capture the onboarding flow.
+
+### B. Explore (the discovery surface)
+- [ ] **Explore header** — shows the `VoyoWordmark` SVG (not a 'VOYO' text placeholder) top-right, weather widget, profile avatar top-left.
+- [ ] **Discovery weather widget** — tap the weather card; grant location if prompted; capture the travel-actionable suggestion (e.g. "Perfect for outdoor sites"). Cairo fallback if GPS denied.
+- [ ] **Featured POIs grid** — scroll the feed; capture 2-3 cards with real images + verified badges.
+- [ ] **POI detail sheet** — tap any POI → full detail (image carousel, narrative, ticket price EGP, opening hours, tags, "Add to trip" CTA).
+- [ ] **Search** — type `luxor` in the search bar; capture filtered results.
+- [ ] **Recommendations screen** — tap into "For You"; capture personalized recommendations (proves the recommendation engine differentiates).
+
+### C. Map (the geographic brain)
+- [ ] **Map default** — POI geotag labels rendered (transparent + tappable), itinerary-stop markers in day colours.
+- [ ] **Map POI preview card** — tap a regular geotag → `MapPoiPreviewCard` (compact image + name + 2 actions).
+- [ ] **Itinerary-stop card (THE FIX)** — tap an **itinerary-stop marker** (coloured circle with day number). **It must now open the SAME `MapPoiPreviewCard` with a real Supabase image** — NOT the old Wikipedia-lookup sheet. If it still shows a gradient/stale card, the fix didn't deploy. Compare it side-by-side with the same POI opened from Explore to prove identical data.
+- [ ] **Route polylines** — multi-coloured day routes between stops. Capture a clean multi-day trip.
+- [ ] **Route-engine-unavailable banner** — stop Docker (or just Valhalla), reload map → the honest "Route engine unavailable" banner + "Open in Maps" fallback (NOT a fake straight line).
+- [ ] **Isochrone overlay** — long-press the map → "Explore from here". Capture the multicoloured 6-band reachable-area ramp. Toggle Walk/Drive, move the time-budget slider. The mode auto-suggests (cluster-density inference).
+- [ ] **POI with no photo** — find a POI known to have zero images; capture the gradient fallback with the "No photo" chip (honest data gap).
+
+### D. Planner (the deterministic core — most important)
+- [ ] **Planner default** — days listed chronologically, stops sorted by VROOM time within each day, "Unscheduled" stops in italic at the bottom.
+- [ ] **Completion state** — tap a stop's circle to mark visited → checkmark + "Now" badge moves to the next stop. Stats bar updates (`days / stops / done`). Reload the app → completion persists (SharedPreferences).
+- [ ] **Add-to-itinerary sheet (Path B — the headline feature)** — from a POI detail, tap "Add to trip" → pick a day → capture the **VROOM feasibility verdict**: green (fits), amber (tight), or red (won't fit). The card shows "CLEO suggests ~2:00 PM, between X and Y" (real VROOM-assigned time, not a fake 9:00 AM).
+- [ ] **Geographic hard-block** — try adding a Luxor POI to a day that already has Cairo stops → the red "342 km apart" block step with alternatives ("Create new day here" / "Choose different day" / "Cancel").
+- [ ] **Manual clock override** — in the add sheet, toggle manual override → the clock-grid picker appears as the opt-in alternative.
+
+### E. Cleo chat (the agent)
+- [ ] **Chat empty state** — fresh chat → `CLEO_Default.png` avatar + "Your itinerary is waiting." + "Plan a trip" CTA. **Proves the real CLEO asset is wired.**
+- [ ] **Grounded Q&A** — type: `Tell me about the Pyramids of Giza`. Capture the answer with `confidence: high` + the source pill ("VOYO verified database") under it.
+- [ ] **Thinking state** — send any question and screenshot while it's parsing → `CLEO_Thinking.png` avatar + animated typing dots + staged status copy ("Checking VOYO places…").
+- [ ] **Follow-up depth** — after the Pyramids answer, type: `What's the best time of day to visit?` → grounded follow-up.
+- [ ] **Scope guard** — type: `Write me a Python script` → politely rejected (out of scope). (Note: "2+2" is a known permissive-gap xfail — use the Python-script example for a clean rejection.)
+- [ ] **Plan-a-trip flow (the /plan endpoint)** — tap "Plan a trip" CTA → fill the trip profile sheet (dates, budget, pace, interests, notes like `Islamic Cairo, pyramids, museums`). Submit. Capture the generated itinerary with **real VROOM times** (provenance should show `times: vroom`).
+- [ ] **Geographic coherence** — in the profile notes put geographically mixed intent (e.g. `Cairo, Luxor temples, Aswan Nile`). Capture how the plan **consolidates to one coherent region** and `provenance.geo_trimmed_cities` lists what was honestly dropped.
+- [ ] **Pace differentiation** — run Plan twice: once with pace `slow_flexible`, once `packed_schedule`. Capture the difference in both stop count (2-3 vs 5-7) AND description depth (slow gets ~3× richer copy).
+- [ ] **Rate-limit fallback** — if Groq quota runs out mid-demo, capture the graceful "daily message limit" fallback (not a crash).
+
+### F. Journey (the memory surface)
+- [ ] **Journey default** — past trips as cards with stats.
+- [ ] **Journey empty** — on a fresh user (no trips) → the empty state.
+- [ ] **Trip detail sheet** — tap a trip → day-by-day breakdown.
+
+### G. Settings / profile
+- [ ] **Profile sheet** — tap the avatar top-left in Explore → profile menu.
+- [ ] **Sign out** — capture the logout confirmation.
+
+### H. Provenance shots (the thesis defence evidence)
+These are the single most important screenshots for the thesis — they prove nothing is fabricated:
+- [ ] From any `/plan` run, capture the JSON response's `provenance` block (via the network panel or a logged response): `poi_selection: llm`, `times: vroom`, `costs: database_ticket_prices`, `descriptions: database_narratives`. Optionally `geo_reclustered` + `geo_trimmed_cities`.
+- [ ] From a CLEO answer, capture the source pill proving the answer traces to the database.
+
+---
+
+## 8. What's left, and who does what
 
 | Owner | Task | Why it's gated |
 |---|---|---|
@@ -135,7 +202,7 @@ These are genuine limitations, not bugs. Acknowledging them *strengthens* the th
 
 ---
 
-## 7. TL;DR for anyone who only reads one section
+## 9. TL;DR for anyone who only reads one section
 
 VOYO is a **deterministic, defensible AI travel planner** — not a polished prototype hiding inconsistencies. Two days of nitpicking made the planner actually trustworthy: real Valhalla routing, real VROOM time-windows (now actually working live, not just in mocked tests), no fabricated POIs/prices/times, geographic coherence (no impossible city-per-day plans), pace-driven depth, graceful degradation, and an auditable provenance trail. **164 tests green, clean commit, safe to demo.** Pull the latest `main`, follow the 3 startup commands, and it runs.
 
