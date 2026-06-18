@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/poi.dart';
 import '../theme.dart';
 
@@ -176,10 +177,18 @@ class PoiImage extends StatelessWidget {
     final url = (poi.imageUrls != null && poi.imageUrls!.isNotEmpty)
         ? poi.imageUrls!.first
         : null;
+    final hasNoCanonicalImage = url == null;
+    // If there IS a url, check whether it's an undecodable format (SVG etc);
+    // if there's no url at all, skip the check (we're already in fallback).
+    final undecodable = !hasNoCanonicalImage && isUndecodableImage(url);
 
     Widget content;
-    if (url == null || isUndecodableImage(url)) {
-      content = _GradientFallback(style: style, showIcon: showFallbackIcon);
+    if (hasNoCanonicalImage || undecodable) {
+      // Genuine data gap — this POI has no verified image anywhere in the
+      // canonical DB. Surfaced honestly as the category gradient + a faint
+      // "no photo" chip so it reads as intentional, not a broken card.
+      content = _GradientFallback(
+          style: style, showIcon: showFallbackIcon, showNoPhotoChip: true);
     } else {
       content = Image.network(
         url,
@@ -190,8 +199,16 @@ class PoiImage extends StatelessWidget {
           if (progress == null) return image;
           return _ShimmerBox(borderRadius: borderRadius);
         },
-        errorBuilder: (_, __, ___) =>
-            _GradientFallback(style: style, showIcon: showFallbackIcon),
+        // Image existed in the DB but failed to load (CDN 403/404/timeout).
+        // We log the gap so it's traceable, then show the gradient WITHOUT
+        // the "no photo" chip — because a photo DOES exist, it just didn't
+        // load this time. The chip is reserved for genuine gaps only.
+        errorBuilder: (_, __, ___) {
+          debugPrint('VOYO image-load failed for POI ${poi.id} "${poi.name}": '
+              '$url  (transient CDN error or stale URL — not a missing image)');
+          return _GradientFallback(
+              style: style, showIcon: showFallbackIcon, showNoPhotoChip: false);
+        },
       );
     }
 
@@ -212,22 +229,51 @@ class PoiImage extends StatelessWidget {
 class _GradientFallback extends StatelessWidget {
   final PoiCategoryStyle style;
   final bool showIcon;
+  final bool showNoPhotoChip;
 
-  const _GradientFallback({required this.style, required this.showIcon});
+  const _GradientFallback({
+    required this.style,
+    required this.showIcon,
+    this.showNoPhotoChip = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(gradient: style.gradient),
-      child: showIcon
-          ? Center(
-              child: Icon(
-                style.icon,
-                size: 36,
-                color: Colors.white.withValues(alpha: 0.30),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (showIcon)
+            Icon(
+              style.icon,
+              size: 36,
+              color: Colors.white.withValues(alpha: 0.30),
+            ),
+          if (showNoPhotoChip)
+            Positioned(
+              bottom: 6,
+              left: 6,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.45),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'no photo',
+                  style: GoogleFonts.instrumentSans(
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withValues(alpha: 0.85),
+                    letterSpacing: 0.3,
+                  ),
+                ),
               ),
-            )
-          : null,
+            ),
+        ],
+      ),
     );
   }
 }

@@ -34,9 +34,13 @@ class RoutingService {
   String get _backend => dotenv.env['CLEO_API_URL'] ?? _defaultBackend;
 
   /// Fetches a road-following polyline from the self-hosted Valhalla backend
-  /// (``GET /api/v1/routing/route``). Falls back to straight-line connections
-  /// when the backend is unavailable so the map never breaks.
-  Future<List<LatLng>> fetchRoute(
+  /// (``GET /api/v1/routing/route``). Returns ``null`` when the backend is
+  /// unavailable so the caller can render an honest fallback banner instead
+  /// of silently drawing a straight line through the POI markers (which
+  /// previously looked indistinguishable from a real routed path — the
+  /// exact failure mode the spec calls out as demo-dangerous). On success
+  /// returns the decoded [lat, lng] polyline.
+  Future<List<LatLng>?> fetchRoute(
     List<LatLng> waypoints, {
     String profile = 'auto',
   }) async {
@@ -50,13 +54,20 @@ class RoutingService {
     );
 
     try {
-      final response = await http.get(uri).timeout(const Duration(seconds: 10));
-      if (response.statusCode != 200) return waypoints;
+      final response = await http.get(uri).timeout(const Duration(seconds: 15));
+      if (response.statusCode != 200) {
+        debugPrint('Route engine returned ${response.statusCode}; '
+            'refusing to render a straight line as a real route.');
+        return null;
+      }
 
       final data = json.decode(response.body) as Map<String, dynamic>;
       // Valhalla backend returns polyline as [[lat, lng], ...]
       final polyline = data['polyline'] as List?;
-      if (polyline == null || polyline.isEmpty) return waypoints;
+      if (polyline == null || polyline.isEmpty) {
+        debugPrint('Route response had no polyline geometry; returning null.');
+        return null;
+      }
 
       return polyline
           .map(
@@ -64,8 +75,8 @@ class RoutingService {
           )
           .toList();
     } catch (e) {
-      debugPrint('Valhalla route unavailable, using straight lines: $e');
-      return waypoints;
+      debugPrint('Valhalla route unavailable (will NOT fake a straight line): $e');
+      return null;
     }
   }
 
@@ -189,7 +200,9 @@ class RoutingService {
   }
 
   /// Fetches road-following routes for every day in the itinerary.
-  /// Returns dayNumber → sorted route polyline.
+  /// Returns dayNumber → sorted route polyline. Days whose route could
+  /// not be fetched (Valhalla down, etc.) are OMITTED — the caller renders
+  /// an honest fallback banner rather than a fake straight-line polyline.
   Future<Map<int, List<LatLng>>> fetchRoutesByDay(
     List<ItineraryPoi> pois,
   ) async {
@@ -205,7 +218,11 @@ class RoutingService {
     for (final entry in byDay.entries) {
       final waypoints =
           entry.value.map((p) => LatLng(p.latitude, p.longitude)).toList();
-      routes[entry.key] = await fetchRoute(waypoints);
+      final route = await fetchRoute(waypoints);
+      if (route != null) {
+        routes[entry.key] = route;
+      }
+      // route == null → omit; the caller shows the fallback banner.
     }
     return routes;
   }

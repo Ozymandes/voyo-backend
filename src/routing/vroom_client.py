@@ -136,18 +136,41 @@ class VROOMClient:
         start_seconds = self._time_to_seconds(daily_start)
         end_seconds = self._time_to_seconds(daily_end)
 
+        # VROOM uses OSRM-style profile names, not Valhalla costing names.
+        # Our pipeline standardizes on Valhalla's (auto/pedestrian/bicycle);
+        # map them here so the solver accepts the request. Without this,
+        # VROOM returns 400 "Invalid profile: auto" and the whole /plan
+        # pipeline silently falls back to unscheduled — the root cause of
+        # the sparse-output bug partner QA found.
+        vroom_profile = {"auto": "car", "pedestrian": "foot",
+                         "bicycle": "bike"}.get(profile, "car")
+
         # ── Vehicles (one per day) ────────────────────────────────
+        # VROOM with a custom matrix requires EVERY location (vehicle
+        # start/end AND job) to supply BOTH a matrix index (`start_index` /
+        # `location_index`) AND a coordinate array (`start` / `location`).
+        # The index drives the duration/distance lookup; the coordinate
+        # drives route geometry. Omitting either is a 400. Without a hotel
+        # anchor, each day-vehicle starts/ends at the first POI's location.
         vehicles: List[Dict[str, Any]] = []
         for day_idx in range(days):
-            vehicle: Dict[str, Any] = {
+            if hotel:
+                anchor_idx = 0
+                anchor_coord = [hotel[1], hotel[0]]  # [lon, lat]
+            elif pois:
+                anchor_idx = 1  # matrix index 1 = first POI (0 reserved for hotel when present)
+                anchor_coord = [pois[0]["longitude"], pois[0]["latitude"]]
+            else:
+                continue
+            vehicles.append({
                 "id": day_idx,
                 "time_window": [start_seconds, end_seconds],
-                "profile": profile,
-            }
-            if hotel:
-                vehicle["start"] = 0  # index 0 in matrix = hotel
-                vehicle["end"] = 0
-            vehicles.append(vehicle)
+                "profile": vroom_profile,
+                "start_index": anchor_idx,
+                "end_index": anchor_idx,
+                "start": anchor_coord,
+                "end": anchor_coord,
+            })
 
         # ── Jobs (one per POI) ────────────────────────────────────
         jobs: List[Dict[str, Any]] = []
@@ -160,17 +183,26 @@ class VROOMClient:
 
             job: Dict[str, Any] = {
                 "id": poi.get("id", poi_idx + 1),
-                "location": location_idx,
+                "location_index": location_idx,
+                "location": [poi["longitude"], poi["latitude"]],
                 "service": service_seconds,
                 "description": poi.get("name", f"POI {poi_idx}"),
             }
 
-            # Add time windows from opening hours
+            # Add time windows from opening hours. Skip any window where
+            # end <= start (e.g. a venue open until 2 AM that parses as
+            # [32400, 0] — midnight rollover) — VROOM rejects those and
+            # they were causing the live planner to drop POIs / fail. The
+            # venue is still visitable within the vehicle's day window.
             time_windows = self.adapter.parse_opening_hours_to_seconds(
                 poi.get("opening_hours")
             )
-            if time_windows:
-                job["time_windows"] = time_windows
+            sane_windows = [
+                tw for tw in time_windows
+                if len(tw) == 2 and tw[1] > tw[0]
+            ]
+            if sane_windows:
+                job["time_windows"] = sane_windows
 
             jobs.append(job)
 
@@ -187,8 +219,11 @@ class VROOMClient:
         return {
             "vehicles": vehicles,
             "jobs": jobs,
+            # Matrix MUST be keyed by the same profile name the vehicles use
+            # (VROOM's car/foot/bike, not Valhalla's auto/pedestrian/bicycle).
+            # Mismatch here is a silent 400.
             "matrices": {
-                profile: {
+                vroom_profile: {
                     "durations": durations,
                     "distances": distances,
                 }
@@ -241,7 +276,10 @@ class VROOMClient:
                 service = step.get("service", 0)
                 departure = step.get("departure", arrival + service)
 
-                # Find the next step to calculate travel
+                # Find the next step to calculate travel. VROOM's solution
+                # steps report `location` as a [lon, lat] array AND
+                # `location_index` as the matrix index. We need the INDEX to
+                # look up the duration/distance cell.
                 travel_to_next_minutes = 0
                 travel_to_next_km = 0.0
                 steps = route.get("steps", [])
@@ -249,12 +287,13 @@ class VROOMClient:
                 if step_idx + 1 < len(steps):
                     next_step = steps[step_idx + 1]
                     if next_step.get("type") in ("job", "end"):
-                        next_location = next_step.get("location", step.get("location", 0))
-                        curr_location = step.get("location", 0)
-                        if (
-                            curr_location < len(matrix)
-                            and next_location < len(matrix[curr_location])
-                        ):
+                        next_location = next_step.get("location_index",
+                                                      step.get("location_index", 0))
+                        curr_location = step.get("location_index", 0)
+                        if (isinstance(curr_location, int)
+                                and isinstance(next_location, int)
+                                and curr_location < len(matrix)
+                                and next_location < len(matrix[curr_location])):
                             cell = matrix[curr_location][next_location]
                             travel_to_next_minutes = round(cell["time"] / 60, 1)
                             travel_to_next_km = round(cell["distance"] / 1000, 1)

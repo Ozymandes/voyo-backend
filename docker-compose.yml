@@ -1,6 +1,8 @@
-version: "3.8"
-
 # VOYO Routing Stack — Valhalla + OSRM + VROOM
+#
+# NOTE: the obsolete top-level `version:` field is intentionally removed —
+# modern Docker Compose (v2+) ignores it and prints a warning every run.
+# Use `docker compose` (space, not hyphen) for v2+ invocation.
 #
 # Services:
 #   valhalla  :8002  — routing + isochrones (used by CLEO and the app directly)
@@ -106,6 +108,15 @@ services:
       osrm:
         condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      # Image-agnostic TCP liveness check (same pattern OSRM uses). The
+      # image lacks curl, so a curl-based check falsely marks this
+      # "unhealthy" even though VROOM is serving /health correctly.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8081"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
 volumes:
   osrm_data:

@@ -60,6 +60,10 @@ class _MapScreenState extends State<MapScreen> {
   Map<int, List<LatLng>> _routesByDay = {};
   bool _routeLoading = false;
   bool _routeVisible = true;
+  // Route-engine honesty (#5): true when at least one day's route could
+  // not be fetched (Valhalla down, etc.). Drives the honest fallback banner
+  // instead of silently drawing straight-line polylines through the markers.
+  bool _routesUnavailable = false;
 
   // ── Isochrone ("Explore from here") ───────────────────────────────────────
   // Owned entirely by widgets/map_isochrone_overlay.dart. Slider / profile
@@ -188,9 +192,17 @@ class _MapScreenState extends State<MapScreen> {
     setState(() => _routeLoading = true);
     final routes = await _routingService.fetchRoutesByDay(pois);
     if (mounted) {
+      // Detect the route-engine-unavailable case: there are multi-stop days
+      // in the itinerary but the fetch returned fewer day-routes than days.
+      // This is the signal that Valhalla is down — we must NOT render the
+      // missing days as straight-line polylines (the prior silent fallback).
+      final expectedDayCount =
+          pois.map((p) => p.dayNumber).toSet().length;
+      final missingDays = expectedDayCount - routes.length;
       setState(() {
         _routesByDay = routes;
         _routeLoading = false;
+        _routesUnavailable = missingDays > 0;
       });
     }
   }
@@ -693,6 +705,24 @@ class _MapScreenState extends State<MapScreen> {
                 onDismiss: () => setState(() => _poisError = null),
               ),
             ),
+
+          // ── Route-engine unavailable banner (#5) ────────────────────────────
+          // Honesty layer: when Valhalla is down, route lines for the
+          // affected day(s) are omitted (we never draw a straight line as a
+          // fake route). This banner surfaces the real status + offers the
+          // Google Maps redirect as the trusted external fallback. Per the
+          // spec: "Do not fake route intelligence."
+          if (_routesUnavailable && _itineraryPois.isNotEmpty)
+            Positioned(
+              bottom: MediaQuery.of(context).padding.bottom + 72,
+              left: 16,
+              right: 16,
+              child: _RouteUnavailableBanner(
+                onOpenGoogleMaps: () =>
+                    _routingService.openInGoogleMaps(_visiblePois),
+                onRetry: () => _fetchRoutes(_itineraryPois),
+              ),
+            ),
         ],
       ),
     );
@@ -711,6 +741,95 @@ class _MapScreenState extends State<MapScreen> {
 }
 
 // ── Small shared widgets ────────────────────────────────────────────────────────
+
+/// Honest fallback banner shown when the route engine (Valhalla) is
+/// unavailable. The map omits the affected day's route line entirely
+/// rather than rendering a straight-line fake; this banner explains why
+/// and offers the trusted Google Maps redirect as the external fallback.
+class _RouteUnavailableBanner extends StatelessWidget {
+  final VoidCallback onOpenGoogleMaps;
+  final VoidCallback onRetry;
+
+  const _RouteUnavailableBanner({
+    required this.onOpenGoogleMaps,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
+        decoration: BoxDecoration(
+          color: VoyoColors.paper.withValues(alpha: 0.97),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: VoyoColors.caution.withValues(alpha: 0.45)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.route_outlined, size: 18, color: VoyoColors.caution),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Route engine unavailable',
+                    style: GoogleFonts.instrumentSans(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: VoyoColors.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    'Showing approximate connections — real routes need the Valhalla engine.',
+                    style: GoogleFonts.instrumentSans(
+                      fontSize: 10.5,
+                      color: VoyoColors.stone,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Primary: trusted external fallback.
+            FilledButton.icon(
+              onPressed: onOpenGoogleMaps,
+              style: FilledButton.styleFrom(
+                backgroundColor: VoyoColors.expedition,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                minimumSize: const Size(0, 32),
+                textStyle: GoogleFonts.instrumentSans(
+                    fontSize: 11, fontWeight: FontWeight.w600),
+              ),
+              icon: const Icon(Icons.map_outlined, size: 14, color: Colors.white),
+              label: const Text('Open in Maps',
+                  style: TextStyle(color: Colors.white)),
+            ),
+            IconButton(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded, size: 16),
+              color: VoyoColors.stone,
+              tooltip: 'Retry',
+              visualDensity: VisualDensity.compact,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _OfflineBanner extends StatelessWidget {
   final String message;

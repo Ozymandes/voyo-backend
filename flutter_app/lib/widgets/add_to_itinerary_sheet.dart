@@ -144,7 +144,12 @@ class _AddToItineraryFlowState extends State<AddToItineraryFlow> {
     // Uses haversine (cheap, routing-independent) so the block is reliable
     // even when OSRM/Valhalla are down. VROOM provides a second opinion via
     // _verdict on the feasible path.
-    final block = _geoClusterBlock(dayItems);
+    //
+    // NOTE: pass the *selected* `day` in (not the `_day` state field) — at
+    // this point `_day` still holds the PREVIOUS selection (or null on the
+    // first pick), so interpolating it into the reason string produced the
+    // "Day null route" copy the partner saw in QA.
+    final block = _geoClusterBlock(dayItems, selectedDay: day);
     if (block != null) {
       setState(() {
         _day = day;
@@ -177,7 +182,8 @@ class _AddToItineraryFlowState extends State<AddToItineraryFlow> {
   /// same-day geographic impossibility, else null. Threshold is 150 km —
   /// cleanly separates Luxor↔Sinai (600 km), Cairo↔Aswan (700 km) from
   /// combinable pairs like Cairo↔Giza (15 km) or Cairo↔Saqqara (30 km).
-  _GeoBlock? _geoClusterBlock(List<Map<String, dynamic>> dayItems) {
+  _GeoBlock? _geoClusterBlock(List<Map<String, dynamic>> dayItems,
+      {required int selectedDay}) {
     final candLat = widget.poi.latitude;
     final candLng = widget.poi.longitude;
     if (dayItems.isEmpty) return null; // empty day → defines its own cluster
@@ -211,7 +217,7 @@ class _AddToItineraryFlowState extends State<AddToItineraryFlow> {
         distanceKm: nearestKm,
         clusterCity: clusterName,
         reason:
-            '${widget.poi.name} is ${nearestKm.round()} km from your Day $_day route — '
+            '${widget.poi.name} is ${nearestKm.round()} km from your Day $selectedDay route — '
             'this day is built around $clusterName, while ${widget.poi.name} is in '
             '${widget.poi.city ?? 'a different region'}. A same-day visit would need '
             'major cross-region travel and isn\'t realistic.',
@@ -235,6 +241,34 @@ class _AddToItineraryFlowState extends State<AddToItineraryFlow> {
         _verdict = v;
         _verdictLoading = false;
       });
+  }
+
+  /// Verdict fetch for a BRAND-NEW day ("Create a new Day N here"). Same as
+  /// _loadVerdict but passes `days: day` so VROOM actually allocates a
+  /// vehicle for the new day instead of the old max — without this the
+  /// solver would reject the candidate as unassignable. Also guards against
+  /// double-tap (partner QA noted lag): if a verdict is already loading,
+  /// the second tap is a no-op.
+  Future<void> _loadVerdictForNewDay(int day) async {
+    if (_verdictLoading) return; // guard against double-tap
+    final tripId = _trip?['id'] as int?;
+    if (tripId == null) return;
+    setState(() => _verdictLoading = true);
+    try {
+      final v = await widget.service.previewAdd(
+        itineraryId: tripId,
+        candidatePoiId: widget.poi.id,
+        preferredDay: day,
+        days: day,
+      );
+      if (mounted)
+        setState(() {
+          _verdict = v;
+          _verdictLoading = false;
+        });
+    } catch (_) {
+      if (mounted) setState(() => _verdictLoading = false);
+    }
   }
 
   Map<String, dynamic>? _conflictAt(String slot) {
@@ -778,12 +812,22 @@ class _AddToItineraryFlowState extends State<AddToItineraryFlow> {
           subtitle:
               'Start a fresh day built around ${widget.poi.city ?? 'this area'}.',
           onTap: () {
+            // A brand-new empty day has no cluster to conflict with, so the
+            // geographic block is moot and VROOM would just confirm it fits.
+            // Skip straight to the slot step (no verdict round-trip — that's
+            // what made this button feel laggy). The placement card renders
+            // immediately with VROOM's first computed slot.
             setState(() {
               _day = nextDay;
               _geoBlockReason = null;
+              _verdict = null;
+              _verdictLoading = false;
               _step = _ItinStep.slot;
             });
-            _loadVerdict(nextDay);
+            // VROOM verdict is still useful for the placement card, but we
+            // pass the CORRECT day count (nextDay, not _days.last) so the
+            // solver actually has a vehicle for the new day.
+            _loadVerdictForNewDay(nextDay);
           },
         ),
         // Try a different existing day.

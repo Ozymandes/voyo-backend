@@ -186,22 +186,57 @@ class SafarnyPlanner:
         unique_ids = [i for i in selected_ids if not (i in seen or seen.add(i))]
 
         travel_profile = "auto"
-        vroom_schedule = None
-        vroom_ok = False
-        try:
-            vroom_schedule = await self.itinerary_engine.generate(
-                poi_ids=unique_ids,
-                user_id=user_id,
-                days=day_count,
-                hotel_location=tuple(hotel_location) if hotel_location else None,
-                daily_start="08:00",
-                daily_end="20:00",
-                travel_profile=travel_profile,
-                pace=profile_with_days.get("pace", "balanced"),
-            )
-            vroom_ok = bool(vroom_schedule.get("days"))
-        except Exception as e:
-            logger.error(f"Safarny VROOM optimization failed: {e}")
+        # Per-day VROOM optimization. The LLM already clusters POIs by region
+        # per day, so solving each day independently keeps the Valhalla
+        # matrix small and same-region — Valhalla's sources_to_targets
+        # rejects large multi-region matrices (Cairo↔Aswan pairs exceed its
+        # max routing distance), which was silently breaking the whole-trip
+        # solve and producing the unscheduled output partner QA saw. Each
+        # day gets real arrival times; cross-day order is the LLM's call.
+        vroom_schedule = {"days": [], "optimization_metadata":
+                          {"solver_status": "OK", "unassigned": []}}
+        vroom_ok_any = False
+        if llm_ok:
+            for llm_day in llm_plan.get("days", []):
+                day_poi_ids = [int(i) for i in llm_day.get("poi_ids", [])
+                               if int(i) in {p["id"] for p in candidates}]
+                if not day_poi_ids:
+                    continue
+                try:
+                    day_sched = await self.itinerary_engine.generate(
+                        poi_ids=day_poi_ids,
+                        user_id=user_id,
+                        days=1,
+                        hotel_location=tuple(hotel_location) if hotel_location else None,
+                        daily_start="08:00",
+                        daily_end="20:00",
+                        travel_profile=travel_profile,
+                        pace=profile_with_days.get("pace", "balanced"),
+                    )
+                    # Tag the day with its real day number so _shape can match.
+                    for d in day_sched.get("days", []):
+                        d["day_number"] = llm_day.get("day", 1)
+                    vroom_schedule["days"].extend(day_sched.get("days", []))
+                    vroom_ok_any = vroom_ok_any or bool(day_sched.get("days"))
+                except Exception as e:
+                    logger.warning(f"Safarny per-day VROOM solve failed "
+                                  f"for day {llm_day.get('day')}: {e}")
+        else:
+            # LLM down → one bulk solve of the recommendation fallback.
+            try:
+                vroom_schedule = await self.itinerary_engine.generate(
+                    poi_ids=unique_ids,
+                    user_id=user_id,
+                    days=day_count,
+                    hotel_location=tuple(hotel_location) if hotel_location else None,
+                    daily_start="08:00",
+                    daily_end="20:00",
+                    travel_profile=travel_profile,
+                    pace=profile_with_days.get("pace", "balanced"),
+                )
+                vroom_ok_any = bool(vroom_schedule.get("days"))
+            except Exception as e:
+                logger.error(f"Safarny fallback VROOM optimization failed: {e}")
 
         # 4. Merge into the final Safarny shape.
         return self._shape(
@@ -211,7 +246,7 @@ class SafarnyPlanner:
             vroom_schedule=vroom_schedule,
             selected_ids=unique_ids,
             llm_ok=llm_ok,
-            vroom_ok=vroom_ok,
+            vroom_ok=vroom_ok_any,
         )
 
     async def _llm_select(
@@ -318,6 +353,16 @@ class SafarnyPlanner:
                     "address": poi.get("address", ""),
                     "tip": vstop.get("tip"),
                 })
+            # Sort each day's stops by VROOM-assigned arrival time so the
+            # itinerary reads in visit order (08:03 → 10:12 → 12:20), not
+            # the LLM's selection order. Unscheduled stops (time=None) sort
+            # last within their day.
+            def _sort_key(s):
+                t = s.get("time")
+                if not t:
+                    return (1, "99:99:99")
+                return (0, t)
+            stops.sort(key=_sort_key)
             days_out.append({
                 "day": dn,
                 "date": _day_date(profile, dn),

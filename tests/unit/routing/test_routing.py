@@ -264,14 +264,22 @@ class TestVROOMProblemBuilding:
         assert "matrices" in problem
         assert len(problem["vehicles"]) == 1  # 1 day = 1 vehicle
         assert len(problem["jobs"]) == 1  # 1 POI = 1 job
-        assert problem["vehicles"][0]["start"] == 0  # hotel index
+        # Vehicle anchored at hotel: BOTH matrix index AND [lon,lat] coord
+        # (VROOM requires both when a custom matrix is supplied).
+        assert problem["vehicles"][0]["start_index"] == 0  # hotel index
+        assert problem["vehicles"][0]["start"] == [31.23, 30.04]  # [lon, lat]
         assert problem["vehicles"][0]["time_window"] == [32400, 64800]  # 9AM-6PM
+        # Profile is mapped from Valhalla's "auto" to VROOM's "car".
+        assert problem["vehicles"][0]["profile"] == "car"
+        # Matrix is keyed by the VROOM profile name, not Valhalla's.
+        assert "car" in problem["matrices"]
 
     def test_multi_day_creates_multiple_vehicles(self):
         """3-day trip should create 3 vehicles."""
         client = self._make_vroom_client()
 
-        pois = [{"id": i, "name": f"POI {i}", "average_visit_duration": 60,
+        pois = [{"id": i, "name": f"POI {i}", "latitude": 30.0 + i * 0.01,
+                 "longitude": 31.0 + i * 0.01, "average_visit_duration": 60,
                  "opening_hours": None} for i in range(1, 6)]
         matrix = [[{"distance": 0, "time": 0}] * 6] * 6
 
@@ -282,20 +290,25 @@ class TestVROOMProblemBuilding:
 
         assert len(problem["vehicles"]) == 3
 
-    def test_no_hotel_skips_start_end(self):
-        """Without hotel, vehicles should not have start/end locations."""
+    def test_no_hotel_anchors_at_first_poi(self):
+        """Without hotel, vehicles anchor at the first POI's location/index
+        (VROOM requires every vehicle to have a start/end)."""
         client = self._make_vroom_client()
 
-        pois = [{"id": 1, "name": "Test", "average_visit_duration": 60, "opening_hours": None}]
-        matrix = [[{"distance": 0, "time": 0}]]
+        pois = [{"id": 1, "name": "Test", "latitude": 30.0, "longitude": 31.0,
+                 "average_visit_duration": 60, "opening_hours": None}]
+        matrix = [[{"distance": 0, "time": 0}, {"distance": 0, "time": 0}],
+                  [{"distance": 0, "time": 0}, {"distance": 0, "time": 0}]]
 
         problem = client._build_vroom_problem(
             pois=pois, matrix=matrix, hotel=None,
             days=1, daily_start="09:00", daily_end="18:00", profile="auto",
         )
 
-        assert "start" not in problem["vehicles"][0]
-        assert "end" not in problem["vehicles"][0]
+        # No hotel → vehicle anchored at first POI's matrix index (1) AND its coord.
+        assert problem["vehicles"][0]["start_index"] == 1
+        assert problem["vehicles"][0]["end_index"] == 1
+        assert problem["vehicles"][0]["start"] == [31.0, 30.0]
 
 
 class TestVROOMSolutionParsing:
@@ -319,9 +332,11 @@ class TestVROOMSolutionParsing:
                             "arrival": 32400,
                             "service": 10800,
                             "departure": 43200,
-                            "location": 1,
+                            "location_index": 1,
+                            "location": [31.13, 29.97],
                         },
-                        {"type": "end", "arrival": 44400, "location": 0},
+                        {"type": "end", "arrival": 44400,
+                         "location_index": 0, "location": [31.23, 30.04]},
                     ],
                 }
             ],
