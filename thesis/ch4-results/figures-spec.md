@@ -121,26 +121,82 @@
 
 ---
 
-## Figures/tables NOT yet producible (PENDING eval harness) — to be added when harness runs
+## Figures/tables NOW PRODUCIBLE (eval harness ran 2026-06-20) — resolves former PENDINGs
 
-The following are spec'd but blocked on the eval harness. They are NOT in the current figure
-set; the writer adds them when (and only when) the harness produces real numbers.
+> **Updated 2026-06-20.** The eval harness ran on `gpt-4o-mini` via the OPTO gateway.
+> Figures 4.8, 4.9, 4.12 below are now PRODUCED from `thesis/evidence/07-eval-results.json`.
+> All rendered figures are in `thesis/figures/eval/`. Retrieval (4.7), provenance (4.10), and
+> e2e (4.11) remain PENDING their respective runs.
+
+### Fig. 4.8 — Feasibility rate + travel-time feasibility + margin penalty (was PENDING → MEASURED)
+
+- **Data source:** `thesis/evidence/07-eval-results.json` `ablation.*`.
+- **Status:** ✅ **MEASURED 2026-06-20.** Opening-hours feasibility 91.3% (full) vs 84.7%
+  (LLM-only), Δ +6.5 pp. Travel-time feasibility 83.2% vs 47.7%, Δ **+35.6 pp** (the headline).
+  Margin penalty 172 vs 434, Δ −262. Threshold ≥ 90% feasibility: **PASSES** (91.3%).
+- **Rendered figures:** `thesis/figures/eval/ablation_ablation_headline.pdf` (keystone chart),
+  `ablation_ablation_per_profile.pdf` (per-profile deltas). Also catalogued as Fig. 4.12.
+
+### Fig. 4.9 — Reliability (margin-penalty proxy) (was PENDING → MEASURED as proxy)
+
+- **Data source:** `thesis/evidence/07-eval-results.json` `ablation.delta.margin_penalty` +
+  `deep_cleo.aggregate.judge_groundedness`.
+- **Status:** ✅ **MEASURED as proxy 2026-06-20.** Margin penalty 172 vs 434 (full ≫ LLM-only).
+  CLEO groundedness 0.919 over 125 queries (the nothing-fabricated claim). Strict
+  constraint-violation-rate requires a per-constraint predicate harness (future work).
+
+### Fig. 4.12 — Ablation comparison (keystone chart, Figure 4.12 per dossier §4.6.1)
+
+- **What it shows:** grouped bars: full-hybrid vs LLM-only × {travel-time feasibility,
+  opening-hours feasibility, margin penalty}.
+- **Data source:** `thesis/evidence/07-eval-results.json` `ablation.full`,
+  `ablation.baseline_llm_only`, `ablation.delta`.
+- **Status:** ✅ **MEASURED 2026-06-20.** The single most defensible chart in the thesis.
+- **Rendered figure:** `thesis/figures/eval/ablation_ablation_headline.pdf`.
+
+### Fig. 4.13 — Planner latency CDF + provenance tally (NEW)
+
+- **What it shows:** end-to-end /plan latency distribution + the determinism provenance
+  (LLM selection / VROOM times / geo-guard firing rates).
+- **Data source:** `thesis/evidence/07-eval-results.json` `planner_benchmark.*`.
+- **Rendered figures:** `thesis/figures/eval/planner_planner_latency.pdf`,
+  `planner_planner_pace_stops.pdf`.
+
+### Figs. 4.14–4.16 — Deep CLEO overall / groundedness / category heatmap (NEW)
+
+- **What they show:** LLM-judge scores (groundedness, relevance, helpfulness) overall and by
+  category (factual, personalized, complex, out_of_scope, itinerary).
+- **Data source:** `thesis/evidence/07-eval-results.json` `deep_cleo.*`.
+- **Rendered figures:** `thesis/figures/eval/deep_deep_cleo_overall.pdf`,
+  `deep_deep_cleo_groundedness.pdf`, `deep_deep_cleo_category_heatmap.pdf`.
+
+### Fig. 4.17 — Load test latency + throughput (NEW)
+
+- **What it shows:** p50/p95/p99 latency + throughput (RPS) across concurrency levels 1–40.
+- **Data source:** `thesis/evidence/07-eval-results.json` `load_test.summary`.
+- **Rendered figures:** `thesis/figures/eval/load_load_latency.pdf`,
+  `load_load_throughput.pdf`.
+
+### Fig. 4.18 — Isochrone reachability views (REMOVED — replaced by in-app UI)
+
+- **What they would have shown:** live Valhalla isochrone polygons for two anchors
+  (Cairo walk, Luxor drive) as visual evidence of the routing engine's role.
+- **Status:** ❌ **REMOVED from the eval figure set.** The bare-polygon matplotlib
+  renders lacked the map overlay the live product shows, so they read as outlines
+  rather than reachability views. The thesis §4 will instead use in-app UI
+  screenshots (the live Flutter map with the isochrone bloom + POI cards) which
+  show the SAME Valhalla data with the user-facing map context. Those screenshots
+  are captured from the running app and live outside `thesis/figures/eval/`.
+
+## Figures/tables still PENDING
 
 ### Fig. 4.7 — Retrieval P@5 / Recall@5 / nDCG@5 by profile set (PENDING)
 
-- **Data source:** planned eval harness over the 310-POI substrate.
-- **Status:** ⏸ **PENDING eval harness.** No figure produced. Threshold P@5 ≥ 0.7.
-
-### Fig. 4.8 — Feasibility rate (time-feasible %) + mean Average Margin per day (PENDING)
-
-- **Data source:** planned eval harness; VROOM/Valhalla/OSRM over 310-POI substrate.
-- **Status:** ⏸ **PENDING eval harness.** Threshold ≥ 90% feasible. Comparand: ItiNera
-  Average Margin 86.0 (full) / 242.8 (w/o CSO) — N1 Q5.
-
-### Fig. 4.9 — Constraint-violation rate by violation type (PENDING)
-
-- **Data source:** planned eval harness.
-- **Status:** ⏸ **PENDING eval harness.** Threshold < 5%.
+- **Data source:** planned IR harness over the 310-POI substrate.
+- **Status:** ⏸ **PENDING.** The 145-query benchmark has type-level and keyword-level labels
+  but NOT POI-level ground-truth relevance sets. True IR metrics need a human-curated POI-ID
+  relevance set per query. The keyword-overlap `heuristic_overall` (0.692) is a partial proxy.
+  Threshold P@5 ≥ 0.7.
 
 ### Fig. 4.10 — Provenance coverage (post-enrich) (PENDING Windows enrich run)
 
@@ -153,9 +209,8 @@ set; the writer adds them when (and only when) the harness produces real numbers
 ### Fig. 4.11 — e2e Playwright pass rate by user journey (PENDING)
 
 - **Data source:** planned Playwright suite against the voyo-e2e chain.
-- **Status:** ⏸ **PENDING eval harness + e2e chain wiring** (and a non-free-tier LLM
-  provider; the Groq 100k TPD ceiling documented in §4.2.2a blocks reliable e2e runs).
-  Threshold ≥ 80%.
+- **Status:** ⏸ **PENDING e2e chain wiring** (and a non-free-tier LLM provider). Threshold
+  ≥ 80%.
 
 ---
 

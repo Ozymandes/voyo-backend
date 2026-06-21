@@ -396,9 +396,49 @@ correctness tasks the LLM is forbidden from authoring.
    the academic characterisation.
 4. **OSRM = BOTH a Tier-A paper (OSRM-PAPER) AND Tier-C software (S-OSRM)** — never conflate.
    Body quotes Q5/Q6/Q7 are FULL-TEXT VERIFIED 2026-06-17 and quotable.
-5. **Ablation numbers are PENDING** — never invent a feasibility / violation / Avg-Margin
-   number for Config A or Config B.
+5. **Ablation numbers are now MEASURED (2026-06-20)** — the eval harness ran on gpt-4o-mini
+   via OPTO. Headline: travel-time feasibility 83.2% (full) vs 47.7% (LLM-only), Δ +35.6 pp;
+   opening-hours feasibility 91.3% vs 84.7%; margin penalty 172 vs 434. All numbers in
+   `thesis/evidence/07-eval-results.json`. The writer may now quote these in §3.5.6 and cross-
+   reference §4.6.1.
 6. **Map widget = `flutter_map`, NOT Mapbox.**
 7. **Semantic cache is non-operational** (Redis DOWN, not embedding-based) — disclose honestly.
 8. **No `scam_risk` / `authenticity_score` field** — real field: `popularity_score`
    (transparent heuristic).
+
+---
+
+## ADDENDUM 2026-06-20: eval-backend model + paired-design (NEW evidence for §3.2.5, §3.5.2a/b)
+
+### Eval-backend model (verbatim from `thesis/evidence/07-eval-results.json` `_meta`)
+
+> "llm_backend": "OPTO gateway (optollm.optomatica.com) via OpenAI-compatible
+> /v1/chat/completions"
+> "llm_model": "gpt-4o-mini"
+> "model_rationale": "Only OPTO model passing BOTH tasks in head-to-head probing: (a)
+> planner structured-JSON POI selection, (b) CLEO OpenAI-style function calling. gemma4-26b/31b
+> return empty content on (a); llama-4-scout-17b produces malformed nested tool calls on (b).
+> Single model across all 3 LLM-using pipelines for reproducibility."
+> "demo_model_note": "Production/demo path remains Groq llama-3.3-70b-versatile (unchanged);
+> eval backend is opt-in via VOYO_LLM_BACKEND=opto env var. Zero regression to demo path."
+
+- **Codebase citation:** `src/cleo/config.py` `OptoClient` + `get_llm_client()` factory (the
+  single env-var switch; default `groq` preserves the demo path). Three call sites wired:
+  `src/cleo/cleo_agent.py:88`, `src/itinerary/safarny_planner.py:170`,
+  `tests/academic/llm_judge.py:76`.
+
+### Paired-design provenance (verbatim from `07-eval-results.json` `ablation.provenance`)
+
+> "llm_selected": 12, "vroom_optimized": 11, "total": 12
+
+Both arms share the identical LLM POI selection (12/12 LLM-selected); they diverge only on
+the time-assignment step (VROOM solve vs naive service+buffer slots). The single VROOM-down
+case is the documented Valhalla 400 km intra-day matrix limit, surfaced as graceful
+degradation. The provenance seam is `result.provenance` in `src/itinerary/safarny_planner.py`.
+
+### Travel-time feasibility metric (§3.5.2b) — the headline discriminator
+
+Fraction of inter-POI transitions whose scheduled gap ≥ real travel time. Haversine-computed
+for the LLM-only arm (no recorded travel); recorded VROOM/Valhalla travel for the full arm.
+Implemented in `scripts/testing/voyo_eval/metrics.py` `travel_time_feasibility()`. Measured
+delta: **+35.6 pp** (83.2% full vs 47.7% LLM-only) — the keystone result.

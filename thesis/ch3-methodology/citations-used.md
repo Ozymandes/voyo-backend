@@ -123,6 +123,21 @@
 5. **POI count = 310 everywhere** per criteria §4. The dossier does NOT introduce 255; the
    stale evidence files (05/06/07/_GROUNDING_MAP) are flagged for regeneration but their stale
    count is not propagated into Ch3 output.
-6. **Ablation numbers are PENDING.** No feasibility / violation / Avg-Margin number is
-   invented for Config A or Config B; the dossier commits the protocol + thresholds +
-   ItiNera-derived magnitude target only.
+6. **Ablation numbers are now MEASURED (2026-06-20).** The eval harness ran on gpt-4o-mini
+   via OPTO. Headline (from `thesis/evidence/07-eval-results.json`): travel-time feasibility
+   83.2% (full) vs 47.7% (LLM-only), Δ +35.6 pp; opening-hours feasibility 91.3% vs 84.7%;
+   margin penalty 172 vs 434. These resolve the former PENDING — the writer may now quote
+   them in §3.5.6 and cross-reference §4.6.1.
+
+---
+
+## ADDENDUM 2026-06-20: new citations for §3.2.5 (eval model) + §3.5.2a/b (paired design)
+
+| §3.x claim | Citation id | Tier | Locator |
+|---|---|---|---|
+| §3.2.5 — eval backend model (gpt-4o-mini via OPTO) | (number: `07-eval-results.json`) | — | `thesis/evidence/07-eval-results.json` `_meta` |
+| §3.2.5 — factory switch (zero demo regression) | (codebase) | — | `src/cleo/config.py` `OptoClient` + `get_llm_client()` |
+| §3.5.2a — paired-design provenance | (number: `07-eval-results.json`) | — | `thesis/evidence/07-eval-results.json` `ablation.provenance` |
+| §3.5.2a — provenance seam | (codebase) | — | `src/itinerary/safarny_planner.py` `result.provenance` |
+| §3.5.2b — travel-time feasibility metric | (codebase) | — | `scripts/testing/voyo_eval/metrics.py` `travel_time_feasibility()` |
+| §3.5.7 — keystone chart (now produced) | (figure) | — | `thesis/figures/eval/ablation_ablation_headline.pdf` |

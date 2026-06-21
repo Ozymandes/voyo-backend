@@ -122,26 +122,39 @@ written about it") respected.
 
 ### 5. Pending vs fabricated — PASS (no-fabrication contract satisfied)
 
-This is the dossier's strongest dimension. All five PENDING metrics carry an explicit
-"*Strategy defined; measurement PENDING the <reason>.* No number is reported." sentence:
+> **Updated 2026-06-20:** the eval harness ran. Metrics 2, 3, and 5 are now **MEASURED**
+> with real numbers from `thesis/evidence/07-eval-results.json`. Only Metrics 1, 4, 6 remain
+> PENDING — and each still carries its explicit "no number reported" disclosure.
 
-| METRIC | Family | PENDING reason | Invented number? |
-|---|---|---|---|
-| 1 | Retrieval P@k/R/nDCG | eval harness | None ✓ |
-| 2 | Feasibility | eval harness | None ✓ |
-| 3 | Reliability | eval harness | None ✓ |
-| 4 | Provenance ≥85% | Windows enrich run | None ✓ |
-| 6 | UX e2e Playwright | eval harness + e2e chain wiring | None ✓ |
+The no-fabrication contract is satisfied across both the PENDING and the newly-MEASURED
+columns. The three still-PENDING metrics carry an explicit "*Strategy defined; measurement
+PENDING the <reason>.* No number is reported." sentence:
+
+| METRIC | Family | Status | Number source | Invented? |
+|---|---|---|---|---|
+| 1 | Retrieval P@k/R/nDCG | ⏸ PENDING (needs POI-level labels) | — | None ✓ |
+| 2 | Feasibility | ✅ **MEASURED 2026-06-20** | `07-eval-results.json` (91.3% / +35.6 pp) | Verbatim ✓ |
+| 3 | Reliability | ✅ **MEASURED 2026-06-20** (proxy) | `07-eval-results.json` (margin 172 vs 434; groundedness 0.919) | Verbatim ✓ |
+| 4 | Provenance ≥85% | ⏸ PENDING Windows enrich run | — | None ✓ |
+| 5 | Latency | ✅ MEASURED | `02-latency.json` + load test `07-eval-results.json` | Verbatim ✓ |
+| 6 | UX e2e Playwright | ⏸ PENDING e2e chain | — | None ✓ |
 
 The §4.4 summary table reproduces the criteria §5 thresholds verbatim (P@5 ≥ 0.7, ≥90%
-feasible, <5% violations, ≥85% grounded, p95 < 500 ms, ≥80% e2e) and marks METRIC 5 as
-"✅ MEASURED NOW — PASSES (p95 1.662 ms)" — the only metric with a real number.
+feasible, <5% violations, ≥85% grounded, p95 < 500 ms, ≥80% e2e). Metrics 2, 3, 5 now carry
+real measured numbers pulled verbatim from `07-eval-results.json`; Metrics 1, 4, 6 remain
+PENDING with no number.
 
 The trickiest PENDING case (METRIC 4 provenance) is handled honestly: the pre-enrich probe
 (42 generated / 57 grounded / "135%") is reported as a *grounding-path probe*, with an
 explicit "Honesty flag (critical)" stating the 135% is a pre-enrich artifact and **NOT** the
 coverage headline. No invented ≥85% number appears anywhere. Criteria §5 "Honesty rule (Ch4)"
 and §7 "Never invent a number for a pending metric" both satisfied.
+
+**Newly-MEASURED honesty check (2026-06-20):** every number in §4.6 and evidence-packet §G is
+pulled verbatim from `07-eval-results.json` — no rounding, no recomputation, no inflation. The
+P07 outlier (0.167 feasibility on both arms) is disclosed as data-substrate evidence, not
+hidden. The 2.4% CLEO degradation is disclosed, not omitted. The eval-backend model
+(gpt-4o-mini) is disclosed in §3.2.5, not buried.
 
 ### 6. Section completeness — PASS (exceeds pass threshold)
 

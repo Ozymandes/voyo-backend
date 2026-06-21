@@ -56,8 +56,13 @@ used" flag needed.)
 | METRIC 2 (feasibility) — strategy + threshold | N1, N4, OSRM-PAPER, S-VROOM, S-OSRM | A, A, A, C, C | arXiv:2402.07204 T2; arXiv:2403.13795 §2.2/§6.2/§3; Luxen-Vetter abstract; VROOM README; OSRM docs |
 | METRIC 3 (reliability) — strategy + threshold | N5, N1 | B, A | OpenReview 34kIv0YVNe §1 pp.1–2 (Q2 + Q5); arXiv:2402.07204 §1 p.1 (Q3) |
 | METRIC 4 (provenance) — strategy + threshold | N1 | A | arXiv:2402.07204 §1 p.1 (Q3); number source `narrative_sources.json` |
-| METRIC 5 (latency) — ✅ measured now | (number: `02-latency.json`) | — | `thesis/evidence/02-latency.json` |
+| METRIC 5 (latency) — ✅ measured now | (number: `02-latency.json`); (number: `07-eval-results.json` load test) | — | `thesis/evidence/02-latency.json` + `07-eval-results.json` |
 | METRIC 6 (UX e2e) — strategy + threshold | N5 | B | OpenReview 34kIv0YVNe §1 p.2 (Q4); blocker number `01-test-results.json` |
+| §4.6.1 — keystone ablation (+35.6 pp travel-time feas) | (number: `07-eval-results.json`) | — | `thesis/evidence/07-eval-results.json` `ablation.*` |
+| §4.6.2 — planner provenance (12/12 LLM, 12/12 VROOM) | (number: `07-eval-results.json`) | — | `thesis/evidence/07-eval-results.json` `planner_benchmark.*` |
+| §4.6.3 — deep CLEO groundedness 0.919 | (number: `07-eval-results.json`) | — | `thesis/evidence/07-eval-results.json` `deep_cleo.*` |
+| §4.6.4 — load test 0% errors, 751 RPS peak | (number: `07-eval-results.json`) | — | `thesis/evidence/07-eval-results.json` `load_test.*` |
+| §4.6.5 — isochrone views | S-VALHALLA | C | `thesis/figures/eval/isochrone_*.png` |
 | 4.5.1 — metric-split reinforces hybrid argument | N1 | A | arXiv:2402.07204 §1 p.1 (Q3) |
 | 4.5.2 — honest measured-vs-pending framing | (criteria §5 + §7) | — | `thesis/criteria/thesis-criteria.md` §5 + §7 |
 | 4.5.3 — forward-compatible ItiNera/PyVRP comparison | N1, N4 | A, A | arXiv:2402.07204 Table 2 (Q5); arXiv:2403.13795 §6.2 (Q5) |
@@ -79,5 +84,6 @@ used" flag needed.)
 - ✅ The Reflexion "+22% ALFWorld" fabricated stat (criteria §7) does not appear.
 - ✅ POI count = **310** everywhere; the stale **255** in `05-db-completeness.json` is flagged
   as STALE and the writer is instructed to use 310 in prose.
-- ✅ PENDING metrics (1, 2, 3, 4, 6) report no number; only METRIC 5 and the supporting
-  99-test / A/B / substrate-integrity metrics are MEASURED NOW.
+- ✅ PENDING metrics (1, 4, 6) report no number; METRICS 2, 3, 5 and the supporting
+  99-test / A/B / substrate-integrity metrics are **MEASURED NOW** as of the 2026-06-20 eval
+  harness run (`07-eval-results.json`).

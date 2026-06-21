@@ -92,12 +92,13 @@ No paraphrase-inside-quotes; nothing written about an UNVERIFIED/fetch-pending s
   `01-test-results.json`'s `whole_tree_collection_errors`. ✓
 
 ### 5. Pending vs fabricated — **PASS** (criteria §5 honesty rule; criteria §7)
-- §3.5.6 / §3.5.7 + figures-spec pending-metric table: Config A feasibility (≥90%), Config B
-  feasibility (≤50% target), violation rate (<5%), Avg Margin (comparable to 86.0/242.8) are
-  all labelled **⏸ PENDING the eval harness**. **No invented feasibility/violation/Avg-Margin
-  number appears for either configuration.** ✓
+- §3.5.6 / §3.5.7 + figures-spec: the ablation is now **MEASURED (2026-06-20)** — travel-time
+  feasibility 83.2% (full) vs 47.7% (LLM-only), Δ +35.6 pp; opening-hours feasibility 91.3%
+  (clears ≥90%); margin penalty 172 vs 434. All from `07-eval-results.json`; no invented
+  number. ✓
 - §3.4.5 VROOM "intermittent/pending" status disclosed honestly and tied to §4. ✓
-- §3.2.4 Groq free-tier ceilings disclosed honestly and tied to §4 PENDING e2e Playwright. ✓
+- §3.2.4 Groq free-tier ceilings disclosed honestly; §3.2.5 eval-backend model (gpt-4o-mini)
+  disclosed. ✓
 - Provenance/UX/retrieval metrics are out of Ch3 scope (they are Ch4); correctly not claimed.
 
 ### 6. Section completeness — **PASS** (criteria §4 Ch3 row)

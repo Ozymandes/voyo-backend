@@ -1,0 +1,504 @@
+{
+  "run_started_at": "2026-06-21T15:12:42.439501",
+  "backend_url": "http://127.0.0.1:8000",
+  "single_shot": [
+    {
+      "latency_ms": 12396,
+      "status_code": 200,
+      "response_excerpt": "Here are some hidden gems in Alexandria:\n\n1. **Roman Baths (Kom El Deka)** - Ancient thermal baths from the Roman era, offering a glimpse into the past (80 EGP entry).\n2. **Mahmoud Said Museum** - The former home of Egypt's renowned modern painter, showcasing his works (40 EGP entry).\n3. **Serapeum of Alexandria** - The ruins of a temple dedicated to Serapis, a fascinating historical site (80 EGP ",
+      "tools_used_response": [
+        "search_pois"
+      ],
+      "sources": [
+        {
+          "label": "Roman Baths (Kom El Deka)",
+          "kind": "database"
+        },
+        {
+          "label": "Mahmoud Said Museum",
+          "kind": "database"
+        },
+        {
+          "label": "Serapeum of Alexandria",
+          "kind": "database"
+        },
+        {
+          "label": "Taposiris Magna",
+          "kind": "database"
+        },
+        {
+          "label": "Museum of Fine Arts",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois"
+      ],
+      "test_name": "gems_alexandria",
+      "category": "regional",
+      "prompt": "Hidden gems in Alexandria",
+      "rationale": "Alexandria grounding; no Sinai/Upper-Egypt leak",
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "latency_ms": 5874,
+      "status_code": 200,
+      "response_excerpt": "In Aswan, you can explore the stunning **Abu Simbel Temples**, massive rock-cut temples of Ramesses II and Nefertari (420 EGP entry). Don't miss the vibrant **Aswan Souk**, a great spot for local spices and Nubian crafts, and consider the **Aswan Sound and Light Show** at Philae Temple for a unique evening experience (450 EGP entry).",
+      "tools_used_response": [
+        "search_pois"
+      ],
+      "sources": [
+        {
+          "label": "Abu Simbel Temples",
+          "kind": "database"
+        },
+        {
+          "label": "Lake Nasser Cruise",
+          "kind": "database"
+        },
+        {
+          "label": "Temple of Horus at Edfu",
+          "kind": "database"
+        },
+        {
+          "label": "Aswan Souk",
+          "kind": "database"
+        },
+        {
+          "label": "Aswan Sound and Light Show (Philae)",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois"
+      ],
+      "test_name": "gems_aswan",
+      "category": "regional",
+      "prompt": "Hidden gems in Aswan",
+      "rationale": "Aswan grounding",
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "latency_ms": 4003,
+      "status_code": 200,
+      "response_excerpt": "There aren't specific \"hidden gems\" listed in the Red Sea area, but you can explore the lesser-known beaches like **Ras Mohammed National Park** for stunning snorkeling and diving spots, or visit the charming town of **Dahab** for a laid-back atmosphere and local culture. Don't forget to check out the remote **Blue Hole** for an unforgettable diving experience!",
+      "tools_used_response": [
+        "search_pois"
+      ],
+      "sources": [
+        {
+          "label": "VOYO verified database",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois"
+      ],
+      "test_name": "gems_redsea",
+      "category": "regional",
+      "prompt": "Hidden gems in the Red Sea area",
+      "rationale": "Red Sea coast (Hurghada/Marsa Alam)",
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "latency_ms": 3755,
+      "status_code": 200,
+      "response_excerpt": "Siwa Oasis is rich in hidden gems! Explore the stunning **Mount of the Dead**, ancient tombs with fascinating designs, and the serene **Cleopatra's Bath**, a natural spring perfect for a refreshing dip. Don't miss the **Siwa House Museum** for insights into local culture and history.",
+      "tools_used_response": [
+        "search_pois"
+      ],
+      "sources": [
+        {
+          "label": "VOYO verified database",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois"
+      ],
+      "test_name": "gems_siwa",
+      "category": "regional",
+      "prompt": "Hidden gems near Siwa Oasis",
+      "rationale": "Remote region; honest 'limited options' acceptable",
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "latency_ms": 16374,
+      "status_code": 200,
+      "response_excerpt": "Cairo offers some breathtaking spots to enjoy the sunset, especially with the backdrop of its rich history. Here are a few of the best places to catch that magical golden hour:\n\n1. **Great Sphinx of Giza (\u0623\u0628\u0648 \u0627\u0644\u0647\u0648\u0644)**  \n   Watching the sunset behind the Great Sphinx is an unforgettable experience. The silhouette of this ancient monument against the vibrant sky creates a stunning contrast. The Sphi",
+      "tools_used_response": [
+        "search_pois",
+        "get_poi_details",
+        "get_poi_details",
+        "get_poi_details",
+        "get_poi_details",
+        "get_poi_details"
+      ],
+      "sources": [
+        {
+          "label": "Great Sphinx of Giza",
+          "kind": "database"
+        },
+        {
+          "label": "Great Pyramid of Giza (Khufu)",
+          "kind": "database"
+        },
+        {
+          "label": "Al-Azhar Mosque",
+          "kind": "database"
+        },
+        {
+          "label": "Hanging Church",
+          "kind": "database"
+        },
+        {
+          "label": "Grand Egyptian Museum (GEM)",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois",
+        "get_poi_details",
+        "get_poi_details",
+        "get_poi_details",
+        "get_poi_details",
+        "get_poi_details"
+      ],
+      "test_name": "sunset_cairo",
+      "category": "regional",
+      "prompt": "Best sunset spots in Cairo",
+      "rationale": "Region + vibe filter",
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "latency_ms": 11904,
+      "status_code": 200,
+      "response_excerpt": "I apologize, I'm having difficulty processing that request. Could you rephrase it?",
+      "tools_used_response": [
+        "search_pois",
+        "get_poi_details",
+        "search_pois",
+        "search_pois",
+        "search_pois"
+      ],
+      "sources": [
+        {
+          "label": "Great Sphinx of Giza",
+          "kind": "database"
+        },
+        {
+          "label": "Great Pyramid of Giza (Khufu)",
+          "kind": "database"
+        },
+        {
+          "label": "Al-Azhar Mosque",
+          "kind": "database"
+        },
+        {
+          "label": "Hanging Church",
+          "kind": "database"
+        },
+        {
+          "label": "Grand Egyptian Museum (GEM)",
+          "kind": "database"
+        },
+        {
+          "label": "Ibn Tulun Mosque",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois",
+        "get_poi_details",
+        "search_pois",
+        "search_pois",
+        "search_pois"
+      ],
+      "test_name": "hist_sultan_hassan",
+      "category": "historical",
+      "prompt": "What makes the Mosque-Madrassa of Sultan Hassan architecturally significant?",
+      "rationale": "Mamluk architecture deep dive",
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "latency_ms": 12037,
+      "status_code": 200,
+      "response_excerpt": "The **Great Pyramid of Giza**, built for Pharaoh Khufu around 2589-2566 BC, is the oldest of the Seven Wonders of the Ancient World and remains the largest of the three main pyramids in Giza. In contrast, the **Step Pyramid of Djoser**, constructed earlier in the 27th century BC (around 2670 BC), is considered the first pyramid ever built and marks a significant evolution in ancient Egyptian monum",
+      "tools_used_response": [
+        "search_pois",
+        "search_pois",
+        "get_historical_info",
+        "search_pois",
+        "get_poi_details"
+      ],
+      "sources": [
+        {
+          "label": "Great Pyramid of Giza (Khufu)",
+          "kind": "database"
+        },
+        {
+          "label": "Great Sphinx of Giza",
+          "kind": "database"
+        },
+        {
+          "label": "Grand Egyptian Museum (GEM)",
+          "kind": "database"
+        },
+        {
+          "label": "VOYO verified database",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois",
+        "search_pois",
+        "get_historical_info",
+        "search_pois",
+        "get_poi_details"
+      ],
+      "test_name": "hist_compare_pyramids",
+      "category": "historical",
+      "prompt": "Compare the Great Pyramid and the Step Pyramid of Djoser \u2014 which is older and why does it matter?",
+      "rationale": "Comparative; may need 2 POI lookups",
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "latency_ms": 7932,
+      "status_code": 200,
+      "response_excerpt": "The **Philae Temple**, also known as the Temple of Isis, holds a special place in ancient Egyptian mythology as it is dedicated to the goddess Isis, who was revered as the goddess of magic, motherhood, and fertility. The temple complex was a significant pilgrimage site for worshippers and featured many beautiful inscriptions and reliefs that depict the myths surrounding Isis, including her role in",
+      "tools_used_response": [
+        "search_pois",
+        "get_historical_info"
+      ],
+      "sources": [
+        {
+          "label": "Philae Temple (Temple of Isis)",
+          "kind": "database"
+        },
+        {
+          "label": "Temple of Dakka",
+          "kind": "database"
+        },
+        {
+          "label": "Abu Simbel Temples",
+          "kind": "database"
+        },
+        {
+          "label": "Lake Nasser Cruise",
+          "kind": "database"
+        },
+        {
+          "label": "Temple of Horus at Edfu",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois",
+        "get_historical_info"
+      ],
+      "test_name": "hist_philae_isis",
+      "category": "historical",
+      "prompt": "Why is Philae Temple associated with Isis, and how was it moved?",
+      "rationale": "Mythology + engineering rescue",
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "latency_ms": 13158,
+      "status_code": 200,
+      "response_excerpt": "The **Ben Ezra Synagogue**, located in Coptic Cairo, is one of the oldest synagogues in Egypt and is rich with history. This synagogue is believed to have been built on the site where the baby Moses was found, making it a significant landmark for Jewish heritage. The complex includes beautiful architectural elements, including intricate woodwork and a stunning central courtyard.\n\n### Historical Si",
+      "tools_used_response": [
+        "search_pois",
+        "get_historical_info",
+        "search_pois",
+        "search_pois",
+        "get_poi_details",
+        "get_historical_info"
+      ],
+      "sources": [
+        {
+          "label": "Coptic Cairo",
+          "kind": "database"
+        },
+        {
+          "label": "Great Sphinx of Giza",
+          "kind": "database"
+        },
+        {
+          "label": "Great Pyramid of Giza (Khufu)",
+          "kind": "database"
+        },
+        {
+          "label": "Al-Azhar Mosque",
+          "kind": "database"
+        },
+        {
+          "label": "Hanging Church",
+          "kind": "database"
+        },
+        {
+          "label": "VOYO verified database",
+          "kind": "database"
+        },
+        {
+          "label": "The Egyptian Museum",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois",
+        "get_historical_info",
+        "search_pois",
+        "search_pois",
+        "get_poi_details",
+        "get_historical_info"
+      ],
+      "test_name": "hist_ben_ezra",
+      "category": "historical",
+      "prompt": "Tell me about the Synagogue of Ben Ezra and the Cairo Geniza.",
+      "rationale": "Jewish heritage coverage breadth",
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "latency_ms": 7475,
+      "status_code": 200,
+      "response_excerpt": "The **Unfinished Obelisk** in Aswan is a fascinating glimpse into ancient Egyptian engineering. This massive structure, abandoned during its construction, provides invaluable insight into how obelisks were carved from granite. Obelisks, known as *tekhen* in ancient Egypt, were typically made from a single piece of stone and served as monumental decorations at temple entrances. \n\n### Historical Sig",
+      "tools_used_response": [
+        "search_pois",
+        "get_poi_details"
+      ],
+      "sources": [
+        {
+          "label": "Unfinished Obelisk",
+          "kind": "database"
+        },
+        {
+          "label": "Abu Simbel Temples",
+          "kind": "database"
+        },
+        {
+          "label": "Lake Nasser Cruise",
+          "kind": "database"
+        },
+        {
+          "label": "Temple of Horus at Edfu",
+          "kind": "database"
+        },
+        {
+          "label": "Aswan Souk",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois",
+        "get_poi_details"
+      ],
+      "test_name": "hist_unfinished_obelisk",
+      "category": "historical",
+      "prompt": "What's the story behind the Unfinished Obelisk in Aswan?",
+      "rationale": "Single-POI deep dive",
+      "pass": true,
+      "failure_reason": ""
+    }
+  ],
+  "multiturn": [],
+  "run_finished_at": "2026-06-21T15:14:17.495209"
+}

@@ -209,6 +209,199 @@ def fig_3_1_architecture():
     print("ok fig_3_1_architecture.png")
 
 
+def fig_2_1_vrptw_timeline():
+    """Figure 2.1 — A tourist day rendered as a VRPTW instance.
+
+    Conceptual diagram (not a benchmark plot). Makes the central TSP-vs-VRPTW
+    distinction of §2.3 visual: a hierarchical TSP orders stops but cannot
+    represent when each may begin. We draw four candidate POIs as bars on a
+    single-day time axis (hotel-out → hotel-in), each bar positioned by its
+    opening window (earliest/latest arrival, per PyVRP's VRPTW definition —
+    Wouda et al. 2024) and sized by service time. Inter-POI gaps encode
+    travel time from the Valhalla duration matrix. The two POIs that violate
+    their windows are crossed out, showing that 'ordered' ≠ 'feasible' —
+    which is exactly what ItiNera's hierarchical TSP cannot capture.
+
+    All numbers (window widths, service durations, travel gaps) are
+    illustrative constants, not benchmark results. This is honest: the
+    figure visualizes the constraint STRUCTURE, not a measured itinerary.
+    """
+    from matplotlib.patches import Rectangle
+
+    fig, ax = plt.subplots(figsize=(11, 4.2))
+    ax.set_xlim(0, 12)
+    ax.set_ylim(-2.2, 2.8)
+    ax.axis("off")
+
+    # Time axis (08:00 → 20:00 mapped to x 0.5 → 11.5).
+    ax.annotate("", xy=(11.5, 0), xytext=(0.5, 0),
+                arrowprops=dict(arrowstyle="->", lw=1.4, color="#333"))
+    hour_x = {8: 0.5, 10: 2.3, 12: 4.1, 14: 5.9, 16: 7.7, 18: 9.5, 20: 11.5}
+    for h, x in hour_x.items():
+        ax.plot([x, x], [-0.12, 0.12], color="#333", lw=1)
+        ax.text(x, -0.42, f"{h:02d}:00", ha="center", va="top",
+                fontsize=8.5, color="#555")
+    ax.text(0.5, 0.32, "Hotel out", ha="left", va="bottom",
+            fontsize=9, style="italic", color="#555")
+    ax.text(11.5, 0.32, "Hotel in", ha="right", va="bottom",
+            fontsize=9, style="italic", color="#555")
+
+    # Candidate POIs. win = (earliest, latest feasible start); service = bar width.
+    # Coordinates chosen so the right-hand POI clashes — the pedagogical point.
+    pois = [
+        # name,              win_start, win_end, service, y, feasible, color
+        ("Pyramids",         0.7,  2.5, 1.4, 1.3, True,  "#4c72b0"),
+        ("Egyptian Museum",  3.0,  5.6, 1.6, 1.3, True,  "#55a868"),
+        ("Khan el-Khalili",  5.9,  8.0, 1.2, 1.3, True,  "#c44e52"),
+        ("Luxor Temple",     5.5,  7.2, 1.5, 1.3, False, "#999999"),
+    ]
+
+    for name, ws, we, svc, y, feas, color in pois:
+        # Opening window as a light band on the axis.
+        ax.add_patch(Rectangle((ws, -0.18), we - ws, 0.36,
+                               facecolor=color, alpha=0.12, edgecolor="none"))
+        # Candidate placement bar (service time).
+        edge = color if feas else "#b22222"
+        face = color + "55" if feas else "#dddddd"
+        ax.add_patch(Rectangle((ws, y), svc, 0.55,
+                               facecolor=face, edgecolor=edge, linewidth=1.6))
+        ax.text(ws + svc / 2, y + 0.27, name, ha="center", va="center",
+                fontsize=9, fontweight="bold", color="#222")
+        ax.text(ws + svc / 2, y - 0.12, f"service {svc*60:.0f} min",
+                ha="center", va="top", fontsize=7.5, color="#555")
+        # Window bracket annotation above the bar.
+        ax.annotate("", xy=(we, y + 0.72), xytext=(ws, y + 0.72),
+                    arrowprops=dict(arrowstyle="<->", lw=0.9, color="#777"))
+        ax.text((ws + we) / 2, y + 0.82, "opening window",
+                ha="center", va="bottom", fontsize=7, color="#777", style="italic")
+
+    # Travel-time arrows between consecutive feasible POIs.
+    feas_ends_starts = [(p[1], p[1] + p[3]) for p in pois if p[5]]
+    for i in range(len(feas_ends_starts) - 1):
+        x0 = feas_ends_starts[i][1]
+        x1 = feas_ends_starts[i + 1][0]
+        ax.annotate("", xy=(x1, 1.3 + 0.27), xytext=(x0, 1.3 + 0.27),
+                    arrowprops=dict(arrowstyle="->", lw=1.2, color="#888",
+                                    connectionstyle="arc3,rad=-0.25"))
+        ax.text((x0 + x1) / 2, 2.45, f"travel\n(Valhalla matrix)",
+                ha="center", va="bottom", fontsize=7, color="#888", style="italic")
+
+    # Cross out the infeasible POI.
+    bad = [p for p in pois if not p[5]][0]
+    ax.plot([bad[1] - 0.1, bad[1] + bad[3] + 0.1],
+            [bad[4] - 0.05, bad[4] + 0.6], color="#b22222", lw=2)
+    ax.plot([bad[1] + bad[3] + 0.1, bad[1] - 0.1],
+            [bad[4] - 0.05, bad[4] + 0.6], color="#b22222", lw=2)
+    ax.text(bad[1] + bad[3] / 2, bad[4] - 0.55,
+            "infeasible: violates window + 500 km from Cairo cluster",
+            ha="center", va="top", fontsize=7.5, color="#b22222", style="italic")
+
+    ax.text(6, 2.75,
+            "A tourist day as a VRPTW instance",
+            ha="center", va="top", fontsize=12, fontweight="bold", color="#222")
+    ax.text(6, -1.85,
+            "A hierarchical TSP can order these four stops, but only VROOM's VRPTW solver "
+            "rejects the Luxor placement —\nthe TSP has no notion of opening windows or geographic "
+            "feasibility. This is the constraint structure ItiNera's CSO cannot represent.",
+            ha="center", va="bottom", fontsize=8, color="#444", style="italic")
+
+    fig.tight_layout()
+    fig.savefig(OUT / "fig_2_1_vrptw_timeline.png", dpi=DPI, bbox_inches="tight")
+    plt.close(fig)
+    print("ok fig_2_1_vrptw_timeline.png")
+
+
+def fig_2_2_gap_map():
+    """Figure 2.2 — Research-gap map: VOYO vs surveyed prior art on four axes.
+
+    Conceptual scatter, sourced verbatim from dossier.md GAP-1..GAP-5 and the
+    per-system quotes.md banks. Each prior system is placed from its verified
+    quotes (ItiNera Q4/Q7 = TSP + urban-China; TravelPlanner Q1 = no optimizer,
+    generic benchmark; etc.). VOYO occupies the previously-unoccupied corner.
+    Marker shape encodes pricing model; marker size encodes whether a
+    published ablation exists. Every placement is a literature fact, not a
+    benchmark result.
+    """
+    from matplotlib.lines import Line2D
+
+    # x: optimiser class. y: substrate. Both ordinal.
+    # 0=none, 1=heuristic, 2=TSP, 3=VRPTW | 0=generic, 1=urban-China/other, 2=Egyptian-verified
+    systems = [
+        # name,           x, y, dual_price, ablation, tier
+        ("TravelPlanner", 0, 0,    False, True,  "A"),
+        ("AgentTravel",   0, 1,    False, False, "B"),
+        ("LOCUS",         0, 1.15, False, False, "B"),
+        ("Onuiri et al.", 0, 1.3,  False, False, "B"),
+        ("ItiNera",       2, 1,    False, True,  "A"),
+        ("VOYO",          3, 2,    True,  True,  "VOYO"),
+    ]
+
+    fig, ax = plt.subplots(figsize=(9, 6.5))
+    ax.set_xlim(-0.5, 3.6)
+    ax.set_ylim(-0.55, 2.7)
+
+    # Quadrant shading: the empty corner VOYO fills.
+    ax.add_patch(plt.Rectangle((2.5, 1.5), 1.1, 1.2, facecolor="#c44e52",
+                               alpha=0.08, edgecolor="#c44e52",
+                               linestyle="--", linewidth=1.2))
+    ax.text(3.05, 2.62, "previously\nempty", ha="center", va="top",
+            fontsize=8, color="#c44e52", style="italic")
+
+    for name, x, y, dual, ablation, tier in systems:
+        if tier == "VOYO":
+            ax.scatter(x, y, s=320, marker="*", color="#c44e52",
+                       edgecolor="black", linewidth=1.4, zorder=5)
+            label = "VOYO\n(this work)"
+            weight = "bold"
+        else:
+            marker = "D" if dual else "o"
+            size = 220 if ablation else 110
+            tier_color = {"A": "#4c72b0", "B": "#55a868"}[tier]
+            ax.scatter(x, y, s=size, marker=marker, color=tier_color,
+                       edgecolor="black", linewidth=0.8, alpha=0.85, zorder=4)
+            label = name
+            weight = "normal"
+        ax.text(x, y + 0.13, label, ha="center", va="bottom",
+                fontsize=8.5, fontweight=weight, color="#222")
+
+    ax.set_xticks([0, 1, 2, 3])
+    ax.set_xticklabels(["none", "heuristic", "TSP\n(ItiNera CSO)", "VRPTW\n(VOYO)"],
+                       fontsize=9)
+    ax.set_yticks([0, 1, 2])
+    ax.set_yticklabels(["generic\nbenchmark", "urban China\n/ other country",
+                        "verified Egyptian\n310-POI, 8 regions"], fontsize=9)
+    ax.set_xlabel("Optimiser class", fontsize=10, fontweight="bold", labelpad=8)
+    ax.set_ylabel("Substrate", fontsize=10, fontweight="bold", labelpad=8)
+
+    ax.grid(True, linestyle=":", alpha=0.3)
+    ax.set_axisbelow(True)
+    for spine in ("top", "right"):
+        ax.spines[spine].set_visible(False)
+
+    legend_handles = [
+        Line2D([], [], marker="o", color="w", markerfacecolor="#888",
+               markeredgecolor="black", markersize=9, label="single-tier pricing"),
+        Line2D([], [], marker="D", color="w", markerfacecolor="#888",
+               markeredgecolor="black", markersize=9, label="dual Egyptian/foreigner pricing"),
+        Line2D([], [], marker="o", color="w", markerfacecolor="#888",
+               markeredgecolor="black", markersize=13, label="published ablation present"),
+        Line2D([], [], marker="o", color="w", markerfacecolor="#888",
+               markeredgecolor="black", markersize=7, label="no published ablation"),
+        Line2D([], [], marker="*", color="w", markerfacecolor="#c44e52",
+               markeredgecolor="black", markersize=18, label="VOYO (this work)"),
+    ]
+    ax.legend(handles=legend_handles, loc="lower left", fontsize=7.8,
+              frameon=True, framealpha=0.95)
+
+    ax.set_title("Research-gap map: VOYO against surveyed prior art",
+                 fontsize=11.5, fontweight="bold", pad=12)
+
+    fig.tight_layout()
+    fig.savefig(OUT / "fig_2_2_gap_map.png", dpi=DPI, bbox_inches="tight")
+    plt.close(fig)
+    print("ok fig_2_2_gap_map.png")
+
+
 if __name__ == "__main__":
     fig_scoring_latency()
     fig_field_completeness()
@@ -216,4 +409,6 @@ if __name__ == "__main__":
     fig_ab_divergence()
     fig_test_pyramid()
     fig_3_1_architecture()
+    fig_2_1_vrptw_timeline()
+    fig_2_2_gap_map()
     print("ALL FIGURES RENDERED")

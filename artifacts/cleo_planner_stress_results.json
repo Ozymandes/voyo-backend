@@ -1,0 +1,711 @@
+{
+  "run_started_at": "2026-06-21T13:50:05.018937",
+  "backend_url": "http://127.0.0.1:8000",
+  "test_user_id": "c75ac1b2-0884-4662-9acc-97549b9ec52b",
+  "cleo_tests": [
+    {
+      "test_name": "hidden_gems_cairo",
+      "prompt": "Hidden gems in Cairo",
+      "endpoint": "/api/v1/chat",
+      "rationale": "Region filter must exclude Sinai POIs (Wadi Wishwashi bug)",
+      "latency_ms": 4292,
+      "status_code": 200,
+      "response_excerpt": "Cairo is full of hidden gems like the stunning Al-Muizz Street, the serene Coptic Cairo with its ancient churches, and the vibrant neighborhood of Zamalek. Don't forget to explore the lesser-known cafes and art galleries in these areas for a true local experience!",
+      "tools_used_response": [
+        "search_pois"
+      ],
+      "sources": [
+        {
+          "label": "VOYO verified database",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois"
+      ],
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "test_name": "hidden_gems_giza",
+      "prompt": "Hidden gems in Giza",
+      "endpoint": "/api/v1/chat",
+      "rationale": "Giza grounding",
+      "latency_ms": 3992,
+      "status_code": 200,
+      "response_excerpt": "Giza has some lesser-known spots worth exploring! Check out the panoramic view from the Giza Plateau, the Solar Boat Museum near the Great Pyramid, or the nearby village of Nazlet El-Semman for a glimpse of local life and traditional food.",
+      "tools_used_response": [
+        "search_pois"
+      ],
+      "sources": [
+        {
+          "label": "VOYO verified database",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois"
+      ],
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "test_name": "hidden_gems_sinai",
+      "prompt": "Hidden gems in Sinai",
+      "endpoint": "/api/v1/chat",
+      "rationale": "Sinai grounding \u2014 Wadi Wishwashi valid here",
+      "latency_ms": 3967,
+      "status_code": 200,
+      "response_excerpt": "A hidden gem in Sinai is Wadi Wishwashi, a stunning rainwater pool nestled in a granite canyon. It's perfect for a refreshing swim, surrounded by breathtaking natural beauty!",
+      "tools_used_response": [
+        "search_pois"
+      ],
+      "sources": [
+        {
+          "label": "Wadi Wishwashi",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois"
+      ],
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "test_name": "best_time_luxor",
+      "prompt": "Best time to visit Luxor?",
+      "endpoint": "/api/v1/chat",
+      "rationale": "Seasonal answer; POI, web, or current-weather grounding all acceptable",
+      "latency_ms": 6620,
+      "status_code": 200,
+      "response_excerpt": "The best time to visit Luxor is from October to April, when the weather is much more pleasant, with average temperatures ranging from 20\u00b0C to 30\u00b0C (68\u00b0F to 86\u00b0F). During this period, you can comfortably explore the ancient sites without the scorching heat of summer, which can reach as high as 40\u00b0C (",
+      "tools_used_response": [
+        "get_weather"
+      ],
+      "sources": [
+        {
+          "label": "OpenWeather (Luxor)",
+          "kind": "weather"
+        }
+      ],
+      "confidence": "medium",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "get_weather"
+      ],
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "test_name": "weather_luxor_now",
+      "prompt": "What is the weather in Luxor right now?",
+      "endpoint": "/api/v1/chat",
+      "rationale": "Weather tool must be called for current conditions",
+      "latency_ms": 4629,
+      "status_code": 200,
+      "response_excerpt": "Right now in Luxor, it's quite hot with a temperature of about **39\u00b0C** (102\u00b0F), feeling slightly cooler at **36\u00b0C** due to the low humidity of **11%**. The skies are clear, making it a bright and sunny day, perfect for exploring the temples and tombs! \ud83c\udf1e\n\n**Practical Tip:** If you're out and about, ",
+      "tools_used_response": [
+        "get_weather"
+      ],
+      "sources": [
+        {
+          "label": "OpenWeather (Luxor)",
+          "kind": "weather"
+        }
+      ],
+      "confidence": "medium",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "get_weather"
+      ],
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "test_name": "events_cairo_week",
+      "prompt": "Are there any events or closures in Cairo this week?",
+      "endpoint": "/api/v1/chat",
+      "rationale": "Current events require Tavily/search_web",
+      "latency_ms": 8055,
+      "status_code": 200,
+      "response_excerpt": "Here\u2019s what\u2019s happening in Cairo this week:\n\n1. **Visa Appointments Canceled**: The U.S. Embassy in Cairo has canceled most visa appointments scheduled for October 22-25. If you have plans related to visas during this period, it\u2019s best to check directly with the embassy for updates. [Read more here]",
+      "tools_used_response": [
+        "search_web"
+      ],
+      "sources": [
+        {
+          "label": "Web search",
+          "kind": "web"
+        }
+      ],
+      "confidence": "medium",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": true,
+      "tavily_queries": [
+        "Cairo events closures October 2023"
+      ],
+      "tavily_result_counts": [
+        5
+      ],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_web"
+      ],
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "test_name": "ibn_tulun_history",
+      "prompt": "What is the historical significance of Ibn Tulun Mosque and how was it built?",
+      "endpoint": "/api/v1/chat",
+      "rationale": "Static POI history should use internal DB, not parametric memory",
+      "latency_ms": 7740,
+      "status_code": 200,
+      "response_excerpt": "The **Ibn Tulun Mosque** is one of Cairo's oldest and most significant mosques, constructed between **876 and 879 CE** by Ahmad ibn Tulun. It holds the distinction of being the oldest well-preserved mosque in Egypt and is a prime example of classical Abbasid architecture, drawing inspiration from th",
+      "tools_used_response": [
+        "search_pois",
+        "get_historical_info"
+      ],
+      "sources": [
+        {
+          "label": "Ibn Tulun Mosque",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois",
+        "get_historical_info"
+      ],
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "test_name": "khan_el_khalili_night",
+      "prompt": "Tell me about Khan el-Khalili and whether it is worth visiting at night.",
+      "endpoint": "/api/v1/chat",
+      "rationale": "Cairo POI grounding",
+      "latency_ms": 6261,
+      "status_code": 200,
+      "response_excerpt": "**Khan el-Khalili** is a historic souk (market) located in the heart of Islamic Cairo, renowned for its vibrant atmosphere and rich cultural heritage. Established in the 14th century, this bustling marketplace is filled with shops selling everything from traditional Egyptian crafts, spices, jewelry,",
+      "tools_used_response": [
+        "search_pois"
+      ],
+      "sources": [
+        {
+          "label": "Khan el-Khalili",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois"
+      ],
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "test_name": "plan_2day_islamic_arch",
+      "prompt": "Plan a relaxed 2-day Cairo trip for someone who likes Islamic architecture and hates long drives.",
+      "endpoint": "/api/v1/chat",
+      "rationale": "Itinerary curation path",
+      "latency_ms": 11776,
+      "status_code": 200,
+      "response_excerpt": "I apologize, I'm having difficulty processing that request. Could you rephrase it?",
+      "tools_used_response": [
+        "search_pois",
+        "search_pois",
+        "get_poi_details",
+        "search_pois",
+        "search_pois",
+        "search_pois"
+      ],
+      "sources": [
+        {
+          "label": "Ibn Tulun Mosque",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois",
+        "search_pois",
+        "get_poi_details",
+        "search_pois",
+        "search_pois",
+        "search_pois"
+      ],
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "test_name": "plan_3day_packed",
+      "prompt": "Plan a packed 3-day Cairo and Giza itinerary with museums, Islamic Cairo, and pyramids.",
+      "endpoint": "/api/v1/chat",
+      "rationale": "Planner path with POI curation",
+      "latency_ms": 22626,
+      "status_code": 200,
+      "response_excerpt": "Here's a packed 3-day itinerary for your adventure in Cairo and Giza, featuring museums, Islamic architecture, and the iconic pyramids! Get ready for a fantastic journey! \ud83c\udf1f\n\n---\n\n**Day 1 \u2014 Exploring Islamic Cairo**\n\nMorning (9:00\u201312:00)\n\u2022 **Citadel of Cairo (Saladin Citadel)** \u2014 2 hours \u2014 Discover t",
+      "tools_used_response": [
+        "search_pois",
+        "search_pois",
+        "search_pois",
+        "search_pois",
+        "search_pois",
+        "search_pois",
+        "search_pois"
+      ],
+      "sources": [
+        {
+          "label": "Citadel of Cairo (Saladin Citadel)",
+          "kind": "database"
+        },
+        {
+          "label": "The Egyptian Museum",
+          "kind": "database"
+        },
+        {
+          "label": "Dahshur Pyramids",
+          "kind": "database"
+        },
+        {
+          "label": "Ibn Tulun Mosque",
+          "kind": "database"
+        },
+        {
+          "label": "Al-Azhar Mosque",
+          "kind": "database"
+        },
+        {
+          "label": "Mosque of Sultan Hassan",
+          "kind": "database"
+        },
+        {
+          "label": "Al-Mu'izz Street",
+          "kind": "database"
+        },
+        {
+          "label": "VOYO verified database",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois",
+        "search_pois",
+        "search_pois",
+        "search_pois",
+        "search_pois",
+        "search_pois",
+        "search_pois"
+      ],
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "test_name": "plan_4hr_zamalek",
+      "prompt": "I only have 4 hours from Zamalek. What can I realistically see?",
+      "endpoint": "/api/v1/chat",
+      "rationale": "Routing/feasibility-aware",
+      "latency_ms": 6880,
+      "status_code": 200,
+      "response_excerpt": "With just 4 hours from Zamalek, you can have a delightful experience visiting **Cairo Tower**! Standing at 187 meters tall, this iconic tower offers stunning panoramic views of Cairo and the Nile River. It's a great spot to take in the city's skyline and get some fantastic photos. \ud83c\udf06\n\n**Visiting Tips",
+      "tools_used_response": [
+        "search_pois"
+      ],
+      "sources": [
+        {
+          "label": "Cairo Tower",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois"
+      ],
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "test_name": "book_hotel_outscope",
+      "prompt": "Can you book me a hotel?",
+      "endpoint": "/api/v1/chat",
+      "rationale": "Scope-safe response; VOYO is not a booking app",
+      "latency_ms": 12143,
+      "status_code": 200,
+      "response_excerpt": "I can't book hotels directly, but I can definitely help you find some great options in Cairo! \n\nFor a balanced and comfortable stay, consider looking for hotels in the Zamalek area, which is known for its greenery, restaurants, and proximity to the Nile. Some popular hotels include:\n\n1. **Cairo Marr",
+      "tools_used_response": [
+        "search_pois"
+      ],
+      "sources": [
+        {
+          "label": "VOYO verified database",
+          "kind": "database"
+        }
+      ],
+      "confidence": "high",
+      "model_logged": "gpt-4o-mini",
+      "provider_logged": "OptoClient",
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [
+        "search_pois"
+      ],
+      "pass": true,
+      "failure_reason": ""
+    }
+  ],
+  "planner_tests": [
+    {
+      "test_name": "planner_1day_cairo",
+      "prompt": "Egyptian Museum, Ibn Tulun Mosque, Khan el-Khalili",
+      "endpoint": "/api/v1/itinerary/plan",
+      "rationale": "Valid POIs, route feasible, ordered itinerary",
+      "profile": {
+        "title": "1-day Cairo",
+        "travelers": 2,
+        "pace": "balanced",
+        "interests": [
+          "historical",
+          "religious",
+          "cultural"
+        ],
+        "hotel_location": [
+          30.0626,
+          31.2197
+        ],
+        "notes": "Egyptian Museum, Ibn Tulun Mosque, Khan el-Khalili"
+      },
+      "latency_ms": 12126,
+      "status_code": 200,
+      "response_keys": [
+        "status",
+        "overview",
+        "days",
+        "tips",
+        "summary",
+        "total_cost_egp",
+        "budget_breakdown",
+        "provenance"
+      ],
+      "status_field": "ok",
+      "itinerary_excerpt": "day1: ['The Egyptian Museum', 'Al-Azhar Mosque', 'Citadel of Cairo (Saladin Citadel)'] | day2: ['Cairo Opera House', 'Ibn Tulun Mosque', 'Mosque of Sultan Hassan'] | day3: ['Cairo Tower', 'Al-Azhar Park', 'National Museum of Egyptian Civilization (NMEC)']",
+      "day_count": 3,
+      "stop_count": 9,
+      "has_null_poi_names": false,
+      "has_numeric_times": true,
+      "model_logged": null,
+      "provider_logged": null,
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [],
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "test_name": "planner_2day_relaxed",
+      "prompt": "Short travel times, no more than four stops per day",
+      "endpoint": "/api/v1/itinerary/plan",
+      "rationale": "Stop count + pacing respected",
+      "profile": {
+        "title": "2-day relaxed Cairo",
+        "start_date": "2026-07-01",
+        "end_date": "2026-07-02",
+        "travelers": 2,
+        "pace": "slow_flexible",
+        "interests": [
+          "cultural",
+          "dining"
+        ],
+        "hotel_location": [
+          30.0626,
+          31.2197
+        ],
+        "notes": "Short travel times, no more than four stops per day"
+      },
+      "latency_ms": 8408,
+      "status_code": 200,
+      "response_keys": [
+        "status",
+        "overview",
+        "days",
+        "tips",
+        "summary",
+        "total_cost_egp",
+        "budget_breakdown",
+        "provenance"
+      ],
+      "status_field": "ok",
+      "itinerary_excerpt": "day1: ['The Egyptian Museum', 'Al-Azhar Mosque', 'Citadel of Cairo (Saladin Citadel)'] | day2: ['Cairo Tower', 'Mosque of Sultan Hassan']",
+      "day_count": 2,
+      "stop_count": 5,
+      "has_null_poi_names": false,
+      "has_numeric_times": true,
+      "model_logged": null,
+      "provider_logged": null,
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [],
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "test_name": "planner_3day_cairo_giza",
+      "prompt": "Pyramids, museums, Islamic Cairo, markets",
+      "endpoint": "/api/v1/itinerary/plan",
+      "rationale": "Geographic clustering (Giza stops grouped)",
+      "profile": {
+        "title": "3-day Cairo+Giza",
+        "start_date": "2026-07-01",
+        "end_date": "2026-07-03",
+        "travelers": 2,
+        "pace": "packed_schedule",
+        "interests": [
+          "historical",
+          "cultural"
+        ],
+        "hotel_location": [
+          29.9792,
+          31.1342
+        ],
+        "notes": "Pyramids, museums, Islamic Cairo, markets"
+      },
+      "latency_ms": 22236,
+      "status_code": 200,
+      "response_keys": [
+        "status",
+        "overview",
+        "days",
+        "tips",
+        "summary",
+        "total_cost_egp",
+        "budget_breakdown",
+        "provenance"
+      ],
+      "status_field": "ok",
+      "itinerary_excerpt": "day1: ['Citadel of Cairo (Saladin Citadel)', 'Al-Azhar Mosque', 'The Egyptian Museum', 'Mosque of Sultan Hassan', 'Ibn Tulun Mosque'] | day2: ['Citadel of Cairo (Saladin Citadel)', 'Mosque of Muhammad Ali', 'The Egyptian Museum', 'Cairo Tower', 'Cairo Opera House'] | day3: ['Grand Egyptian Museum (GEM)', 'National Museum of Egyptian Civilization (NMEC)', 'Al-Azhar Park']",
+      "day_count": 3,
+      "stop_count": 13,
+      "has_null_poi_names": false,
+      "has_numeric_times": true,
+      "model_logged": null,
+      "provider_logged": null,
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [],
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "test_name": "planner_family_kids",
+      "prompt": "Family with kids, avoiding long walks and very late nights",
+      "endpoint": "/api/v1/itinerary/plan",
+      "rationale": "Constraints influence POI choice + pacing",
+      "profile": {
+        "title": "2-day family",
+        "travelers": 4,
+        "pace": "slow_flexible",
+        "companions": "family",
+        "interests": [
+          "entertainment",
+          "natural"
+        ],
+        "hotel_location": [
+          30.0626,
+          31.2197
+        ],
+        "notes": "Family with kids, avoiding long walks and very late nights"
+      },
+      "latency_ms": 48914,
+      "status_code": 200,
+      "response_keys": [
+        "status",
+        "overview",
+        "days",
+        "tips",
+        "summary",
+        "total_cost_egp",
+        "budget_breakdown",
+        "provenance"
+      ],
+      "status_field": "ok",
+      "itinerary_excerpt": "day1: ['The Egyptian Museum', 'Citadel of Cairo (Saladin Citadel)', 'Cairo Tower'] | day2: ['Al-Azhar Mosque', 'Mosque of Sultan Hassan', 'Al-Azhar Park'] | day3: ['Ibn Tulun Mosque', 'Cairo Opera House']",
+      "day_count": 3,
+      "stop_count": 8,
+      "has_null_poi_names": false,
+      "has_numeric_times": false,
+      "model_logged": null,
+      "provider_logged": null,
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [],
+      "pass": true,
+      "failure_reason": ""
+    },
+    {
+      "test_name": "planner_impossible_3hr",
+      "prompt": "Plan 12 major sites in Cairo in 3 hours",
+      "endpoint": "/api/v1/itinerary/plan",
+      "rationale": "Should refuse / propose reduced plan, not fabricate feasibility",
+      "profile": {
+        "title": "impossible 3hr",
+        "travelers": 1,
+        "pace": "packed_schedule",
+        "interests": [
+          "historical"
+        ],
+        "hotel_location": [
+          30.0626,
+          31.2197
+        ],
+        "notes": "Plan 12 major sites in Cairo in 3 hours"
+      },
+      "latency_ms": 130656,
+      "status_code": 200,
+      "response_keys": [
+        "status",
+        "overview",
+        "days",
+        "tips",
+        "summary",
+        "total_cost_egp",
+        "budget_breakdown",
+        "provenance"
+      ],
+      "status_field": "ok",
+      "itinerary_excerpt": "day1: ['Citadel of Cairo (Saladin Citadel)', 'Mosque of Sultan Hassan', 'The Egyptian Museum', 'Al-Azhar Mosque', 'Ibn Tulun Mosque'] | day2: ['Grand Egyptian Museum (GEM)', 'Cairo Tower', 'Cairo Opera House', 'Mosque of Muhammad Ali', 'The Egyptian Museum'] | day3: ['Al-Azhar Park', 'Cairo Tower', 'Al-Azhar Mosque']",
+      "day_count": 3,
+      "stop_count": 13,
+      "has_null_poi_names": false,
+      "has_numeric_times": false,
+      "model_logged": null,
+      "provider_logged": null,
+      "tools_available_logged": [],
+      "tools_called_logged": [],
+      "tavily_called": false,
+      "tavily_queries": [],
+      "tavily_result_counts": [],
+      "tavily_errors": [],
+      "tool_calls_raw": [],
+      "pass": true,
+      "failure_reason": ""
+    }
+  ],
+  "active_model_evidence": {
+    "model": "gpt-4o-mini",
+    "provider": "OptoClient",
+    "tools_available": [],
+    "source": "parsed from [LLM] log line"
+  },
+  "tavily_configured_evidence": {
+    "configured": true,
+    "proven_by": "[TAVILY] called=true in test 'events_cairo_week'",
+    "first_query": "Cairo events closures October 2023"
+  },
+  "run_finished_at": "2026-06-21T13:55:26.768268"
+}
