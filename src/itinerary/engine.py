@@ -200,7 +200,50 @@ class ItineraryEngine:
         # Simulate the addition (deduped — if the POI is already on the trip,
         # there's nothing to add; we still report that honestly).
         already_on_trip = candidate_poi_id in existing_poi_ids
-        all_ids = existing_poi_ids + ([] if already_on_trip else [candidate_poi_id])
+
+        # ── P0 fix: per-day scoping for the feasibility matrix ───────────
+        # The previous implementation built the matrix over every existing
+        # stop + the candidate. For a multi-city trip (Cairo + Luxor + Aswan
+        # + Hurghada) that produces cross-country pairs (Cairo↔Aswan ≈
+        # 680 km) and Valhalla rejects the whole matrix with HTTP 400
+        # ("Path distance exceeds max distance limit: 400000 meters"). Even
+        # a Cairo-to-Cairo add failed because of Luxor/Sinai POIs in the
+        # same trip. Fix: only evaluate the stops on the preferred day (or
+        # if no preferred day was passed, only stops in the SAME city as
+        # the candidate) + the candidate itself. This is what actually
+        # matters for "can this POI fit on this day" — not whether the
+        # trip as a whole includes Luxor.
+        candidate_rows = self._fetch_pois_sync([candidate_poi_id])
+        candidate_poi = candidate_rows[0] if candidate_rows else None
+
+        if preferred_day is not None:
+            scoped_existing = [
+                pid for pid, d in prior_day_by_poi.items()
+                if d == preferred_day and pid != candidate_poi_id
+            ]
+            scope_reason = f"day-{preferred_day} stops only"
+        elif candidate_poi is not None and candidate_poi.get("city"):
+            # Same-city fallback when no day preferred: keep the matrix local.
+            cand_city = (candidate_poi.get("city") or "").strip().lower()
+            same_city_pois = self._fetch_pois_sync([candidate_poi_id] + existing_poi_ids)
+            same_city_map = {p["id"]: p for p in same_city_pois}
+            scoped_existing = [
+                pid for pid in existing_poi_ids
+                if pid != candidate_poi_id
+                and ((same_city_map.get(pid, {}).get("city") or "").strip().lower() == cand_city)
+            ]
+            scope_reason = f"same-city ({candidate_poi.get('city')}) stops only"
+        else:
+            scoped_existing = [pid for pid in existing_poi_ids if pid != candidate_poi_id]
+            scope_reason = "all stops (no preferred day / no city)"
+
+        scoped_existing = list(dict.fromkeys(scoped_existing))
+        all_ids = scoped_existing + ([] if already_on_trip else [candidate_poi_id])
+        logger.info(
+            f"[PREVIEW-ADD] matrix_scope={scope_reason} scoped_stops="
+            f"{len(scoped_existing)} candidate={candidate_poi_id} "
+            f"total_matrix_size={len(all_ids)}"
+        )
 
         optimized = await self.generate(
             poi_ids=all_ids,
@@ -352,10 +395,42 @@ class ItineraryEngine:
             return []
 
     def _fetch_pois_sync(self, poi_ids: List[int]) -> List[Dict[str, Any]]:
-        """Synchronous POI fetch."""
-        all_pois = self.db.get_records("pois", filters={"is_active": True}, use_admin=True)
-        poi_map = {p["id"]: p for p in all_pois}
-        return [poi_map[pid] for pid in poi_ids if pid in poi_map]
+        """Synchronous POI fetch.
+
+        Fetches ONLY the requested POI IDs (not the entire active table).
+        The previous implementation loaded all 316 active POIs then
+        filtered in Python — which meant the VROOM/Valhalla distance matrix
+        was computed over the full set, producing cross-country pairs
+        (Cairo ↔ Abu Simbel = 700km) that Valhalla rejects with HTTP 400
+        ("Path distance exceeds max distance limit: 400000 meters"). That
+        made every preview-add fail even for nearby POIs.
+        """
+        if not poi_ids:
+            return []
+        try:
+            # Server-side filter by ID set — only the stops on this trip +
+            # the candidate. Keeps the matrix small and same-region.
+            # in_() on the supabase-py client; cap at a safe 100 IDs.
+            unique_ids = list(dict.fromkeys(int(pid) for pid in poi_ids if pid is not None))
+            if not unique_ids:
+                return []
+            response = (
+                self.db.admin_client.table("pois")
+                .select("*")
+                .eq("is_active", True)
+                .in_("id", unique_ids[:100])
+                .execute()
+            )
+            return response.data if response.data else []
+        except Exception as e:
+            logger.error(f"Error fetching POIs by id: {e}")
+            # Fallback to the old broad fetch (preserves prior behaviour on
+            # any unexpected error) — but this path is what we are trying
+            # to avoid, so log loudly.
+            logger.warning("Falling back to full-table POI fetch (matrix may exceed 400km)")
+            all_pois = self.db.get_records("pois", filters={"is_active": True}, use_admin=True)
+            poi_map = {p["id"]: p for p in all_pois}
+            return [poi_map[pid] for pid in unique_ids if pid in poi_map]
 
     @staticmethod
     def _apply_pace(pois: List[Dict], pace_config: Dict) -> List[Dict]:

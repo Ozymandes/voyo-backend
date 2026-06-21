@@ -1,0 +1,380 @@
+{
+  "run_id": "planner_20260620_193409",
+  "name": "planner",
+  "timestamp": "2026-06-20T19:38:15.239989",
+  "git_commit": "5971e2b",
+  "host": "TITAN",
+  "n_profiles": 12,
+  "n_ok": 12,
+  "n_failed": 0,
+  "latency_ms": {
+    "mean": 20363.3,
+    "median": 20269.2,
+    "max": 34297.3
+  },
+  "provenance_tally": {
+    "poi_selection": {
+      "llm": 12
+    },
+    "times": {
+      "vroom": 12
+    },
+    "geo_reclustered_count": 11
+  },
+  "mean_stops_per_day": 2.36,
+  "results": [
+    {
+      "profile_id": "P01",
+      "title": "Cairo history weekend",
+      "status": "ok",
+      "latency_ms": 23763.6,
+      "n_days": 3,
+      "n_stops": 8,
+      "stops_per_day": [
+        3,
+        3,
+        2
+      ],
+      "total_cost_egp": 40.0,
+      "provenance": {
+        "poi_selection": "llm",
+        "times": "vroom",
+        "costs": "database_ticket_prices",
+        "descriptions": "database_narratives",
+        "llm_available": true,
+        "vroom_available": true,
+        "candidate_pool_size": 25,
+        "geo_reclustered": false,
+        "geo_trimmed_cities": []
+      }
+    },
+    {
+      "profile_id": "P02",
+      "title": "Luxor temples deep dive",
+      "status": "ok",
+      "latency_ms": 17304.1,
+      "n_days": 4,
+      "n_stops": 7,
+      "stops_per_day": [
+        2,
+        2,
+        2,
+        1
+      ],
+      "total_cost_egp": 40.0,
+      "provenance": {
+        "poi_selection": "llm",
+        "times": "vroom",
+        "costs": "database_ticket_prices",
+        "descriptions": "database_narratives",
+        "llm_available": true,
+        "vroom_available": true,
+        "candidate_pool_size": 25,
+        "geo_reclustered": true,
+        "geo_trimmed_cities": [
+          "Sinai",
+          "Aswan",
+          "Hurghada"
+        ]
+      }
+    },
+    {
+      "profile_id": "P03",
+      "title": "Aswan family Nile trip",
+      "status": "ok",
+      "latency_ms": 20241.6,
+      "n_days": 3,
+      "n_stops": 7,
+      "stops_per_day": [
+        3,
+        3,
+        1
+      ],
+      "total_cost_egp": 120.0,
+      "provenance": {
+        "poi_selection": "llm",
+        "times": "vroom",
+        "costs": "database_ticket_prices",
+        "descriptions": "database_narratives",
+        "llm_available": true,
+        "vroom_available": true,
+        "candidate_pool_size": 25,
+        "geo_reclustered": true,
+        "geo_trimmed_cities": [
+          "Aswan",
+          "Hurghada",
+          "Unknown"
+        ]
+      }
+    },
+    {
+      "profile_id": "P04",
+      "title": "Giza packed photo tour",
+      "status": "ok",
+      "latency_ms": 12313.9,
+      "n_days": 2,
+      "n_stops": 7,
+      "stops_per_day": [
+        5,
+        2
+      ],
+      "total_cost_egp": 40.0,
+      "provenance": {
+        "poi_selection": "llm",
+        "times": "vroom",
+        "costs": "database_ticket_prices",
+        "descriptions": "database_narratives",
+        "llm_available": true,
+        "vroom_available": true,
+        "candidate_pool_size": 25,
+        "geo_reclustered": true,
+        "geo_trimmed_cities": [
+          "Alexandria",
+          "Hurghada"
+        ]
+      }
+    },
+    {
+      "profile_id": "P05",
+      "title": "Alexandria coastal weekend",
+      "status": "ok",
+      "latency_ms": 23060.7,
+      "n_days": 3,
+      "n_stops": 7,
+      "stops_per_day": [
+        3,
+        3,
+        1
+      ],
+      "total_cost_egp": 120.0,
+      "provenance": {
+        "poi_selection": "llm",
+        "times": "vroom",
+        "costs": "database_ticket_prices",
+        "descriptions": "database_narratives",
+        "llm_available": true,
+        "vroom_available": true,
+        "candidate_pool_size": 25,
+        "geo_reclustered": true,
+        "geo_trimmed_cities": [
+          "Unknown"
+        ]
+      }
+    },
+    {
+      "profile_id": "P06",
+      "title": "Red Sea Hurghada dive trip",
+      "status": "ok",
+      "latency_ms": 26840.5,
+      "n_days": 4,
+      "n_stops": 7,
+      "stops_per_day": [
+        2,
+        2,
+        2,
+        1
+      ],
+      "total_cost_egp": 120.0,
+      "provenance": {
+        "poi_selection": "llm",
+        "times": "vroom",
+        "costs": "database_ticket_prices",
+        "descriptions": "database_narratives",
+        "llm_available": true,
+        "vroom_available": true,
+        "candidate_pool_size": 25,
+        "geo_reclustered": true,
+        "geo_trimmed_cities": [
+          "Hurghada",
+          "Unknown"
+        ]
+      }
+    },
+    {
+      "profile_id": "P07",
+      "title": "Sinai adventure trek",
+      "status": "ok",
+      "latency_ms": 20296.8,
+      "n_days": 3,
+      "n_stops": 7,
+      "stops_per_day": [
+        3,
+        3,
+        1
+      ],
+      "total_cost_egp": 120.0,
+      "provenance": {
+        "poi_selection": "llm",
+        "times": "vroom",
+        "costs": "database_ticket_prices",
+        "descriptions": "database_narratives",
+        "llm_available": true,
+        "vroom_available": true,
+        "candidate_pool_size": 25,
+        "geo_reclustered": true,
+        "geo_trimmed_cities": [
+          "Sinai",
+          "Unknown",
+          "Hurghada"
+        ]
+      }
+    },
+    {
+      "profile_id": "P08",
+      "title": "Two-week grand Egypt tour",
+      "status": "ok",
+      "latency_ms": 32786.0,
+      "n_days": 3,
+      "n_stops": 7,
+      "stops_per_day": [
+        3,
+        3,
+        1
+      ],
+      "total_cost_egp": 40.0,
+      "provenance": {
+        "poi_selection": "llm",
+        "times": "vroom",
+        "costs": "database_ticket_prices",
+        "descriptions": "database_narratives",
+        "llm_available": true,
+        "vroom_available": true,
+        "candidate_pool_size": 25,
+        "geo_reclustered": true,
+        "geo_trimmed_cities": [
+          "Alexandria",
+          "Sinai",
+          "Aswan",
+          "Hurghada"
+        ]
+      }
+    },
+    {
+      "profile_id": "P09",
+      "title": "Cairo + Luxor in 3 days (impossible mix)",
+      "status": "ok",
+      "latency_ms": 8779.2,
+      "n_days": 2,
+      "n_stops": 7,
+      "stops_per_day": [
+        5,
+        2
+      ],
+      "total_cost_egp": 40.0,
+      "provenance": {
+        "poi_selection": "llm",
+        "times": "vroom",
+        "costs": "database_ticket_prices",
+        "descriptions": "database_narratives",
+        "llm_available": true,
+        "vroom_available": true,
+        "candidate_pool_size": 25,
+        "geo_reclustered": true,
+        "geo_trimmed_cities": [
+          "Aswan",
+          "Alexandria",
+          "Hurghada"
+        ]
+      }
+    },
+    {
+      "profile_id": "P10",
+      "title": "Cairo, Luxor, Aswan Nile sweep",
+      "status": "ok",
+      "latency_ms": 10585.8,
+      "n_days": 3,
+      "n_stops": 7,
+      "stops_per_day": [
+        3,
+        3,
+        1
+      ],
+      "total_cost_egp": 40.0,
+      "provenance": {
+        "poi_selection": "llm",
+        "times": "vroom",
+        "costs": "database_ticket_prices",
+        "descriptions": "database_narratives",
+        "llm_available": true,
+        "vroom_available": true,
+        "candidate_pool_size": 25,
+        "geo_reclustered": true,
+        "geo_trimmed_cities": [
+          "Aswan",
+          "Hurghada"
+        ]
+      }
+    },
+    {
+      "profile_id": "P11",
+      "title": "Budget backpacker greatest hits",
+      "status": "ok",
+      "latency_ms": 34297.3,
+      "n_days": 2,
+      "n_stops": 7,
+      "stops_per_day": [
+        5,
+        2
+      ],
+      "total_cost_egp": 40.0,
+      "provenance": {
+        "poi_selection": "llm",
+        "times": "vroom",
+        "costs": "database_ticket_prices",
+        "descriptions": "database_narratives",
+        "llm_available": true,
+        "vroom_available": true,
+        "candidate_pool_size": 25,
+        "geo_reclustered": true,
+        "geo_trimmed_cities": [
+          "Sinai",
+          "Alexandria",
+          "Aswan",
+          "Hurghada"
+        ]
+      }
+    },
+    {
+      "profile_id": "P12",
+      "title": "Slow luxury cultural immersion",
+      "status": "ok",
+      "latency_ms": 14090.7,
+      "n_days": 4,
+      "n_stops": 7,
+      "stops_per_day": [
+        2,
+        2,
+        2,
+        1
+      ],
+      "total_cost_egp": 120.0,
+      "provenance": {
+        "poi_selection": "llm",
+        "times": "vroom",
+        "costs": "database_ticket_prices",
+        "descriptions": "database_narratives",
+        "llm_available": true,
+        "vroom_available": true,
+        "candidate_pool_size": 25,
+        "geo_reclustered": true,
+        "geo_trimmed_cities": [
+          "Unknown",
+          "Sinai",
+          "Aswan"
+        ]
+      }
+    }
+  ],
+  "figures": [
+    {
+      "name": "planner_latency",
+      "png": "C:\\Users\\yasee\\OneDrive\\Desktop\\VOYO_Backend\\voyo-backend\\data\\evaluation\\runs\\planner_20260620_193409\\figures\\planner_latency.png",
+      "pdf": "C:\\Users\\yasee\\OneDrive\\Desktop\\VOYO_Backend\\voyo-backend\\data\\evaluation\\runs\\planner_20260620_193409\\figures\\planner_latency.pdf"
+    },
+    {
+      "name": "planner_pace_stops",
+      "png": "C:\\Users\\yasee\\OneDrive\\Desktop\\VOYO_Backend\\voyo-backend\\data\\evaluation\\runs\\planner_20260620_193409\\figures\\planner_pace_stops.png",
+      "pdf": "C:\\Users\\yasee\\OneDrive\\Desktop\\VOYO_Backend\\voyo-backend\\data\\evaluation\\runs\\planner_20260620_193409\\figures\\planner_pace_stops.pdf"
+    }
+  ]
+}

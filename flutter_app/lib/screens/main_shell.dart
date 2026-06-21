@@ -26,14 +26,35 @@ class _MainShellState extends State<MainShell> {
         _ => 0,
       };
 
+  // GlobalKey so external navigation (e.g. CLEO's "Open Planner" CTA
+  // after a fresh /itinerary/plan save) can force the planner to reload
+  // its current itinerary. Without this, PlannerScreen keeps the stale
+  // itinerary from app-boot because it only loads in initState and the
+  // tab is kept alive across switches. (P0 fix: "Open Planner" opening
+  // the wrong / previous itinerary.)
+  final _plannerKey = GlobalKey<PlannerScreenState>();
+
   void _onNavTap(int navIdx) {
     setState(() => _navIndex = navIdx == 2 ? 0 : navIdx);
+    // When the user navigates to the planner tab (directly or via the
+    // chat's "Open Planner" CTA), refresh its data so a newly-saved
+    // itinerary is displayed instead of the boot-time snapshot.
+    final targetScreen = switch (navIdx) {
+      1 => 1, // planner
+      _ => null,
+    };
+    if (targetScreen == 1) {
+      // Microtask: let setState settle before reloading.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _plannerKey.currentState?.reload();
+      });
+    }
   }
 
   // Screens are fixed — defined once so state is preserved across tab switches.
   late final _screens = [
     ExploreScreen(onSwitchToCleo: () => _onNavTap(3)),
-    const PlannerScreen(),
+    PlannerScreen(key: _plannerKey),
     ChatScreen(onSwitchToPlanner: () => _onNavTap(1)),
     const JourneyScreen(),
   ];

@@ -1,0 +1,12 @@
+{
+  "query_id": "P014",
+  "query": "I have limited mobility but want to see the Pyramids.",
+  "answer": "Visiting the Pyramids can be an incredible experience, even with limited mobility. Here are some options to consider:\n\n### 1. **Pyramids Sound and Light Show**\nThis evening show at the Giza Pyramids is a fantastic way to enjoy the iconic structures without extensive walking. The show narrates Egyptian history while illuminating the pyramids with vibrant colors, creating a magical atmosphere. It’s a unique way to appreciate the pyramids' grandeur from a comfortable seated position. \n\n**Practical Tip:** The best time to visit is after sunset when the show begins, usually starting in the evening. Be sure to check the language schedule to catch the narration in your preferred language. Dressing in layers is a good idea, as desert temperatures can drop significantly at night.\n\n![Pyramids Sound and Light Show](***REMOVED***/storage/v1/object/public/poi-images/pois/pyramids-sound-and-light-show-0-1781570550.jpg)\n\n### 2. **Accessibility Considerations**\nIf you wish to visit the pyramids during the day, consider hiring a private guide with a vehicle that can accommodate your mobility needs. The site is expansive, so having someone assist you can make a significant difference.\n\n**Practical Tip:** Focus your visit on the Great Pyramid of Giza, which offers the most iconic views and some areas that are easier to navigate. You can also enjoy the surroundings from a distance without needing to climb.\n\nWould you like more details on how to arrange a guided tour, or perhaps information on nearby accommodations?",
+  "sources": [
+    "SourceRef(label='Pyramids Sound and Light Show', kind='database')",
+    "SourceRef(label=\"Queen's Pyramids of Menkaure\", kind='database')",
+    "SourceRef(label='Mena House Hotel', kind='database')",
+    "SourceRef(label='Dahshur Pyramids', kind='database')",
+    "SourceRef(label=\"Queen's Pyramids of Khufu\", kind='database')"
+  ]
+}

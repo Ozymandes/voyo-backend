@@ -1,0 +1,9 @@
+{
+  "query_id": "P018",
+  "query": "I want luxury experiences in Egypt. Recommendations?",
+  "answer": "Ah, luxury experiences in Egypt can be truly unforgettable! Here are some top recommendations:\n\n### 1. **Lake Nasser Cruise**\nThis multi-day luxury cruise is a fantastic way to explore the majestic Lake Nasser while visiting remote Nubian temples. The cruise offers opulent accommodations, fine dining, and personalized service, allowing you to soak in the beauty of the landscapes and ancient history in comfort. \n\n**Practical Tip:** The cruise typically costs around 25,000 EGP, so consider booking in advance, especially during peak tourist seasons. \n\n### 2. **Porto Sokhna Marina**\nLocated near Hurghada, this luxury resort complex features a mountain-top hotel, golf courses, and a stunning marina. It's perfect for those who enjoy a blend of relaxation and recreational activities. You can indulge in spa treatments, gourmet dining, and various water sports.\n\n**Practical Tip:** Don’t miss the sunset views from the marina — they’re breathtaking! It’s also a great spot for yacht rentals if you're interested in a private sailing experience.\n\n### 3. **Luxury Hotels in Cairo**\nWhile not specifically listed in the earlier search, consider staying at iconic hotels like the **Four Seasons Hotel Cairo at Nile Plaza** or **The Nile Ritz-Carlton**. They offer stunning views of the Nile, exquisite dining options, and exceptional service.\n\n**Practical Tip:** Book a room with a Nile view for a truly luxurious experience, especially during sunset.\n\nWould you like more detailed information on any of these experiences or assistance with bookings?",
+  "sources": [
+    "SourceRef(label='Porto Sokhna Marina', kind='database')",
+    "SourceRef(label='Lake Nasser Cruise', kind='database')"
+  ]
+}

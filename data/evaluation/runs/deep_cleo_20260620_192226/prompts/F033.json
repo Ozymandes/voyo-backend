@@ -1,0 +1,11 @@
+{
+  "query_id": "F033",
+  "query": "Explain the history of Khan el-Khalili",
+  "answer": "Khan el-Khalili is one of the most famous bazaars in Cairo and a vibrant piece of the city's history. Established during the Mamluk era, it began as a center for trade and has evolved into a bustling market that attracts both locals and tourists. The name \"Khan el-Khalili\" originally referred to a specific caravanserai in the area, but over time, it has come to signify the entire shopping district. \n\n### Historical Significance\nThis market is not just a shopping destination; it's a living museum of traditional Egyptian crafts. You'll find numerous artisans and workshops producing everything from intricate jewelry to handwoven textiles. The atmosphere is rich with history, and as you wander through the narrow lanes, you'll feel the echoes of centuries past. The bazaar has been a vital hub of commerce and culture, symbolizing Cairo's role as a crossroads of trade and interaction throughout history.\n\n### What to Expect\nWhen you visit Khan el-Khalili, expect to be enchanted by the vibrant stalls, aromatic spices, and colorful textiles. It's a great place to find unique souvenirs, local handicrafts, and experience the hustle and bustle of everyday life in Cairo. Don’t forget to explore the nearby Al-Hussein Mosque and enjoy a cup of traditional mint tea in one of the local cafes.\n\n### Practical Tip\nTo enjoy your visit fully, try going in the morning or late afternoon to avoid the heat and crowds. Bargaining is part of the shopping experience here, so don't hesitate to negotiate prices! It’s a fun way to engage with the local culture.\n\nWould you like to know more about specific shops or cultural experiences in Khan el-Khalili?",
+  "sources": [
+    "SourceRef(label='Khan el-Khalili', kind='database')",
+    "SourceRef(label='Al-Hussein Mosque', kind='database')",
+    "SourceRef(label='Sultan Barquq Complex', kind='database')",
+    "SourceRef(label='Al-Ghuri Complex', kind='database')"
+  ]
+}

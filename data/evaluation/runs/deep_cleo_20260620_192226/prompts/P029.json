@@ -1,0 +1,11 @@
+{
+  "query_id": "P029",
+  "query": "I'm traveling with a group of friends. What's fun for groups?",
+  "answer": "Traveling with friends in Egypt means you're in for a blast! Here are some fun group activities and entertainment spots you can enjoy:\n\n### 1. **SOHO Square (Sinai)**\nThis upscale entertainment area is perfect for groups, boasting a vibrant atmosphere with a musical fountain and an ice rink! It's a lively spot to unwind and enjoy some fun together.\n\n**Practical Tip:** Check the schedule for the nightly light and water show at the Musical Fountain to catch a spectacular display! 🎉\n\n### 2. **Genena City (Sinai)**\nA massive shopping and entertainment mall located on a hill in Naama Bay. It features various shops, restaurants, and entertainment options, making it a great place to hang out with friends.\n\n**Practical Tip:** Plan to spend a few hours here, as there's plenty to explore and enjoy!\n\n### 3. **Hollywood Sharm (Sinai)**\nThis entertainment park is filled with attractions like dancing fountains and dinosaur statues. It’s a quirky spot that can spark laughter and fun for the whole group.\n\n**Practical Tip:** Look for group discounts on entry tickets to make it more budget-friendly.\n\n### 4. **Nile River Felucca Ride (Cairo)**\nIf you're in Cairo, consider renting a felucca for a leisurely sail on the Nile. It's a unique experience where you can relax, enjoy the views, and maybe even bring along some snacks for a mini picnic on board.\n\n**Practical Tip:** Aim for a sunset ride for breathtaking views and a magical atmosphere!\n\nThese activities offer a mix of relaxation, adventure, and fun that are perfect for a group. Would you like more information on any of these spots or activities?",
+  "sources": [
+    "SourceRef(label='SOHO Square', kind='database')",
+    "SourceRef(label='Musical Fountain', kind='database')",
+    "SourceRef(label='Hollywood Sharm', kind='database')",
+    "SourceRef(label='Genena City', kind='database')"
+  ]
+}

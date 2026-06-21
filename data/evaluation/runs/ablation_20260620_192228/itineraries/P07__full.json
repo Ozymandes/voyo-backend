@@ -1,0 +1,142 @@
+{
+  "status": "ok",
+  "overview": "Embark on a 5-day journey through the natural and religious wonders of Sinai, exploring iconic sites like Mount Sinai and Ras Mohammed. This itinerary balances cultural experiences with serene natural landscapes, ensuring a memorable adventure.",
+  "days": [
+    {
+      "day": 1,
+      "date": "2026-10-01",
+      "title": "Sinai — Day 1",
+      "theme": "Fun & Adventure & Sacred Heritage",
+      "stops": [
+        {
+          "poi_id": 277,
+          "name": "SOHO Square",
+          "category": "entertainment",
+          "time": "08:15",
+          "departure_time": "09:15",
+          "service_duration_min": 60,
+          "transport_to_next_min": 145.5,
+          "transport_to_next_km": 206.3,
+          "transport_mode": "Taxi / drive",
+          "description": "Upscale entertainment area with a musical fountain and ice rink.",
+          "cost_egp": null,
+          "address": "SOHO Square, أول شرم الشيخ، محافظة جنوب سيناء 46628, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        },
+        {
+          "poi_id": 261,
+          "name": "Burning Bush",
+          "category": "religious",
+          "time": "11:41",
+          "departure_time": "12:41",
+          "service_duration_min": 60,
+          "transport_to_next_min": 151.1,
+          "transport_to_next_km": 217.0,
+          "transport_mode": "Taxi / drive",
+          "description": "The specific plant species mentioned in the Bible, located in the Monastery.",
+          "cost_egp": null,
+          "address": "HX4G+4QV, Saint Catherine, South Sinai Governorate 8730062, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        },
+        {
+          "poi_id": 279,
+          "name": "Old Market",
+          "category": "cultural",
+          "time": "15:12",
+          "departure_time": "16:12",
+          "service_duration_min": 60,
+          "transport_to_next_min": 0.0,
+          "transport_to_next_km": 0.0,
+          "transport_mode": "Walk",
+          "description": "Traditional bazaar perfect for souvenirs and local food.",
+          "cost_egp": null,
+          "address": "Entrance El-Souk, Sharm El Sheikh 2, South Sinai Governorate 8761130, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "date": "2026-10-02",
+      "title": "Sinai — Day 2",
+      "theme": "Fun & Adventure & Ancient Wonders",
+      "stops": [
+        {
+          "poi_id": 278,
+          "name": "Farsha Mountain Lounge",
+          "category": "entertainment",
+          "time": "08:00",
+          "departure_time": "09:00",
+          "service_duration_min": 60,
+          "transport_to_next_min": 0.0,
+          "transport_to_next_km": 0.0,
+          "transport_mode": "Walk",
+          "description": "Iconic clifftop lounge with a bohemian vibe and sea views.",
+          "cost_egp": null,
+          "address": "هضبة ام السيد، Sharm El Sheikh 1, South Sinai Governorate 46619, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        },
+        {
+          "poi_id": 284,
+          "name": "Genena City",
+          "category": "entertainment",
+          "time": "10:00",
+          "departure_time": "11:00",
+          "service_duration_min": 60,
+          "transport_to_next_min": 9.7,
+          "transport_to_next_km": 9.7,
+          "transport_mode": "Taxi / drive",
+          "description": "A huge shopping and entertainment mall on top of a hill in Naama Bay.",
+          "cost_egp": null,
+          "address": "W859+6W4 جنينه سيتى، Sharm El Sheikh 1, South Sinai Governorate 8763011, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        },
+        {
+          "poi_id": 287,
+          "name": "Taba Heights",
+          "category": "cultural",
+          "time": null,
+          "departure_time": null,
+          "service_duration_min": null,
+          "transport_to_next_min": null,
+          "transport_to_next_km": null,
+          "transport_mode": "Walk",
+          "description": "Luxury resort town featuring golf courses and salt caves.",
+          "cost_egp": null,
+          "address": "Heights, Nuweiba, South Sinai Governorate 8785202, Egypt",
+          "tip": null
+        }
+      ]
+    }
+  ],
+  "tips": [
+    "Start your days early to make the most of the cooler morning temperatures, especially when hiking.",
+    "Stay hydrated and carry snacks while exploring the natural sites.",
+    "Respect local customs, especially when visiting religious sites.",
+    "Consider local transportation options for easier access between sites.",
+    "Engage with local guides for deeper insights into the history and significance of each location."
+  ],
+  "summary": "Enjoy your exploration of Sinai's rich tapestry of nature and spirituality!",
+  "total_cost_egp": 0.0,
+  "budget_breakdown": {
+    "activities_egp": 0,
+    "accommodation_egp_estimate": 4000,
+    "food_egp_estimate": 3000,
+    "transport_egp_estimate": 1000
+  },
+  "provenance": {
+    "poi_selection": "llm",
+    "times": "vroom",
+    "costs": "database_ticket_prices",
+    "descriptions": "database_narratives",
+    "llm_available": true,
+    "vroom_available": true,
+    "candidate_pool_size": 25,
+    "geo_reclustered": true,
+    "geo_trimmed_cities": [
+      "Unknown",
+      "Hurghada",
+      "Alexandria"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "query_id": "I008",
+  "query": "I have 10 days in Egypt. How should I plan my trip?",
+  "answer": "I apologize, I'm having difficulty processing that request. Could you rephrase it?",
+  "sources": [
+    "SourceRef(label='West Bank Bicycle Tour', kind='database')",
+    "SourceRef(label='Tomb of Ti', kind='database')",
+    "SourceRef(label='Al-Hussein Mosque', kind='database')",
+    "SourceRef(label='Catacombs of Kom El Shoqafa', kind='database')",
+    "SourceRef(label='Tombs of the Nobles (Aswan)', kind='database')",
+    "SourceRef(label='Citadel of Cairo (Saladin Citadel)', kind='database')"
+  ]
+}

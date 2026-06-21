@@ -1,0 +1,8 @@
+{
+  "query_id": "O013",
+  "query": "Can you recommend a good sci-fi book?",
+  "answer": "If you're looking for a great sci-fi book, I highly recommend **\"Dune\" by Frank Herbert**. This classic novel is set in a distant future amidst a huge interstellar empire, focusing on Paul Atreides, a young noble who becomes embroiled in a complex struggle over the desert planet of Arrakis. Known for its intricate plot, rich world-building, and themes of politics, religion, and ecology, \"Dune\" has captivated readers for decades and even inspired films and adaptations.\n\n**Why It Matters:** \"Dune\" is often regarded as one of the greatest science fiction novels of all time, winning the Hugo and Nebula awards. Its exploration of power dynamics and ecological themes remains relevant today, making it a thought-provoking read.\n\n**Practical Tip:** If you enjoy immersive stories, consider reading it alongside its sequels to fully appreciate the depth of Herbert's universe. And if you're planning a movie night, the recent film adaptation can be a great complement to the book! \n\nAre there specific themes or elements you enjoy in sci-fi that I could help you with?",
+  "sources": [
+    "SourceRef(label='Web search', kind='web')"
+  ]
+}

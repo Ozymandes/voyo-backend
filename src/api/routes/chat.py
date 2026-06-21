@@ -61,6 +61,11 @@ class ChatResponse(BaseModel):
     confidence: Optional[str] = Field(
         None, description="Coarse grounding confidence: 'high' | 'medium' | 'low'"
     )
+    tools_used: Optional[List[str]] = Field(
+        None,
+        description="Tool names CLEO actually invoked this turn "
+        "(e.g. ['search_pois', 'search_web']). Null when no tools fired.",
+    )
 
 
 class StreamEvent(BaseModel):
@@ -103,11 +108,17 @@ async def chat(request: ChatRequest):
                 SourceItem(label=s.label, kind=s.kind) for s in result.sources
             ] or None,
             confidence=result.confidence,
+            tools_used=result.tools_used or None,
         )
 
     except Exception as e:
         logger.error(f"Chat error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        # Never surface raw exception text to the UI — log it here with
+        # full traceback, return a polished VOYO-safe message.
+        raise HTTPException(
+            status_code=500,
+            detail="Cleo had trouble with that request. Please try again.",
+        )
 
 
 @router.post("/chat/stream")

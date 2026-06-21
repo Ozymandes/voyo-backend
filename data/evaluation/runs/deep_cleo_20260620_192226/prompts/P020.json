@@ -1,0 +1,20 @@
+{
+  "query_id": "P020",
+  "query": "I'm a student on a budget. Help me plan affordable Egypt trip.",
+  "answer": "I apologize, I'm having difficulty processing that request. Could you rephrase it?",
+  "sources": [
+    "SourceRef(label='Tomb of Ti', kind='database')",
+    "SourceRef(label='Catacombs of Kom El Shoqafa', kind='database')",
+    "SourceRef(label='Tombs of the Nobles (Aswan)', kind='database')",
+    "SourceRef(label='VOYO verified database', kind='database')",
+    "SourceRef(label='Straits of Tiran', kind='database')",
+    "SourceRef(label='Cairo Tower', kind='database')",
+    "SourceRef(label='Temple of Kalabsha', kind='database')",
+    "SourceRef(label='Khan el-Khalili', kind='database')",
+    "SourceRef(label='Luxor Corniche', kind='database')",
+    "SourceRef(label='Nile Corniche', kind='database')",
+    "SourceRef(label='Khedivial Cairo', kind='database')",
+    "SourceRef(label='Naama Bay', kind='database')",
+    "SourceRef(label='Three Pools', kind='database')"
+  ]
+}

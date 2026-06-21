@@ -1,0 +1,13 @@
+{
+  "query_id": "F031",
+  "query": "Tell me about the history of the Great Pyramids",
+  "answer": "Ah, the Great Pyramids of Giza! These iconic structures are not just architectural marvels but also steeped in fascinating history. The Great Pyramid, built for Pharaoh Khufu around 2580–2560 BC, is the largest and the oldest of the three pyramids on the Giza Plateau. It's an extraordinary testament to ancient Egyptian engineering and serves as a burial site reflecting the pharaoh's divine status and the belief in the afterlife.\n\n### Historical Significance\nThe pyramids were constructed during the Fourth Dynasty of the Old Kingdom and were part of a larger complex that included mortuary temples and smaller pyramids for queens. The Great Pyramid was originally covered in casing stones made of highly polished Tura limestone, which reflected sunlight, making it shine brilliantly. This grand structure served as a center for worship and offerings to sustain the pharaoh in the afterlife. The Khufu Mortuary Temple, located to the east of the Great Pyramid, was an active site for rituals and ceremonies dedicated to the deceased king.\n\n### What to Expect\nWhen visiting the Great Pyramids, you'll encounter the monumental scale and precision of these ancient wonders. The site includes the Great Sphinx, which guards the pyramids, and various smaller pyramids and tombs nearby. Make sure to take time to explore the Khufu Mortuary Temple, where you can see remnants of the ancient rituals that once took place. It's a place where you can almost feel the history echoing through the stones.\n\n### Practical Tip\nTo truly appreciate the grandeur of the pyramids, consider visiting early in the morning or later in the afternoon to avoid the heat and crowds. Wearing comfortable shoes is a must, as you'll be walking on uneven terrain. And don't forget your camera—these structures are incredibly photogenic!\n\nWould you like to learn more about the Sphinx or explore other sites in Giza?",
+  "sources": [
+    "SourceRef(label='Khufu Mortuary Temple', kind='database')",
+    "SourceRef(label='Tomb of Queen Hetepheres I', kind='database')",
+    "SourceRef(label='Abusir Pyramid Field', kind='database')",
+    "SourceRef(label='Great Sphinx of Giza', kind='database')",
+    "SourceRef(label='Pyramid of Unas', kind='database')",
+    "SourceRef(label='VOYO verified database', kind='database')"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "query_id": "C004",
+  "query": "What's the difference between Luxor Temple and Karnak Temple?",
+  "answer": "Both Luxor Temple and Karnak Temple are remarkable sites in Luxor, but they serve different historical and architectural purposes.\n\n### Luxor Temple\n- **Description:** Luxor Temple is an ancient Egyptian temple complex located on the east bank of the Nile. It is beautifully illuminated at night, creating a magical atmosphere. The temple was built primarily during the reign of Pharaoh Amenhotep III and later expanded by Ramses II.\n- **Ticket Price:** 160 EGP\n- **Average Rating:** 4.8/5\n- **Significance:** Luxor Temple was dedicated to the rejuvenation of kingship and was a center for the annual Opet Festival, celebrating the god Amun.\n\n### Karnak Temple\n- **Description:** The Karnak Temple Complex is the largest ancient religious site in the world, built over 2000 years. It features massive columns, intricate hieroglyphics, and various temples dedicated to different deities, with the Temple of Amun being the most prominent.\n- **Ticket Price:** 220 EGP\n- **Average Rating:** 4.8/5\n- **Significance:** Karnak was a major religious center, and its complex reflects the wealth and power of ancient Thebes. The sheer scale and grandeur of Karnak Temple are awe-inspiring.\n\n### Practical Tip\nIf time allows, visit Karnak Temple first during the early morning to beat the crowds and enjoy a peaceful exploration. Then, head to Luxor Temple in the evening to see it beautifully lit up. This way, you’ll appreciate the contrast between the expansive Karnak complex and the more intimate Luxor Temple.\n\nWould you like more details on how to plan your visit to these temples? 🏺.",
+  "sources": [
+    "SourceRef(label='Luxor Temple', kind='database')",
+    "SourceRef(label='Temple of Dakka', kind='database')",
+    "SourceRef(label='Khufu Mortuary Temple', kind='database')",
+    "SourceRef(label='El-Kab (Nekheb)', kind='database')",
+    "SourceRef(label='Deir el-Medina', kind='database')",
+    "SourceRef(label='Sunrise at Karnak Temple', kind='database')",
+    "SourceRef(label='Karnak Temple Complex', kind='database')"
+  ]
+}

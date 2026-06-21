@@ -1,0 +1,12 @@
+{
+  "query_id": "F022",
+  "query": "What's the address of the Egyptian Museum?",
+  "answer": "The Egyptian Museum is located in Tahrir Square, Cairo, Egypt. It houses the world's largest collection of ancient Egyptian antiquities, including treasures from Tutankhamun.",
+  "sources": [
+    "SourceRef(label='The Egyptian Museum', kind='database')",
+    "SourceRef(label='Grand Egyptian Museum (GEM)', kind='database')",
+    "SourceRef(label='Temple of Dakka', kind='database')",
+    "SourceRef(label='Hurghada Marina', kind='database')",
+    "SourceRef(label='Tomb of Queen Hetepheres I', kind='database')"
+  ]
+}

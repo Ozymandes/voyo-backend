@@ -1,0 +1,18 @@
+{
+  "query_id": "I010",
+  "query": "Plan a 5-day family trip to Egypt.",
+  "answer": "I apologize, I'm having difficulty processing that request. Could you rephrase it?",
+  "sources": [
+    "SourceRef(label='VOYO verified database', kind='database')",
+    "SourceRef(label='Saints Sergius and Bacchus Church (Abu Serga)', kind='database')",
+    "SourceRef(label=\"Al-Rifa'i Mosque\", kind='database')",
+    "SourceRef(label='Eastern Cemetery of Giza', kind='database')",
+    "SourceRef(label='Coptic Cairo', kind='database')",
+    "SourceRef(label='Abu al-Abbas al-Mursi Mosque', kind='database')",
+    "SourceRef(label=\"Tentmakers' Street\", kind='database')",
+    "SourceRef(label='Ben Ezra Synagogue', kind='database')",
+    "SourceRef(label='The Egyptian Museum', kind='database')",
+    "SourceRef(label='Bab al-Futuh', kind='database')",
+    "SourceRef(label='National Museum of Egyptian Civilization (NMEC)', kind='database')"
+  ]
+}

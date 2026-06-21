@@ -1,0 +1,21 @@
+{
+  "query_id": "P024",
+  "query": "I only have 3 days in Egypt. What should I focus on?",
+  "answer": "With just 3 days in Egypt, focusing on Cairo and Luxor will give you a rich taste of the country’s history and culture. Here's a well-balanced itinerary to make the most of your time:\n\n### **Day 1: Cairo's Treasures**\n\n**Morning (9:00–12:00)**\n- **The Egyptian Museum** — 2-3 hours — Marvel at the world’s largest collection of ancient Egyptian antiquities, including the treasures of Tutankhamun.\n  - *Ticket Price:* 200 EGP\n\n**Lunch**\n- **Tentmakers' Street** — Enjoy lunch in this vibrant area known for its hand-stitched textiles and crafts. Grab some local dishes from nearby cafés.\n\n**Afternoon (13:00–17:00)**\n- **National Museum of Egyptian Civilization (NMEC)** — 2-3 hours — Explore this modern museum featuring over 50,000 artifacts, including the Royal Mummies Hall.\n  - *Ticket Price:* 200 EGP\n\n**Evening**\n- **Dinner along the Nile Corniche** — Relax at a riverside restaurant, enjoying views of the Nile as the sun sets.\n\n---\n\n### **Day 2: Luxor's Ancient Wonders**\n\n**Morning (8:00–12:00)**\n- **Valley of the Kings** — 3 hours — Discover the tombs of famous pharaohs, including Tutankhamun. Arrive early to beat the crowds and heat.\n  - *Tip:* Purchase a ticket that allows entry to select tombs.\n\n**Lunch**\n- **Luxor Corniche** — Enjoy lunch at one of the cafes along the Nile, soaking up the scenic views.\n\n**Afternoon (13:00–17:00)**\n- **Karnak Temple Complex** — 2-3 hours — Explore this vast temple complex filled with incredible hieroglyphics and grand architecture.\n  - *Ticket Price:* 220 EGP\n\n**Evening**\n- **Luxor Temple** — 1-2 hours — Visit this beautiful temple, particularly stunning at sunset when it's illuminated.\n  - *Tip:* Consider a guided tour for deeper insights.\n\n---\n\n### **Day 3: Cultural Connections in Luxor**\n\n**Morning (9:00–12:00)**\n- **Luxor Museum** — 1-2 hours — Discover artifacts from Theban temples and the necropolis, showcasing the region's rich history.\n  - *Ticket Price:* 140 EGP\n\n**Lunch**\n- **Local Restaurant** — Experience authentic Egyptian cuisine at a nearby restaurant, perhaps trying Koshari or grilled meats.\n\n**Afternoon (13:00–17:00)**\n- **Deir el-Medina** — 1-2 hours — Visit the ancient village of artisans who built the royal tombs, with beautifully decorated private tombs.\n  - *Ticket Price:* 100 EGP\n\n**Evening**\n- **Felucca Ride on the Nile** — Wrap up your trip with a relaxing evening felucca ride, enjoying the peaceful waters and stunning views of the sunset.\n\n---\n\n### **Travel Tips:**\n- **Stay Hydrated**: Always carry water, especially during temple visits.\n- **Comfortable Footwear**: You’ll be walking a lot, so wear supportive shoes.\n- **Plan Breaks**: Take breaks to recharge between sites, especially in the heat.\n\nThis itinerary balances historical exploration with cultural experiences, ensuring you make the most out of your limited time in Egypt. Would you like me to refine any part of this plan or provide more specific recommendations? \n\n[PLANNER]",
+  "sources": [
+    "SourceRef(label='Suez Canal Authority Building', kind='database')",
+    "SourceRef(label='Ain Khudra', kind='database')",
+    "SourceRef(label='Blue Lagoon', kind='database')",
+    "SourceRef(label='Luxor Corniche', kind='database')",
+    "SourceRef(label='Lighthouse Reef', kind='database')",
+    "SourceRef(label=\"Tentmakers' Street\", kind='database')",
+    "SourceRef(label='Ben Ezra Synagogue', kind='database')",
+    "SourceRef(label='The Egyptian Museum', kind='database')",
+    "SourceRef(label='Bab al-Futuh', kind='database')",
+    "SourceRef(label='National Museum of Egyptian Civilization (NMEC)', kind='database')",
+    "SourceRef(label='Deir el-Medina', kind='database')",
+    "SourceRef(label='West Bank Bicycle Tour', kind='database')",
+    "SourceRef(label='Temple of Khnum at Esna', kind='database')",
+    "SourceRef(label='Luxor Museum', kind='database')"
+  ]
+}

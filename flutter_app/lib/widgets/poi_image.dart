@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/poi.dart';
@@ -130,12 +131,17 @@ PoiCategoryStyle poiCategoryStyle(String? category) {
 }
 
 /// HTTP headers sent with every image request. Wikimedia Commons (which
-/// hosts our POI and CLEO-response images) rate-limits requests that lack a
-/// descriptive User-Agent — without this, image loads fail with HTTP 429.
-/// See Wikimedia's User-Agent policy.
-const voyoImageHttpHeaders = {
-  'User-Agent': 'VOYO-App/1.0 (Egypt travel guide; thesis project)',
-};
+/// hosts some legacy POI and CLEO-response images) rate-limits requests
+/// that lack a descriptive User-Agent — without this, those loads fail
+/// with HTTP 429. See Wikimedia's User-Agent policy.
+///
+/// On web the browser refuses the User-Agent header (forbidden for fetch
+/// / <img>), which aborts every image request and leaves the POI card
+/// showing the gradient fallback (the "grey box"). Omit it on web;
+/// mobile/desktop keep it for Wikimedia compatibility.
+final Map<String, String> voyoImageHttpHeaders = kIsWeb
+    ? const <String, String>{}
+    : const {'User-Agent': 'VOYO-App/1.0 (Egypt travel guide; thesis project)'};
 
 /// Whether [url] points at an image format Flutter's bundled codec can't
 /// decode (SVG needs `flutter_svg`, which we don't bundle). Used to skip
@@ -204,7 +210,8 @@ class PoiImage extends StatelessWidget {
         // the "no photo" chip — because a photo DOES exist, it just didn't
         // load this time. The chip is reserved for genuine gaps only.
         errorBuilder: (_, __, ___) {
-          debugPrint('VOYO image-load failed for POI ${poi.id} "${poi.name}": '
+          // print() not debugPrint() so this shows in --release.
+          print('VOYO image-load failed for POI ${poi.id} "${poi.name}": '
               '$url  (transient CDN error or stale URL — not a missing image)');
           return _GradientFallback(
               style: style, showIcon: showFallbackIcon, showNoPhotoChip: false);

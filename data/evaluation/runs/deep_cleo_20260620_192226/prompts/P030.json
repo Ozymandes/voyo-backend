@@ -1,0 +1,11 @@
+{
+  "query_id": "P030",
+  "query": "I'm a senior traveler. What's suitable for older visitors?",
+  "answer": "For senior travelers, Egypt offers many historical and cultural experiences that are accessible and rich in significance. Here are some suitable options:\n\n### 1. **Tomb of Ti (Cairo)**\nThis beautifully detailed 5th-Dynasty mastaba is famous for its exquisite low-relief carvings. It gives insight into the lives of ancient Egyptians and showcases incredible artistry. The tomb is relatively easy to navigate, making it a great choice for seniors.\n\n**Practical Tip:** Visit early in the day to avoid the heat and crowds. The ticket price is around 120 EGP, and the average rating is 4.8, indicating a positive experience for visitors.\n\n### 2. **Catacombs of Kom El Shoqafa (Alexandria)**\nThese fascinating underground tombs blend Pharaonic and Greco-Roman styles, providing a unique glimpse into the cultural exchanges in ancient Egypt. The site is well-maintained, and the pathways are manageable for older visitors.\n\n**Practical Tip:** Wear comfortable shoes, as you'll be walking on uneven surfaces. Tickets cost approximately 80 EGP, and the site has an average rating of 4.5.\n\n### 3. **Tombs of the Nobles (Aswan)**\nLocated on the west bank of Aswan, these rock-cut tombs offer stunning panoramic views. They are not only historical sites but also provide a serene environment for exploration without strenuous hiking.\n\n**Practical Tip:** Bring a hat and water, as it can get warm. The entry fee is about 100 EGP, and visitors rate it around 4.5 on average.\n\nThese sites offer a blend of accessibility and rich history, making them enjoyable for senior travelers. Would you like more details about any of these locations or other suggestions?",
+  "sources": [
+    "SourceRef(label='Tomb of Ti', kind='database')",
+    "SourceRef(label='Catacombs of Kom El Shoqafa', kind='database')",
+    "SourceRef(label='Tombs of the Nobles (Aswan)', kind='database')",
+    "SourceRef(label='VOYO verified database', kind='database')"
+  ]
+}

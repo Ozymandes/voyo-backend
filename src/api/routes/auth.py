@@ -67,6 +67,13 @@ def _decode_supabase_jwt(token: str) -> Dict:
             _JWT_SECRET,
             algorithms=["HS256"],
             audience="authenticated",
+            # Clock-skew tolerance: when the server host clock lags the
+            # Supabase auth host by a few seconds, a freshly-issued token's
+            # `iat` (issued-at) lands in the future relative to this backend
+            # and PyJWT rejects it as ImmatureSignatureError — breaking every
+            # authed endpoint (incl. /itinerary/plan) on clock-drifted hosts.
+            # 60s leeway is standard practice and covers NTP drift.
+            leeway=60,
         )
         return payload
     except jwt.ExpiredSignatureError:

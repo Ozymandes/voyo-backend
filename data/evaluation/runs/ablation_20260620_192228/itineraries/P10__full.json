@@ -1,0 +1,165 @@
+{
+  "status": "ok",
+  "overview": "This 5-day itinerary takes you through the historical and natural wonders of Egypt, focusing on Cairo, Luxor, and Aswan. Experience the rich heritage and stunning landscapes while enjoying a balanced pace suitable for a family trip.",
+  "days": [
+    {
+      "day": 1,
+      "date": "2026-11-10",
+      "title": "Day 1",
+      "theme": "Ancient Wonders & Sacred Heritage",
+      "stops": [
+        {
+          "poi_id": 342,
+          "name": "Tahrir Square",
+          "category": "historical",
+          "time": "08:06",
+          "departure_time": "09:06",
+          "service_duration_min": 60,
+          "transport_to_next_min": 21.1,
+          "transport_to_next_km": 16.7,
+          "transport_mode": "Taxi / drive",
+          "description": "Cairo's central public square and focal point of modern Egyptian political history",
+          "cost_egp": null,
+          "address": "El-Tahrir Square, محطة السادات، Qasr El Nil, Cairo Governorate 11512, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        },
+        {
+          "poi_id": 373,
+          "name": "Queen's Pyramids of Khufu",
+          "category": "historical",
+          "time": "09:27",
+          "departure_time": "10:27",
+          "service_duration_min": 60,
+          "transport_to_next_min": 23.5,
+          "transport_to_next_km": 23.5,
+          "transport_mode": "Taxi / drive",
+          "description": "Three small pyramids east of the Great Pyramid, the tombs of Khufu's wives and mother",
+          "cost_egp": null,
+          "address": "Al Haram, Nazlet El-Semman, Al Haram, Giza Governorate 3512201, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        },
+        {
+          "poi_id": 355,
+          "name": "Mosque of Muhammad Ali",
+          "category": "religious",
+          "time": "10:51",
+          "departure_time": "11:51",
+          "service_duration_min": 60,
+          "transport_to_next_min": 0.0,
+          "transport_to_next_km": 0.0,
+          "transport_mode": "Walk",
+          "description": "Ottoman alabaster mosque dominating the Citadel skyline, built by Muhammad Ali Pasha in the 19th century",
+          "cost_egp": null,
+          "address": "Salah al-Din, al-Ayyubi, Saladin, Cairo Governorate 4252360, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "date": "2026-11-11",
+      "title": "Day 2",
+      "theme": "Ancient Wonders & Sacred Heritage",
+      "stops": [
+        {
+          "poi_id": 358,
+          "name": "Al-Azhar Park",
+          "category": "natural",
+          "time": "09:00",
+          "departure_time": "10:00",
+          "service_duration_min": 60,
+          "transport_to_next_min": 0.0,
+          "transport_to_next_km": 0.0,
+          "transport_mode": "Walk",
+          "description": "30-hectare landscaped park on a historic rubbish dump, with gardens, restaurants, and city views",
+          "cost_egp": 40.0,
+          "address": "10 Salah Salem St, El-Darb El-Ahmar, Al-Darb Al-Ahmar, Cairo Governorate 4294010, Egypt",
+          "tip": "Check opening hours before visiting"
+        },
+        {
+          "poi_id": 340,
+          "name": "Cairo Opera House",
+          "category": "entertainment",
+          "time": null,
+          "departure_time": null,
+          "service_duration_min": null,
+          "transport_to_next_min": null,
+          "transport_to_next_km": null,
+          "transport_mode": "Walk",
+          "description": "National performing-arts center on Gezira Island hosting opera, ballet, and symphony in its seven theatres",
+          "cost_egp": null,
+          "address": "Gezira St, Zamalek, Cairo Governorate 4270020, Egypt",
+          "tip": null
+        },
+        {
+          "poi_id": 347,
+          "name": "Bab al-Futuh",
+          "category": "historical",
+          "time": null,
+          "departure_time": null,
+          "service_duration_min": null,
+          "transport_to_next_min": null,
+          "transport_to_next_km": null,
+          "transport_mode": "Walk",
+          "description": "Northern gateway of the Fatimid city walls, flanked by two massive semi-circular towers",
+          "cost_egp": null,
+          "address": "1 Darb Al Keshta, El-Gamaleya, El Gamaliya, Cairo Governorate 4334111, Egypt",
+          "tip": null
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "date": "2026-11-12",
+      "title": "Day 3",
+      "theme": "Culinary Journey & Shopping",
+      "stops": [
+        {
+          "poi_id": 377,
+          "name": "Mena House Hotel",
+          "category": "historical",
+          "time": null,
+          "departure_time": null,
+          "service_duration_min": null,
+          "transport_to_next_min": null,
+          "transport_to_next_km": null,
+          "transport_mode": "Walk",
+          "description": "Historic 1869 royal hunting lodge turned luxury hotel with direct views of the Great Pyramid",
+          "cost_egp": null,
+          "address": "6 Pyramids Road، Kafr Nassar, Al Haram, Giza Governorate 12556, Egypt",
+          "tip": null
+        }
+      ]
+    }
+  ],
+  "tips": [
+    "Start your days early to avoid crowds at popular sites.",
+    "Stay hydrated and wear comfortable shoes for walking.",
+    "Try local cuisine at each destination for an authentic experience.",
+    "Use local transport options for a more immersive experience.",
+    "Take plenty of photos, but also take time to enjoy the views."
+  ],
+  "summary": "Enjoy your Egyptian adventure, filled with history, culture, and breathtaking landscapes!",
+  "total_cost_egp": 40.0,
+  "budget_breakdown": {
+    "activities_egp": 80.0,
+    "accommodation_egp_estimate": 12500,
+    "food_egp_estimate": 3000,
+    "transport_egp_estimate": 1000
+  },
+  "provenance": {
+    "poi_selection": "llm",
+    "times": "vroom",
+    "costs": "database_ticket_prices",
+    "descriptions": "database_narratives",
+    "llm_available": true,
+    "vroom_available": true,
+    "candidate_pool_size": 25,
+    "geo_reclustered": true,
+    "geo_trimmed_cities": [
+      "Aswan",
+      "Alexandria",
+      "Hurghada"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "query_id": "P015",
+  "query": "What attractions are best for someone with strollers?",
+  "answer": "For a family visiting Egypt with strollers, there are several attractions that are more accessible and stroller-friendly. Here are some great options in Cairo:\n\n### 1. **The Egyptian Museum**\n   - **Description:** Home to the world's largest collection of ancient Egyptian antiquities, including treasures from Tutankhamun. The museum is spacious with wide pathways, making it easier to navigate with a stroller.\n   - **Ticket Price:** 200 EGP \n   - **Average Rating:** 4.5/5\n   - **Practical Tip:** Visit early in the day to avoid crowds, and check out the layout to plan for the most famous exhibits first!\n\n### 2. **National Museum of Egyptian Civilization (NMEC)**\n   - **Description:** A modern museum located in Fustat, featuring the Royal Mummies Hall and over 50,000 artifacts. Its design is accommodating for strollers, with ramps and elevators available.\n   - **Ticket Price:** 200 EGP\n   - **Average Rating:** 4.7/5\n   - **Practical Tip:** Allow plenty of time to explore, as there is a lot to see, and consider scheduling a guided tour for insights without the hassle.\n\n### 3. **Imhotep Museum**\n   - **Description:** Situated at the Saqqara entrance, this museum showcases finds from the necropolis, including statues and architectural elements. It's intimate and easier to navigate.\n   - **Ticket Price:** 80 EGP\n   - **Average Rating:** 4.7/5\n   - **Practical Tip:** Combine your visit with a trip to the nearby Step Pyramid of Djoser, which has accessible pathways.\n\n### 4. **Museum of Islamic Art**\n   - **Description:** One of the world's finest collections of Islamic art, featuring ceramics, metalwork, and woodwork. The museum has wide corridors suitable for strollers.\n   - **Ticket Price:** 80 EGP\n   - **Average Rating:** 4.6/5\n   - **Practical Tip:** Check if there are any special exhibitions during your visit to enhance your experience.\n\nThese attractions not only accommodate strollers but also provide enriching experiences for the whole family. Would you like more details on any specific museum or help with planning your visit?",
+  "sources": [
+    "SourceRef(label='VOYO verified database', kind='database')",
+    "SourceRef(label='The Egyptian Museum', kind='database')",
+    "SourceRef(label='Imhotep Museum', kind='database')",
+    "SourceRef(label='National Museum of Egyptian Civilization (NMEC)', kind='database')",
+    "SourceRef(label='Luxor Museum', kind='database')",
+    "SourceRef(label='Museum of Islamic Art', kind='database')"
+  ]
+}

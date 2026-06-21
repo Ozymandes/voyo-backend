@@ -1,0 +1,12 @@
+{
+  "query_id": "F035",
+  "query": "Tell me about Luxor Temple's history",
+  "answer": "The **Luxor Temple** (معبد الأقصر) is an extraordinary ancient temple complex located on the east bank of the Nile River in Luxor, Egypt. Constructed around 1400 BCE, it was known in ancient times as **ipet resyt**, meaning \"the southern sanctuary.\" Unlike other temples in Thebes dedicated to specific gods or pharaohs, the Luxor Temple served a unique purpose: it was focused on the **rejuvenation of kingship**, possibly serving as the site where many pharaohs were crowned.\n\n### Historical Significance\nThe temple complex is one of the two primary temples on the east bank of the Nile, the other being the **Karnak Temple**. The Luxor Temple's architecture is designed to guide visitors inward, culminating in an inner sanctum where the king's divine nature was reinforced. Historically, it played a crucial role in the annual Opet Festival, which celebrated the link between the pharaoh and the gods, showcasing the deep connection between religion and governance in ancient Egypt.\n\n### What to Expect\nAs you explore Luxor Temple, you'll be captivated by the stunning reliefs depicting the pharaoh's coronation and divine legitimacy. The site is particularly magical at night when the temple is beautifully illuminated, allowing you to appreciate the intricate details of the architecture against the dark sky. \n\n### Practical Tip\nTo make the most of your visit, consider going in the late afternoon and staying until evening. This way, you can witness how the light changes the atmosphere of the temple, creating a serene and majestic environment. Pair your visit with a morning trip to Karnak Temple to fully appreciate the historical and spiritual connection between these two magnificent sites.\n\nWould you like to know more about nearby attractions or other historical sites in Luxor? 🌟.",
+  "sources": [
+    "SourceRef(label='Luxor Temple', kind='database')",
+    "SourceRef(label='Temple of Dakka', kind='database')",
+    "SourceRef(label='Khufu Mortuary Temple', kind='database')",
+    "SourceRef(label='El-Kab (Nekheb)', kind='database')",
+    "SourceRef(label='Deir el-Medina', kind='database')"
+  ]
+}

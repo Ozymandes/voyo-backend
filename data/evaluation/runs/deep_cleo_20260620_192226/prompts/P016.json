@@ -1,0 +1,11 @@
+{
+  "query_id": "P016",
+  "query": "I'm on a tight budget. What's free in Cairo?",
+  "answer": "Cairo has some fantastic free attractions that allow you to enjoy the city's charm without breaking the bank. Here are a couple of must-visit spots:\n\n### 1. **Khan el-Khalili**\nThis historic souk (market) is a vibrant maze of shops, cafes, and artisan stalls, perfect for immersing yourself in local culture. You can wander through the narrow alleys, enjoy window shopping, and soak in the lively atmosphere. Don't forget to try some traditional Egyptian tea or coffee while you're there!\n\n**Practical Tip:** Visit in the early morning or late afternoon to avoid the heat and to experience the market at its liveliest.\n\n### 2. **Cairo Tower (Viewing Area)**\nWhile there is a small fee to go up the Cairo Tower for panoramic views, you can still enjoy the surrounding gardens and the view of the tower itself for free. The tower stands at 187 meters and offers a stunning perspective of the city and the Nile River.\n\n**Practical Tip:** Bring a camera! The views from the base are lovely, especially at sunset.\n\nThese spots will give you a taste of Cairo's culture and beauty without spending a dime. Would you like more recommendations for free activities or events happening during your visit?",
+  "sources": [
+    "SourceRef(label='Straits of Tiran', kind='database')",
+    "SourceRef(label='Cairo Tower', kind='database')",
+    "SourceRef(label='Temple of Kalabsha', kind='database')",
+    "SourceRef(label='Khan el-Khalili', kind='database')"
+  ]
+}

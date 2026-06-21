@@ -83,6 +83,44 @@ class PoiDetailSheet extends StatelessWidget {
   }
 
   List<Widget> _body(BuildContext context) {
+    // ── DIAGNOSTIC GUARD (temporary): the body renders grey on Windows
+    // release. Release-mode ErrorWidget is a grey box, so a build exception
+    // in the body sliver produces exactly that symptom. This guard catches
+    // it, logs the full stack to the console, and renders a visible error
+    // chip so we can read the cause from a screenshot/log instead of a
+    // featureless grey rectangle. Remove once the throw site is fixed.
+    //
+    // NOTE: uses print() not debugPrint() so logs survive in --release.
+    try {
+      final built = _bodyInner(context);
+      print(
+        'VOYO-PDIAG poi=${poi.id} "${poi.name}" bodySections=${built.length} '
+        'narrative=${poi.narrative?.length ?? 'null'} '
+        'desc=${poi.description?.length ?? 'null'} '
+        'sig=${poi.historicalSignificance?.length ?? 'null'} '
+        'tips=${poi.travelTips?.length ?? 'null'} '
+        'tags=${poi.tags?.length ?? 'null'} '
+        'imgs=${poi.imageUrls?.length ?? 'null'}',
+      );
+      return built;
+    } catch (e, st) {
+      print('VOYO-PDIAG ===== _body THREW =====');
+      print('VOYO-PDIAG poi=${poi.id} "${poi.name}"');
+      print('VOYO-PDIAG exception: $e');
+      print('VOYO-PDIAG stack:\n$st');
+      return [
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text(
+            'PDIAG body-build threw:\n$e\n\n$st',
+            style: const TextStyle(color: Colors.red, fontSize: 11),
+          ),
+        ),
+      ];
+    }
+  }
+
+  List<Widget> _bodyInner(BuildContext context) {
     final children = <Widget>[];
 
     // Quick facts (only the ones we actually have data for).

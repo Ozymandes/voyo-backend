@@ -8,6 +8,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.api.routes import chat, profile, recommendations, routing, itinerary
 import logging
 
+# Root logger config — without this, INFO from src.cleo.* and src.itinerary.*
+# is silently dropped (uvicorn only configures its own loggers). This makes
+# the [LLM], [TAVILY], and startup banner lines visible for QA without
+# exposing any secrets (those modules never log keys).
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
+
 logger = logging.getLogger(__name__)
 
 # Create FastAPI app

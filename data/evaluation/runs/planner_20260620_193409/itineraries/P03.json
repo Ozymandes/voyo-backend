@@ -1,0 +1,165 @@
+{
+  "status": "ok",
+  "overview": "This 4-day itinerary takes you through the historical and natural wonders of Egypt, focusing on Aswan and Alexandria. Enjoy a balanced pace with a mix of cultural experiences and breathtaking landscapes.",
+  "days": [
+    {
+      "day": 1,
+      "date": "2026-11-05",
+      "title": "Alexandria — Day 1",
+      "theme": null,
+      "stops": [
+        {
+          "poi_id": 319,
+          "name": "Monastery of Abu Mina",
+          "category": "religious",
+          "time": "08:50",
+          "departure_time": "09:50",
+          "service_duration_min": 60,
+          "transport_to_next_min": 52.5,
+          "transport_to_next_km": 70.9,
+          "transport_mode": "Taxi / drive",
+          "description": "UNESCO-listed pilgrimage site with ancient ruins and a modern monastery.",
+          "cost_egp": null,
+          "address": "9 Mar-Mina Rd, Qetaa Maryout, Borg El Arab, Alexandria Governorate 21934, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        },
+        {
+          "poi_id": 325,
+          "name": "Shallalat Gardens",
+          "category": "natural",
+          "time": "10:43",
+          "departure_time": "11:43",
+          "service_duration_min": 60,
+          "transport_to_next_min": 4.5,
+          "transport_to_next_km": 3.8,
+          "transport_mode": "Taxi / drive",
+          "description": "Features waterfalls and remains of the city’s Islamic walls.",
+          "cost_egp": null,
+          "address": "6W37+3RF, Bab Sharqi WA Wabour Al Meyah, Bab Shar', Alexandria Governorate 5423005, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        },
+        {
+          "poi_id": 324,
+          "name": "Antoniadis Gardens",
+          "category": "natural",
+          "time": "11:47",
+          "departure_time": "12:47",
+          "service_duration_min": 60,
+          "transport_to_next_min": 0.0,
+          "transport_to_next_km": 0.0,
+          "transport_mode": "Walk",
+          "description": "Vast botanical gardens containing Greco-Roman style statues.",
+          "cost_egp": 20.0,
+          "address": "ش البرت الأول، Smoha Sq., Sidi Gabir, Sidi Gaber, Alexandria Governorate 5432034, Egypt",
+          "tip": "Check opening hours before visiting"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "date": "2026-11-06",
+      "title": "Alexandria — Day 2",
+      "theme": "Fun & Adventure & Ancient Wonders",
+      "stops": [
+        {
+          "poi_id": 305,
+          "name": "Royal Jewelry Museum",
+          "category": "cultural",
+          "time": "09:00",
+          "departure_time": "10:00",
+          "service_duration_min": 60,
+          "transport_to_next_min": 7.2,
+          "transport_to_next_km": 4.8,
+          "transport_mode": "Taxi / drive",
+          "description": "Houses the exquisite jewels of the Muhammad Ali dynasty.",
+          "cost_egp": 100.0,
+          "address": "27 Ahmed Yehia, San Stefano, El Raml 2, Alexandria Governorate 5451010, Egypt",
+          "tip": "Check opening hours before visiting"
+        },
+        {
+          "poi_id": 332,
+          "name": "Smouha Club",
+          "category": "entertainment",
+          "time": "10:07",
+          "departure_time": "11:07",
+          "service_duration_min": 60,
+          "transport_to_next_min": 0.0,
+          "transport_to_next_km": 0.0,
+          "transport_mode": "Walk",
+          "description": "Massive social and sporting club in the heart of the city.",
+          "cost_egp": null,
+          "address": "Victor Emanouil Al Thaleth, Ezbet Saad, Sidi Gaber, Alexandria Governorate 5432080, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        },
+        {
+          "poi_id": 326,
+          "name": "San Stefano Mall",
+          "category": "entertainment",
+          "time": null,
+          "departure_time": null,
+          "service_duration_min": null,
+          "transport_to_next_min": null,
+          "transport_to_next_km": null,
+          "transport_mode": "Walk",
+          "description": "Upscale shopping and dining in the city's tallest building.",
+          "cost_egp": null,
+          "address": "El-Gaish Rd, San Stefano, El Raml 2, Alexandria Governorate 5452053, Egypt",
+          "tip": null
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "date": "2026-11-07",
+      "title": "Alexandria — Day 3",
+      "theme": "Sacred Heritage & Natural Beauty",
+      "stops": [
+        {
+          "poi_id": 329,
+          "name": "Gleem Bay",
+          "category": "entertainment",
+          "time": null,
+          "departure_time": null,
+          "service_duration_min": null,
+          "transport_to_next_min": null,
+          "transport_to_next_km": null,
+          "transport_mode": "Walk",
+          "description": "A modern hub for restaurants built directly over the sea.",
+          "cost_egp": null,
+          "address": "Glime Beach, San Stefano, El Raml 1, Alexandria Governorate 5452033, Egypt",
+          "tip": null
+        }
+      ]
+    }
+  ],
+  "tips": [
+    "Start your days early to avoid the heat and enjoy quieter sites.",
+    "Stay hydrated and carry water, especially during outdoor activities.",
+    "Try local cuisine at each destination for an authentic experience.",
+    "Use local transport options for a more immersive travel experience.",
+    "Consider visiting markets for unique souvenirs and local crafts."
+  ],
+  "summary": "Enjoy your journey through Egypt's rich history and stunning landscapes, creating unforgettable family memories.",
+  "total_cost_egp": 120.0,
+  "budget_breakdown": {
+    "activities_egp": 240.0,
+    "accommodation_egp_estimate": 10000,
+    "food_egp_estimate": 2400,
+    "transport_egp_estimate": 800
+  },
+  "provenance": {
+    "poi_selection": "llm",
+    "times": "vroom",
+    "costs": "database_ticket_prices",
+    "descriptions": "database_narratives",
+    "llm_available": true,
+    "vroom_available": true,
+    "candidate_pool_size": 25,
+    "geo_reclustered": true,
+    "geo_trimmed_cities": [
+      "Aswan",
+      "Hurghada",
+      "Unknown"
+    ]
+  }
+}

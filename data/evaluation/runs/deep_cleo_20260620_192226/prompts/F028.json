@@ -1,0 +1,12 @@
+{
+  "query_id": "F028",
+  "query": "What's the location of the Cairo Tower?",
+  "answer": "The Cairo Tower is located on Gezira Island in the Nile River, near the Zamalek neighborhood of Cairo. It's a 187-meter tall structure offering stunning panoramic views of the city and the Nile.",
+  "sources": [
+    "SourceRef(label='Cairo Tower', kind='database')",
+    "SourceRef(label='Ben Ezra Synagogue', kind='database')",
+    "SourceRef(label='The Egyptian Museum', kind='database')",
+    "SourceRef(label='Bab al-Futuh', kind='database')",
+    "SourceRef(label='National Museum of Egyptian Civilization (NMEC)', kind='database')"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "query_id": "F044",
+  "query": "Should I tip in Egypt? How much?",
+  "answer": "Tipping, or \"baksheesh,\" is quite customary in Egypt and is appreciated in many situations. Here's a quick guide on when and how much to tip:\n\n### General Tipping Guidelines\n1. **Restaurants:** \n   - It's common to leave around 10-15% of the bill as a tip. If service isn't included, you can round up the bill or leave a couple of pounds for good service.\n\n2. **Hotel Staff:**\n   - For bellboys, about 10-20 EGP per bag is standard.\n   - Housekeeping can be tipped around 10 EGP per day.\n\n3. **Guides and Drivers:**\n   - If you have a private tour guide, consider tipping around 50-100 EGP per day, depending on the quality of service.\n   - For drivers, 20-50 EGP is a reasonable amount.\n\n4. **Cafés and Street Vendors:**\n   - It's nice to leave small change (1-5 EGP) if you enjoyed the service.\n\n### Practical Tips\n- **Cash is King:** Always have small denominations of EGP on hand for tipping, as not all places can give change for larger bills.\n- **Cultural Respect:** Tipping is seen as a gesture of appreciation, so don’t worry about it being perceived negatively.\n\nIn summary, tipping in Egypt is not only common but also a way to show gratitude for good service. It enhances your experience and helps support the local economy. \n\nWould you like to know more about dining etiquette or other customs in Egypt?",
+  "sources": [
+    "SourceRef(label='Temple of Dakka', kind='database')",
+    "SourceRef(label='Qasr Ibrim', kind='database')",
+    "SourceRef(label='Hurghada Marina', kind='database')",
+    "SourceRef(label='Ben Ezra Synagogue', kind='database')",
+    "SourceRef(label='Tomb of Queen Hetepheres I', kind='database')"
+  ]
+}

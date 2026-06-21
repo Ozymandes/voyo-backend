@@ -1,0 +1,12 @@
+{
+  "query_id": "F037",
+  "query": "Explain the Valley of the Kings",
+  "answer": "The **Valley of the Kings** is an iconic archaeological site located near Luxor, Egypt, serving as the final resting place for pharaohs and powerful nobles during the New Kingdom period (approximately 1550 to 1070 BC). This area, also known as the Valley of the Gates of the Kings, features a remarkable collection of 63 rock-cut tombs, including the famous tomb of **Tutankhamun** (KV62).\n\n### Historical Significance\nThe Valley was deliberately chosen for its remote location, which helped protect the tombs from grave robbers and the elements. Each tomb is intricately designed, showcasing stunning wall paintings and inscriptions that reflect the beliefs and practices of ancient Egyptian burial customs. The elaborate artwork was intended to ensure a safe passage to the afterlife for the deceased.\n\n### What to Expect\nVisitors to the Valley of the Kings can explore several tombs, with the option to see the tombs of notable figures like Seti I, known for its breathtaking wall paintings, and Ramses II. The site offers a deep insight into ancient Egyptian history and culture, making it a must-visit for history enthusiasts.\n\n### Practical Tip\nEntry to the Valley costs around 300 EGP, and it's best to visit early in the morning to avoid the heat and crowds. Be sure to wear comfortable shoes for walking through the rocky terrain!\n\nWould you like to know more about specific tombs or other nearby attractions?",
+  "sources": [
+    "SourceRef(label='Valley of the Kings', kind='database')",
+    "SourceRef(label='Tomb of Seti I (KV17)', kind='database')",
+    "SourceRef(label='Suez Canal Authority Building', kind='database')",
+    "SourceRef(label='Luxor Corniche', kind='database')",
+    "SourceRef(label='Lighthouse Reef', kind='database')"
+  ]
+}

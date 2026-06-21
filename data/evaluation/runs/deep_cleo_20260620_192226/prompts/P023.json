@@ -1,0 +1,22 @@
+{
+  "query_id": "P023",
+  "query": "I want a balanced Egypt trip - not too rushed, not too slow.",
+  "answer": "For a balanced trip to Egypt, combining historical exploration, cultural experiences, and relaxation, here’s a suggested itinerary that allows you to enjoy the treasures of Cairo, Luxor, and Aswan without feeling rushed. \n\n### **Cairo (3 Days)**\n1. **Day 1: Iconic Landmarks**\n   - **The Egyptian Museum**: Start your journey by marveling at the world’s largest collection of ancient Egyptian antiquities, including treasures from Tutankhamun. \n     - *Ticket Price:* 200 EGP\n   - **Tentmakers' Street**: Spend the afternoon exploring this vibrant street where you can shop for beautiful hand-stitched textiles.\n   \n2. **Day 2: Cultural Insights**\n   - **Ben Ezra Synagogue**: Visit this historical site in Coptic Cairo, significant for the discovery of the Cairo Geniza manuscripts.\n   - **National Museum of Egyptian Civilization (NMEC)**: Wrap up your day at this modern museum showcasing 50,000 artifacts and the Royal Mummies Hall.\n     - *Ticket Price:* 200 EGP\n\n3. **Day 3: Relaxation and Exploration**\n   - **Luxor Corniche**: Enjoy a leisurely morning stroll along this beautiful waterfront promenade, perfect for cafes and felucca rides on the Nile.\n\n### **Luxor (3 Days)**\n1. **Day 4: West Bank Wonders**\n   - **Valley of the Kings**: Explore the magnificent tombs of pharaohs like Tutankhamun. It's best to arrive early to beat the heat.\n   - **Hatshepsut Temple**: This stunning mortuary temple is a must-see for its unique architecture.\n   - **Colossi of Memnon**: Quick photo op with these monumental statues.\n\n2. **Day 5: Temple Exploration**\n   - **Karnak Temple**: Spend your morning wandering through this vast temple complex filled with incredible hieroglyphics.\n     - *Ticket Price:* 220 EGP\n   - **Luxor Temple**: Visit this beautiful temple, especially enchanting at sunset.\n     - *Tip:* Consider a guided tour for deeper insights.\n\n3. **Day 6: Cultural Connection**\n   - **Luxor Museum**: Wrap up your Luxor experience with a visit to this museum, showcasing artifacts from the Theban temples.\n     - *Ticket Price:* 140 EGP\n   - **Optional Visit**: Consider a bicycle tour to see the West Bank villages and ancient sites.\n\n### **Aswan (3 Days)**\n1. **Day 7: Nubian Culture**\n   - **Aswan Souk**: Browse this vibrant market for spices, textiles, and Nubian crafts.\n   - **Temple of Dakka**: Visit this relocated Greco-Roman temple dedicated to Thoth.\n     - *Ticket Price:* 100 EGP\n\n2. **Day 8: Scenic Exploration**\n   - **Qasr Ibrim**: This unique site offers a glimpse into Nubian history, as it remains in its original location.\n   - **Felucca Ride on the Nile**: Enjoy a leisurely boat ride, soaking in the serene views.\n\n3. **Day 9: Relaxation and Reflection**\n   - **Relax at a Riverside Cafe**: Spend your last day unwinding at a cafe along the Nile, soaking up the landscape and reflecting on your journey.\n\n### **Practical Tips:**\n- **Balance Your Days**: Mix busy sightseeing days with more relaxed ones to avoid fatigue.\n- **Stay Hydrated**: Always carry water, especially during temple visits.\n- **Comfortable Footwear**: You’ll be walking a lot, so wear supportive shoes.\n\nThis itinerary offers a balanced pace, allowing you to absorb the rich history and culture of Egypt while also enjoying some downtime. Would you like more details on any specific activities or accommodations?",
+  "sources": [
+    "SourceRef(label=\"Tentmakers' Street\", kind='database')",
+    "SourceRef(label='Ben Ezra Synagogue', kind='database')",
+    "SourceRef(label='The Egyptian Museum', kind='database')",
+    "SourceRef(label='Bab al-Futuh', kind='database')",
+    "SourceRef(label='National Museum of Egyptian Civilization (NMEC)', kind='database')",
+    "SourceRef(label='Luxor Corniche', kind='database')",
+    "SourceRef(label='Deir el-Medina', kind='database')",
+    "SourceRef(label='West Bank Bicycle Tour', kind='database')",
+    "SourceRef(label='Temple of Khnum at Esna', kind='database')",
+    "SourceRef(label='Luxor Museum', kind='database')",
+    "SourceRef(label='Temple of Dakka', kind='database')",
+    "SourceRef(label='Aswan Souk', kind='database')",
+    "SourceRef(label='Qasr Ibrim', kind='database')",
+    "SourceRef(label='El-Kab (Nekheb)', kind='database')",
+    "SourceRef(label='Rock Tombs of El-Kab', kind='database')"
+  ]
+}

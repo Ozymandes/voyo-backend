@@ -1,0 +1,12 @@
+{
+  "query_id": "C002",
+  "query": "What's the best way to travel from Cairo to Luxor?",
+  "answer": "Traveling from Cairo to Luxor offers several convenient options, each with its own advantages. Here are the best ways to make the journey:\n\n### 1. By Air\n- **Duration:** Approximately 1 hour\n- **Details:** The quickest way to travel is by taking a direct flight from Cairo International Airport to Luxor International Airport. Airlines like EgyptAir operate multiple flights daily.\n- **Tip:** Book your flight in advance for better rates, and check the flight times as they can vary.\n\n### 2. By Train\n- **Duration:** Approximately 10-12 hours\n- **Details:** The train ride is a scenic option, allowing you to relax and enjoy views of the Egyptian countryside. The sleeper trains provide comfortable cabins for overnight travel.\n- **Tip:** It's best to book tickets in advance, especially for sleeper trains, and consider the first-class option for added comfort.\n\n### 3. By Bus\n- **Duration:** Approximately 12-14 hours\n- **Details:** Several bus companies, like GoBus and SuperJet, offer services between Cairo and Luxor. Buses are usually equipped with air conditioning and comfortable seating.\n- **Tip:** Check for overnight buses to save on accommodation costs, and book your tickets online to secure your seat.\n\n### 4. By Private Car\n- **Duration:** Approximately 9-10 hours\n- **Details:** Renting a car or hiring a private driver can give you flexibility and the chance to stop at interesting sites along the way, such as the Temple of Karnak or the Step Pyramid of Saqqara.\n- **Tip:** Ensure you have a GPS or a reliable map, as some areas may be less well-signposted.\n\n### Conclusion\nEach option varies in terms of time, comfort, and cost. If you’re looking for speed, flying is the way to go; for a more adventurous experience, consider the train or bus. If you want to explore along the way, a private car might suit you best.\n\nDo you have a preference for how you'd like to travel, or would you like more details on any specific option? 🚆✈️.",
+  "sources": [
+    "SourceRef(label='Ben Ezra Synagogue', kind='database')",
+    "SourceRef(label='The Egyptian Museum', kind='database')",
+    "SourceRef(label='Bab al-Futuh', kind='database')",
+    "SourceRef(label='National Museum of Egyptian Civilization (NMEC)', kind='database')",
+    "SourceRef(label='Nile Corniche', kind='database')"
+  ]
+}

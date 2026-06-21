@@ -1,0 +1,5 @@
+{"concurrency": 1, "requests": 60, "wall_s": 0.381, "throughput_rps": 157.69, "ok": 60, "errors": 0}
+{"concurrency": 5, "requests": 60, "wall_s": 0.282, "throughput_rps": 213.08, "ok": 60, "errors": 0}
+{"concurrency": 10, "requests": 60, "wall_s": 0.08, "throughput_rps": 751.31, "ok": 60, "errors": 0}
+{"concurrency": 20, "requests": 60, "wall_s": 0.321, "throughput_rps": 186.91, "ok": 60, "errors": 0}
+{"concurrency": 40, "requests": 60, "wall_s": 0.155, "throughput_rps": 387.0, "ok": 60, "errors": 0}

@@ -1,0 +1,12 @@
+{
+  "query_id": "P019",
+  "query": "What's the best value for money in Egypt?",
+  "answer": "For the best value for your money in Egypt, here are some fantastic attractions that offer rich experiences without breaking the bank:\n\n### 1. **Khedivial Cairo**\nThis late 19th-century district is filled with stunning belle époque architecture, European-style boulevards, and charming cafés. Walking through Khedivial Cairo feels like stepping back in time, and it's completely free to explore! You can admire the beautiful buildings and enjoy the local atmosphere.\n\n**Practical Tip:** Grab a coffee at one of the historic cafés and enjoy people-watching while soaking in the elegant surroundings. \n\n### 2. **Abdeen Palace Museum**\nFor just 100 EGP, you can explore this 19th-century royal palace that was once the seat of government. The museum houses impressive collections of arms, silverware, and royal gifts, providing a glimpse into Egypt's rich history.\n\n**Practical Tip:** Join a guided tour if available, as it can enhance your understanding of the palace's significance and the artifacts on display.\n\n### 3. **Nilometer on Elephantine Island**\nThis ancient device for measuring Nile flood levels is another great value at 100 EGP. It's one of the oldest and best-preserved nilometers in Egypt, offering insights into ancient Egyptian engineering and agriculture.\n\n**Practical Tip:** Combine your visit to the Nilometer with a stroll around Elephantine Island, where you can enjoy the peaceful surroundings and beautiful views of the Nile.\n\nWould you like to know more about any of these attractions or need help planning your visit?",
+  "sources": [
+    "SourceRef(label='Khedivial Cairo', kind='database')",
+    "SourceRef(label='Shalateen Bazaar', kind='database')",
+    "SourceRef(label='Nilometer (Elephantine Island)', kind='database')",
+    "SourceRef(label='Temple of Horus at Edfu', kind='database')",
+    "SourceRef(label='Abdeen Palace Museum', kind='database')"
+  ]
+}

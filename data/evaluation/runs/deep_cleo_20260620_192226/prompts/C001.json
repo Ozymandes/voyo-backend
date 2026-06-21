@@ -1,0 +1,15 @@
+{
+  "query_id": "C001",
+  "query": "Compare the Pyramids of Giza with the Step Pyramid at Saqqara.",
+  "answer": "The Pyramids of Giza and the Step Pyramid at Saqqara are both iconic symbols of ancient Egyptian architecture, but they represent different eras and architectural innovations.\n\n### Pyramids of Giza\n- **Historical Significance:** The Great Pyramids of Giza, built during the Fourth Dynasty (around 2580–2560 BC), are the most famous pyramids in the world. The Great Pyramid of Khufu (Cheops) is the largest and was originally 146.6 meters tall. It showcases the Egyptians' advanced engineering skills and serves as a testament to their religious beliefs about the afterlife.\n- **Architecture:** The Giza pyramids are true pyramids with smooth sides, designed as monumental tombs for the pharaohs. The complex includes the Great Sphinx, which is also an iconic symbol of ancient Egypt, carved from limestone and dating back to the same period.\n- **Visiting Tip:** Aim to visit early in the morning or late afternoon to avoid crowds and take advantage of the softer lighting for photos. \n\n### Step Pyramid at Saqqara\n- **Historical Significance:** The Step Pyramid of Djoser, built around 2670 BC during the Third Dynasty, is the world's oldest stone pyramid and represents a significant evolution in Egyptian funerary architecture. It consists of six steps and marks the transition from flat-roofed mastabas to the pyramid shape.\n- **Architecture:** Unlike the true pyramids of Giza, the Step Pyramid is a stepped structure that served as a prototype for later pyramids. It is part of a larger mortuary complex, which includes ceremonial structures and extensive decorations.\n- **Visiting Tip:** Saqqara is less crowded than Giza, allowing for a more relaxed exploration of the site. Don’t miss the surrounding tombs, which offer excellent examples of ancient art.\n\n### Conclusion\nWhile the Pyramids of Giza represent the pinnacle of pyramid construction, the Step Pyramid at Saqqara holds significant historical value as the first of its kind. Both sites are essential for understanding the evolution of ancient Egyptian architecture and culture. \n\nWould you like to know more about specific visiting details for either site? 🌍.",
+  "sources": [
+    "SourceRef(label='Tomb of Queen Hetepheres I', kind='database')",
+    "SourceRef(label='Abusir Pyramid Field', kind='database')",
+    "SourceRef(label='Great Sphinx of Giza', kind='database')",
+    "SourceRef(label='Pyramid of Unas', kind='database')",
+    "SourceRef(label='Tomb of Ti', kind='database')",
+    "SourceRef(label='Saqqara (Step Pyramid)', kind='database')",
+    "SourceRef(label='Khufu Mortuary Temple', kind='database')",
+    "SourceRef(label='Steps of Penitence', kind='database')"
+  ]
+}

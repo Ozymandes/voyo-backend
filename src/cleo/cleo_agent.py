@@ -15,7 +15,14 @@ from datetime import datetime
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-from src.cleo.config import CleoConfig, GroqClient, LLMResponse, config, CLEO_FALLBACK_MESSAGE
+from src.cleo.config import (
+    CleoConfig,
+    GroqClient,
+    get_llm_client,
+    LLMResponse,
+    config,
+    CLEO_FALLBACK_MESSAGE,
+)
 from src.cleo.semantic_cache import SemanticCache
 from src.cleo.conversation_memory import ConversationMemory
 from src.cleo.prompts import (
@@ -51,6 +58,11 @@ class CleoResult:
     text: str
     sources: List[SourceRef] = field(default_factory=list)
     confidence: str = "medium"   # "high" | "medium" | "low"
+    # Every tool name dispatched through _execute_tool this turn, in call
+    # order. Surfaces real routing to the client so QA can tell e.g.
+    # search_pois (DB-grounded) from search_web (Tavily) from no-tools
+    # (parametric/LLM-only). Not a provenance list — see ``sources``.
+    tools_used: List[str] = field(default_factory=list)
 
 
 # Map tool-name → (kind, fallback label) for source provenance.
@@ -78,7 +90,7 @@ class CleoAgent:
         self.config = CleoConfig()
 
         # LLM Client (Async Groq)
-        self.llm = GroqClient()
+        self.llm = get_llm_client()
 
         # Semantic Cache (optional Redis)
         self.cache = SemanticCache()
@@ -142,6 +154,34 @@ class CleoAgent:
                 confidence="low",
             )
 
+        # ── P4 fix: booking-intent hard pre-check ─────────────────────
+        # VOYO is informational + planning, NOT a booking platform.
+        # This fires BEFORE the scope_detector so that conversation
+        # context (which can boost borderline queries to in-scope) cannot
+        # re-admit a clear transactional booking intent. Catches the
+        # observed regression: "Book me a 5-star hotel" after a Cairo
+        # itinerary conversation passed scope and spun search_pois 5x.
+        import re as _re_booking
+        _booking_verb = r"\b(book|booking|reserve|reservation|buy|buying|purchase|purchasing|checkout|pay\s+for)\b"
+        _booking_obj = r"\b(hotel|motel|room|suite|flight|airfare|airline|airbnb|villa|cabin|cruise\s+booking|tour\s+package|plane\s+ticket)\b"
+        if (
+            _re_booking.search(_booking_verb, user_message, _re_booking.I)
+            and _re_booking.search(_booking_obj, user_message, _re_booking.I)
+        ):
+            logger.info(f"[SCOPE] booking-intent pre-check redirect for: {user_message[:60]}")
+            return CleoResult(
+                text=(
+                    "I can't book hotels, flights, or tickets directly — VOYO is "
+                    "a planning companion, not a booking platform. But I can "
+                    "help you choose the best area to stay based on your "
+                    "itinerary and budget, suggest what to look for, and plan "
+                    "your days so you book the right nights. Where are you "
+                    "thinking of staying?"
+                ),
+                sources=[],
+                confidence="low",
+            )
+
         # Fetch conversation context (Supabase-backed, survives restarts)
         conversation_context = ""
         if user_id:
@@ -155,6 +195,24 @@ class CleoAgent:
         )
         if not scope_decision.in_scope:
             logger.info(f"Query out-of-scope: {scope_decision.reasoning}")
+            # Booking-specific redirect: VOYO is informational/planning, not
+            # a booking platform. A specific redirect reads as intentional
+            # scope-safety, not a broken "rephrase it" fallback.
+            import re as _re
+            if _re.search(r"\b(book|booking|reserve|reservation|buy|purchase)\b", user_message, _re.I):
+                booking_redirect = (
+                    "I can't book hotels, flights, or tickets directly — VOYO is "
+                    "a planning companion, not a booking platform. But I can "
+                    "help you choose the best area to stay based on your "
+                    "itinerary and budget, suggest what to look for, and plan "
+                    "your days so you book the right nights. Where are you "
+                    "thinking of staying?"
+                )
+                return CleoResult(
+                    text=booking_redirect,
+                    sources=[],
+                    confidence="low",
+                )
             return CleoResult(
                 text=(
                     scope_decision.redirection
@@ -193,13 +251,41 @@ class CleoAgent:
 
         # ── AGENT CORE — Real ReAct Loop ────────────────────────────
 
-        response, sources = await self._agent_loop(
+        # Snapshot tool names for the [LLM] instrumentation line. The agent
+        # loop logs the full request envelope (endpoint, model, tools made
+        # available) so QA can verify routing from backend logs alone.
+        _tool_names_available = [
+            d.get("function", {}).get("name", "?")
+            for d in self._get_tool_definitions()
+        ]
+        # request_id: short, unique per call, never contains secrets. Used to
+        # correlate [LLM] / [TAVILY] / TOOL CALL log lines for one request.
+        import uuid as _uuid
+        _req_id = _uuid.uuid4().hex[:12]
+        _model_name = getattr(self.llm, "model", "unknown")
+        logger.info(
+            "[LLM] request_id=%s endpoint=chat provider=%s model=%s "
+            "streaming=false tools_available=%s",
+            _req_id,
+            type(self.llm).__name__,
+            _model_name,
+            _tool_names_available,
+        )
+
+        response, sources, tools_used = await self._agent_loop(
             user_message=user_message,
             user_id=user_id,
             conversation_context=conversation_context,
             profile_context=profile_context,
             response_style=response_style,
             debug=debug,
+        )
+        logger.info(
+            "[LLM] request_id=%s status=complete tools_called=%s "
+            "sources_count=%d",
+            _req_id,
+            tools_used,
+            len(sources),
         )
 
         # ── POST-PROCESSING ────────────────────────────────────────
@@ -230,7 +316,12 @@ class CleoAgent:
         if self._is_cacheable(user_message, response_style):
             self.cache.set(user_message, response)
 
-        return CleoResult(text=response, sources=sources, confidence=confidence)
+        return CleoResult(
+            text=response,
+            sources=sources,
+            confidence=confidence,
+            tools_used=tools_used,
+        )
 
     # ==================================================================
     # POI_EXPLAIN — grounded deep-dive on a single POI
@@ -285,7 +376,7 @@ class CleoAgent:
                 logger.warning(f"explain_poi: failed to persist user message: {e}")
 
         # 4. Run the agent loop with POI ground truth + the wikimedia tool
-        response, loop_sources = await self._agent_loop(
+        response, loop_sources, _tools_used = await self._agent_loop(
             user_message=user_message,
             user_id=user_id,
             conversation_context="",
@@ -495,6 +586,18 @@ class CleoAgent:
         elif response_style == "standard":
             first_iter_force = True
 
+        # Recommendation intent override: queries asking for suggestions /
+        # discoveries ("hidden gems", "best places", "recommend", "what to
+        # see") MUST ground in the POI database — never parametric memory.
+        # Without this, gpt-4o-mini non-deterministically answers "hidden
+        # gems in Cairo" from training data (plausible but unverified POI
+        # names, no region filter, no ticket/hours data). Forcing
+        # search_pois specifically guarantees the region filter + real
+        # records flow through, which is also what makes the Wadi-Wishwashi
+        # region fix actually take effect.
+        if self._is_recommendation_intent(user_message):
+            first_iter_force = "search_pois"
+
         for iteration in range(max_iters):
             if debug:
                 print(f"\n--- AGENT ITERATION {iteration + 1}/{max_iters} ---")
@@ -525,12 +628,36 @@ class CleoAgent:
                         "substituting fallback message.",
                         llm_response.finish_reason,
                     )
-                    return CLEO_FALLBACK_MESSAGE, self._sources_from_invocations(tool_invocations)
-                return content, self._sources_from_invocations(tool_invocations)
+                    return (
+                        CLEO_FALLBACK_MESSAGE,
+                        self._sources_from_invocations(tool_invocations),
+                        [t[0] for t in tool_invocations],
+                    )
+                return (
+                    content,
+                    self._sources_from_invocations(tool_invocations),
+                    [t[0] for t in tool_invocations],
+                )
 
             # ── LLM wants to call tools → execute them ──────────────
             # Append the assistant's tool-call message to history
             messages.append(llm_response.to_message())
+
+            # ── P5 fix: discovery-intent override for search_pois ────────
+            # When the user asks for "hidden gems" / "lesser known" / etc,
+            # the LLM often strips the discovery phrasing and calls
+            # search_pois(query="Cairo") — which then hits Tier 2 (description
+            # ilike) and returns the most famous POIs (Pyramids/Sphinx) by
+            # text-match frequency. Detect the discovery intent from the
+            # ORIGINAL user message and rewrite the query so the tool's
+            # Tier 4 discovery-inverted ranking path fires.
+            _user_lc = user_message.lower()
+            _is_discovery = any(p in _user_lc for p in (
+                "hidden gem", "lesser known", "lesser-known",
+                "off the beaten", "off-beaten", "underrated",
+                "secret spot", "secret places", "overlooked",
+                "not touristy", "non-touristy", "local favorite",
+            ))
 
             for tool_call in llm_response.tool_calls:
                 tool_name = tool_call.function.name
@@ -538,6 +665,19 @@ class CleoAgent:
                     tool_args = json.loads(tool_call.function.arguments)
                 except json.JSONDecodeError:
                     tool_args = {}
+
+                # Apply the discovery override to search_pois calls when the
+                # user asked for hidden gems but the LLM passed a generic query.
+                if (
+                    tool_name == "search_pois"
+                    and _is_discovery
+                    and tool_args.get("region")
+                    and tool_args.get("query", "").strip().lower()
+                        in ("", tool_args["region"].strip().lower())
+                ):
+                    tool_args["query"] = "hidden gems"
+                    if debug:
+                        print(f"  [P5] discovery override: query → 'hidden gems'")
 
                 if debug:
                     print(f"  TOOL CALL: {tool_name}({json.dumps(tool_args)[:120]})")
@@ -556,6 +696,45 @@ class CleoAgent:
                     "content": result_str,
                 })
 
+                # ── P2 fix: curate_itinerary is terminal ────────────────
+                # The tool returns a "ready_for_optimization" payload that
+                # the frontend consumes via the [PLANNER] token. The LLM
+                # cannot actually POST to the optimize endpoint from inside
+                # the chat loop, so leaving it to "finish the job" causes
+                # it to re-call curate_itinerary until max_iter (observed:
+                # 3 repeats then "rephrase it" fallback). When the tool
+                # returns a ready payload, synthesize the final user-facing
+                # response with the [PLANNER] token and break the loop.
+                if (
+                    tool_name == "curate_itinerary"
+                    and isinstance(result, dict)
+                    and result.get("status") == "ready_for_optimization"
+                ):
+                    poi_ids = result.get("poi_ids") or []
+                    region = result.get("region") or "Egypt"
+                    days = result.get("trip_duration_days") or 1
+                    # Look up POI names so the frontend's natural-language
+                    # itinerary parser (_parseItineraryStops) can extract
+                    # real stops. Without named stops the import sheet is
+                    # empty and tapping "Open Planner" just switches tabs
+                    # without saving anything. (Demo regression fix.)
+                    poi_names = self._lookup_poi_names(poi_ids)
+                    synth = self._build_planner_synth(
+                        poi_names=poi_names,
+                        days=days,
+                        region=region,
+                    )
+                    logger.info(
+                        f"[PLANNER] curate_itinerary terminal: "
+                        f"poi_count={len(poi_ids)} days={days} region={region} "
+                        f"named={len(poi_names)}"
+                    )
+                    return (
+                        synth,
+                        self._sources_from_invocations(tool_invocations),
+                        [t[0] for t in tool_invocations],
+                    )
+
                 if debug:
                     preview = result_str[:150]
                     print(f"  TOOL RESULT ({tool_name}): {preview}...")
@@ -567,6 +746,7 @@ class CleoAgent:
         return (
             "I apologize, I'm having difficulty processing that request. Could you rephrase it?",
             self._sources_from_invocations(tool_invocations),
+            [t[0] for t in tool_invocations],
         )
 
     # ==================================================================
@@ -754,6 +934,77 @@ class CleoAgent:
             ),
         }
 
+    def _lookup_poi_names(self, poi_ids: list) -> List[Dict[str, Any]]:
+        """Fetch minimal POI info (id, name, city) for the curated IDs.
+
+        Used to build a [PLANNER] synth that the frontend's natural-language
+        itinerary parser can extract real stops from. Returns rows ordered
+        by ID for deterministic layout. Empty list on any failure — the
+        synth still emits a valid (if thinner) message.
+        """
+        if not poi_ids:
+            return []
+        unique_ids = list(dict.fromkeys(int(p) for p in poi_ids if p is not None))
+        try:
+            from src.cleo.tools.supabase_tool import SupabaseTool
+            tool = SupabaseTool()
+            rows = (
+                tool.db.admin_client.table("pois")
+                .select("id, name, city")
+                .in_("id", unique_ids)
+                .execute()
+            )
+            data = rows.data or []
+            # Preserve input order (LLM picked the order).
+            by_id = {r["id"]: r for r in data}
+            return [by_id[i] for i in unique_ids if i in by_id]
+        except Exception as e:
+            logger.warning(f"[PLANNER] POI name lookup failed: {e}")
+            return []
+
+    def _build_planner_synth(
+        self, poi_names: List[Dict[str, Any]], days: int, region: str
+    ) -> str:
+        """Build the [PLANNER] user-facing reply.
+
+        Layout is intentionally line-based with 'Day N' headers so the
+        Flutter _parseItineraryStops regex (\\bDay (\\d+)\\b + POI-name
+        lines) can extract real stops. Without named stops the import
+        sheet is empty and tapping 'Open Planner' silently no-ops.
+
+        Stop names are emitted WITHOUT a '(city)' suffix because the
+        Flutter import path fuzzy-matches stop names against the DB via
+        Supabase ilike — appending '(Cairo)' breaks the match and the
+        stop falls through to a custom_title insert, which can then
+        fail downstream. The day header already carries the region.
+        """
+        header = (
+            f"[PLANNER] I've curated {len(poi_names)} stops for your "
+            f"{days}-day trip in {region}. Here's the plan — tap "
+            f"**Open Planner** below to lock in day-by-day scheduling "
+            f"with real admission prices, opening hours, and travel times.\n"
+        )
+        if not poi_names:
+            return header + "\n(Open the planner to finish building your trip.)"
+        # Distribute stops across the requested days. We no longer
+        # collapse to fewer days — the user explicitly asked for N days,
+        # so respect that even if the LLM under-curated (2+1 for 3 POIs
+        # over 2 days is acceptable; the prompt separately pushes the
+        # LLM to curate ≥2/day). The previous collapse-when-sparse logic
+        # turned a 2-day request into a 1-day trip, which surprised the
+        # user. (Demo feedback.)
+        per_day = max(1, (len(poi_names) + days - 1) // days)
+        lines = [header]
+        for d in range(days):
+            chunk = poi_names[d * per_day : (d + 1) * per_day]
+            if not chunk:
+                break
+            lines.append(f"\nDay {d + 1} — {region}")
+            for stop in chunk:
+                name = stop.get("name") or "Stop"
+                lines.append(f"• {name}")
+        return "\n".join(lines)
+
     # ==================================================================
     # Post-Processing
     # ==================================================================
@@ -774,11 +1025,24 @@ class CleoAgent:
         formatted = format_cleo_response(response)
 
         # 3. Inject [PLANNER] token for itinerary responses
+        # Two paths produce [PLANNER]: (a) the curate_itinerary terminal
+        # synth in _agent_loop (preferred — has structured named stops),
+        # and (b) this fallback, which fires when the LLM writes its own
+        # multi-day itinerary in chat without calling curate_itinerary.
+        # For path (b) we still inject the token AND append the same CTA
+        # copy so the UX is consistent and the user knows to tap the
+        # button. (Demo consistency fix — was: bare token, no CTA, so the
+        # 'Open Planner' button appeared under a message that never told
+        # the user to tap it.)
         if "[PLANNER]" not in formatted:
             day_headers = re.findall(r"(?:^|\n)\s*[\*#]*\s*Day\s+(\d+)", formatted)
             if len(set(day_headers)) >= 2:
-                formatted += "\n[PLANNER]"
-                logger.debug("[PLANNER] appended — itinerary detected")
+                formatted += (
+                    "\n\n**Tap Open Planner below** to lock in the full "
+                    "day-by-day itinerary with real admission prices, opening "
+                    "hours, and optimized travel times.\n[PLANNER]"
+                )
+                logger.info("[PLANNER] appended via post-process fallback — itinerary detected")
 
         return formatted
 
@@ -796,6 +1060,22 @@ class CleoAgent:
     ) -> List[Dict[str, Any]]:
         """Build the full message list for the LLM."""
         system_prompt = build_system_prompt(include_itinerary=(response_style == "detailed"))
+        # Inject the current date so the LLM grounds "this week" / "now" /
+        # "currently" queries on the real date instead of its training
+        # cutoff. Without this, generated Tavily/web-search queries default
+        # to the model's knowledge cutoff (observed: "October 2023" for a
+        # "this week" query in June 2026).
+        from datetime import datetime
+        now = datetime.now()
+        date_context = (
+            f"\n\n## CURRENT DATE CONTEXT\n"
+            f"Today's date is {now.strftime('%A, %B %d, %Y')} "
+            f"(ISO: {now.strftime('%Y-%m-%d')}). "
+            f"Use this date for any 'this week', 'now', 'currently', 'this "
+            f"month', or 'upcoming' queries. When you call search_web, "
+            f"include the current month and year in the query."
+        )
+        system_prompt = system_prompt + date_context
         messages: List[Dict[str, Any]] = [
             {"role": "system", "content": system_prompt}
         ]
@@ -1048,6 +1328,37 @@ class CleoAgent:
     # ==================================================================
     # Helpers
     # ==================================================================
+
+    @staticmethod
+    def _is_recommendation_intent(query: str) -> bool:
+        """Detect queries asking for POI suggestions / discoveries.
+
+        These must ground in the POI database via ``search_pois`` (never
+        parametric memory) so the region filter + real records apply.
+        Triggers on phrases like "hidden gems", "best places", "off the
+        beaten path", "recommend", "suggest", "what to see/visit/do",
+        "must-see", "worth visiting".
+        """
+        q = query.lower()
+        patterns = [
+            r"hidden gems?",
+            r"off[- ]?(the[- ]?)?beaten[- ]?path",
+            r"\b(best|top|great|cool|nice|amazing|underrated|lesser[- ]?known|secret)\b"
+            r".{0,30}\b(places?|spots?|sites?|things|attractions?|destinations?|gems?)\b",
+            r"\b(recommend|suggest)\b.{0,40}\b(place|site|spot|thing|visit|see|do)\b",
+            r"\bwhat (should|can|to) (i |we )?(visit|see|do|explore)\b",
+            r"\bmust[- ]?see\b",
+            r"\bworth (visiting|seeing|exploring)\b",
+            r"\bwhere (should|can|to).{0,20}\b(go|visit|see|eat|stay)\b",
+            # Travel-discovery phrasings that imply "what can I realistically do?"
+            # — caught after the 8hr-layover regression: gpt-4o-mini was using
+            # get_weather as a fig-leaf then inventing an itinerary from
+            # parametric memory. These force search_pois so the real
+            # region-filtered records flow.
+            r"\b(layover|stopover|transit)\b.{0,40}\b(what|realistic|see|do|visit|explore|worth)\b",
+            r"\b\d+[\s\-]?hours?\b.{0,40}\b(layover|stopover|what|realistic|see|do|visit)\b",
+        ]
+        return any(re.search(p, q) for p in patterns)
 
     @staticmethod
     def _classify_response_style(query: str) -> str:

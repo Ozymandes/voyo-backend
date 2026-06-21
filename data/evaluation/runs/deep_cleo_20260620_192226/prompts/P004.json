@@ -1,0 +1,9 @@
+{
+  "query_id": "P004",
+  "query": "I'm a foodie. What Egyptian dishes should I try?",
+  "answer": "Ah, you're in for a treat! Egyptian cuisine is a delicious blend of flavors and traditions. Here are some must-try dishes that will give you a taste of Egypt's rich culinary heritage:\n\n1. **Koshari**: This iconic dish is a hearty mix of rice, lentils, pasta, and topped with a spicy tomato sauce and crispy onions. It's filling, nutritious, and a favorite among locals. You can find it at street vendors and local eateries across Cairo.\n\n2. **Molokhia**: A unique green soup made from the leaves of the jute plant, often enjoyed with chicken or rabbit. Its distinct flavor is a staple in many Egyptian households, and it's usually served with rice or bread.\n\n3. **Fatta**: This celebratory dish consists of layers of rice, garlic, and vinegar, often served with meat (usually beef or lamb) and a rich broth. It's traditionally eaten during special occasions and gatherings.\n\n4. **Ta'ameya (Egyptian Falafel)**: Unlike the chickpea falafel found in other countries, ta'ameya is made from fava beans and is flavored with herbs like parsley and dill. It's crispy on the outside and soft on the inside, perfect for a quick snack!\n\n5. **Basbousa**: For dessert, don't miss this sweet semolina cake soaked in syrup, often garnished with almonds. It's a delightful treat that showcases Egypt's love for sweets.\n\n### Practical Tip\nTo truly enjoy these dishes, consider visiting local eateries or food markets where you can experience authentic flavors. A great place to start is **Khan el-Khalili**, where you can find many restaurants serving traditional dishes. Don't forget to ask for recommendations from locals!\n\nAre you interested in any specific types of cuisine or dining experiences?",
+  "sources": [
+    "SourceRef(label='Animalia Nubian Village', kind='database')",
+    "SourceRef(label='Old Market', kind='database')"
+  ]
+}

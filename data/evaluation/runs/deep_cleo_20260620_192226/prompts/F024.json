@@ -1,0 +1,10 @@
+{
+  "query_id": "F024",
+  "query": "How do I get to the Citadel?",
+  "answer": "To get to the **Citadel of Cairo (Saladin Citadel)**, head to **Al Abageyah, El Khalifa, Cairo**. It’s a significant historical site built by Salah ad-Din in 1176, serving as the seat of government for nearly 700 years! The citadel features impressive mosques and museums, and it offers stunning views of the city. \n\n### Directions:\n- **Public Transport:** You can take the metro to **Salah El Din Station** and then grab a taxi or a local bus to the citadel. Alternatively, you can take a taxi directly from your location.\n- **Driving:** If you're driving, there are parking facilities nearby, but be prepared for Cairo's bustling traffic.\n\n### Visiting Tips:\n- **Opening Hours:** The citadel is open daily from **8 AM to 5 PM**.\n- **Ticket Price:** Entry costs **60 EGP** (about $2).\n- **Best Time to Visit:** Early morning is ideal to avoid the heat and enjoy the panoramic views.\n\nPlan to spend at least **two hours** exploring its vast grounds, and don't rush through the courtyards and museums!\n\nWould you like to know more about what to see inside the citadel?",
+  "sources": [
+    "SourceRef(label='Citadel of Qaitbay', kind='database')",
+    "SourceRef(label='Qaitbay Citadel', kind='database')",
+    "SourceRef(label='Citadel of Cairo (Saladin Citadel)', kind='database')"
+  ]
+}

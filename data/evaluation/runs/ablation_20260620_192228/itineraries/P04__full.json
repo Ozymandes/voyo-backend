@@ -1,0 +1,168 @@
+{
+  "status": "ok",
+  "overview": "Embark on a thrilling two-day journey through the historical wonders of Cairo and its surroundings, exploring the iconic Pyramids, ancient tombs, and vibrant cultural sites. This itinerary is designed for history enthusiasts and entertainment seekers, ensuring a packed yet enriching experience.",
+  "days": [
+    {
+      "day": 1,
+      "date": "2026-09-12",
+      "title": "Pyramids and Ancient Wonders",
+      "theme": "Ancient Wonders & Sacred Heritage",
+      "stops": [
+        {
+          "poi_id": 355,
+          "name": "Mosque of Muhammad Ali",
+          "category": "religious",
+          "time": "09:15",
+          "departure_time": "10:00",
+          "service_duration_min": 45,
+          "transport_to_next_min": 24.1,
+          "transport_to_next_km": 22.9,
+          "transport_mode": "Taxi / drive",
+          "description": "Ottoman alabaster mosque dominating the Citadel skyline, built by Muhammad Ali Pasha in the 19th century",
+          "cost_egp": null,
+          "address": "Salah al-Din, al-Ayyubi, Saladin, Cairo Governorate 4252360, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        },
+        {
+          "poi_id": 342,
+          "name": "Tahrir Square",
+          "category": "historical",
+          "time": "10:06",
+          "departure_time": "10:51",
+          "service_duration_min": 45,
+          "transport_to_next_min": 5.9,
+          "transport_to_next_km": 3.7,
+          "transport_mode": "Taxi / drive",
+          "description": "Cairo's central public square and focal point of modern Egyptian political history",
+          "cost_egp": null,
+          "address": "El-Tahrir Square, محطة السادات، Qasr El Nil, Cairo Governorate 11512, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        },
+        {
+          "poi_id": 373,
+          "name": "Queen's Pyramids of Khufu",
+          "category": "historical",
+          "time": "10:24",
+          "departure_time": "11:09",
+          "service_duration_min": 45,
+          "transport_to_next_min": 0.0,
+          "transport_to_next_km": 0.0,
+          "transport_mode": "Walk",
+          "description": "Three small pyramids east of the Great Pyramid, the tombs of Khufu's wives and mother",
+          "cost_egp": null,
+          "address": "Al Haram, Nazlet El-Semman, Al Haram, Giza Governorate 3512201, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        },
+        {
+          "poi_id": 340,
+          "name": "Cairo Opera House",
+          "category": "entertainment",
+          "time": "10:57",
+          "departure_time": "11:42",
+          "service_duration_min": 45,
+          "transport_to_next_min": 18.6,
+          "transport_to_next_km": 15.1,
+          "transport_mode": "Taxi / drive",
+          "description": "National performing-arts center on Gezira Island hosting opera, ballet, and symphony in its seven theatres",
+          "cost_egp": null,
+          "address": "Gezira St, Zamalek, Cairo Governorate 4270020, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        },
+        {
+          "poi_id": 377,
+          "name": "Mena House Hotel",
+          "category": "historical",
+          "time": "12:01",
+          "departure_time": "12:46",
+          "service_duration_min": 45,
+          "transport_to_next_min": 0.0,
+          "transport_to_next_km": 0.0,
+          "transport_mode": "Walk",
+          "description": "Historic 1869 royal hunting lodge turned luxury hotel with direct views of the Great Pyramid",
+          "cost_egp": null,
+          "address": "6 Pyramids Road، Kafr Nassar, Al Haram, Giza Governorate 12556, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "date": "2026-09-13",
+      "title": "Tombs and Cultural Exploration",
+      "theme": "Ancient Wonders & Sacred Heritage",
+      "stops": [
+        {
+          "poi_id": 347,
+          "name": "Bab al-Futuh",
+          "category": "historical",
+          "time": "08:24",
+          "departure_time": "09:09",
+          "service_duration_min": 45,
+          "transport_to_next_min": 6.1,
+          "transport_to_next_km": 4.2,
+          "transport_mode": "Taxi / drive",
+          "description": "Northern gateway of the Fatimid city walls, flanked by two massive semi-circular towers",
+          "cost_egp": null,
+          "address": "1 Darb Al Keshta, El-Gamaleya, El Gamaliya, Cairo Governorate 4334111, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        },
+        {
+          "poi_id": 355,
+          "name": "Mosque of Muhammad Ali",
+          "category": "religious",
+          "time": "09:15",
+          "departure_time": "10:00",
+          "service_duration_min": 45,
+          "transport_to_next_min": 24.1,
+          "transport_to_next_km": 22.9,
+          "transport_mode": "Taxi / drive",
+          "description": "Ottoman alabaster mosque dominating the Citadel skyline, built by Muhammad Ali Pasha in the 19th century",
+          "cost_egp": null,
+          "address": "Salah al-Din, al-Ayyubi, Saladin, Cairo Governorate 4252360, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        },
+        {
+          "poi_id": 373,
+          "name": "Queen's Pyramids of Khufu",
+          "category": "historical",
+          "time": "10:24",
+          "departure_time": "11:09",
+          "service_duration_min": 45,
+          "transport_to_next_min": 0.0,
+          "transport_to_next_km": 0.0,
+          "transport_mode": "Walk",
+          "description": "Three small pyramids east of the Great Pyramid, the tombs of Khufu's wives and mother",
+          "cost_egp": null,
+          "address": "Al Haram, Nazlet El-Semman, Al Haram, Giza Governorate 3512201, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        }
+      ]
+    }
+  ],
+  "tips": [
+    "Start your days early to maximize your time at each site.",
+    "Wear comfortable shoes as you'll be walking a lot on uneven surfaces.",
+    "Stay hydrated and carry water, especially when visiting outdoor sites.",
+    "Consider hiring a local guide for deeper insights into the history of each location.",
+    "Check the opening hours of each site in advance to avoid any surprises."
+  ],
+  "summary": "Enjoy your adventure through Egypt's rich history and vibrant culture, and take home unforgettable memories!",
+  "total_cost_egp": 0.0,
+  "budget_breakdown": {
+    "activities_egp": 0,
+    "accommodation_egp_estimate": 5000,
+    "food_egp_estimate": 1200,
+    "transport_egp_estimate": 400
+  },
+  "provenance": {
+    "poi_selection": "llm",
+    "times": "vroom",
+    "costs": "database_ticket_prices",
+    "descriptions": "database_narratives",
+    "llm_available": true,
+    "vroom_available": true,
+    "candidate_pool_size": 25,
+    "geo_reclustered": false,
+    "geo_trimmed_cities": []
+  }
+}

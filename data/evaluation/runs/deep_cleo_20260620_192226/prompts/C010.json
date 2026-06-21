@@ -1,0 +1,14 @@
+{
+  "query_id": "C010",
+  "query": "How do I balance historical sites with relaxation in Egypt?",
+  "answer": "Balancing historical sites with relaxation in Egypt is definitely achievable, and it can make your trip even more enriching! Here’s how you can do it:\n\n### Historical Sites\n1. **Tomb of Ti (Luxor)**: This exquisitely detailed mastaba from the 5th Dynasty is renowned for its low-relief carvings, providing a deep dive into ancient art and burial practices. **Ticket Price:** 120 EGP.\n\n2. **Catacombs of Kom El Shoqafa (Alexandria)**: An underground wonder blending Pharaonic and Greco-Roman architecture, it's a unique site to explore. **Ticket Price:** 80 EGP.\n\n3. **Al-Hussein Mosque (Cairo)**: Visit this holy mosque in Khan el-Khalili, reputed to be the burial place of Imam Hussein's head. It's not only historical but also a spiritual experience.\n\n### Relaxation Spots\n1. **Banana Island (Luxor)**: A lush island with banana plantations, accessible by a charming felucca ride. It's perfect for unwinding amidst nature. **Ticket Price:** 50 EGP.\n\n2. **Ras El Shitan (Sinai)**: Known for its beach camps and stunning natural beauty, this spot offers relaxation with a view of the famous \"Devil's Head\" rock formation.\n\n### Practical Tips\nTo balance both experiences, consider planning your day around historical sites in the morning when it's cooler, followed by a relaxing afternoon at a spot like Banana Island. This way, you can soak in the history without feeling rushed and then enjoy some leisure time to recharge.\n\nWould you like more details on any specific site or additional relaxation options? 🌴✨.",
+  "sources": [
+    "SourceRef(label='West Bank Bicycle Tour', kind='database')",
+    "SourceRef(label='Tomb of Ti', kind='database')",
+    "SourceRef(label='Al-Hussein Mosque', kind='database')",
+    "SourceRef(label='Catacombs of Kom El Shoqafa', kind='database')",
+    "SourceRef(label='Tombs of the Nobles (Aswan)', kind='database')",
+    "SourceRef(label='Banana Island', kind='database')",
+    "SourceRef(label='Ras El Shitan', kind='database')"
+  ]
+}

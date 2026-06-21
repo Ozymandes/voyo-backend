@@ -1,0 +1,8 @@
+{
+  "query_id": "O004",
+  "query": "Write an essay about climate change.",
+  "answer": "I'm here to help you explore the wonders of Egypt! Whether it's historical sites, cultural experiences, or museums, I've got plenty of exciting recommendations tailored to your interests. If you have any specific questions or need assistance planning your trip, feel free to ask!",
+  "sources": [
+    "SourceRef(label='Web search', kind='web')"
+  ]
+}

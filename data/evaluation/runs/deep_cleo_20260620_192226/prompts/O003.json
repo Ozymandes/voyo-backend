@@ -1,0 +1,8 @@
+{
+  "query_id": "O003",
+  "query": "What's the capital of France?",
+  "answer": "The capital of France is **Paris**. Renowned as a global hub for art, fashion, and culture, Paris boasts iconic landmarks like the Eiffel Tower, the Louvre Museum, and Notre-Dame Cathedral. Its rich history dates back over 2,000 years, evolving from a small fishing village into a significant political and cultural center.\n\n**Why It Matters:** Paris has been the capital since its designation by King Clovis in 508 AD, and it regained its status under King Philippe Auguste in the 12th century. The city plays a central role in French history, having witnessed pivotal events such as the French Revolution.\n\n**Practical Tip:** If you visit, make sure to explore the different arrondissements, each offering unique vibes and attractions! Enjoy a stroll along the Seine River for a truly enchanting experience. Would you like tips on things to do in Paris?",
+  "sources": [
+    "SourceRef(label='Web search', kind='web')"
+  ]
+}

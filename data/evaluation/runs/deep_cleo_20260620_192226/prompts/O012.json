@@ -1,0 +1,8 @@
+{
+  "query_id": "O012",
+  "query": "What's the best programming language to learn?",
+  "answer": "Choosing the best programming language to learn depends on your goals, but **Python** is often the top recommendation for beginners. It's known for its readability and simplicity, making it accessible for those new to coding. Python is widely used in various fields, including web development, data analysis, artificial intelligence, and more, which means learning it can open many doors in your career.\n\n**Why Python?** It's supported by a vast community and has extensive libraries that simplify complex tasks. Additionally, many online resources and courses are available to help beginners get started. If you're interested in data science or machine learning, Python is especially relevant, as it's a preferred language in those domains.\n\nAnother great option is **JavaScript**, particularly if you're interested in web development. It's the most commonly used language for creating interactive web pages. Learning JavaScript can also lead you to frameworks like React or Node.js for more advanced development.\n\n**Practical Tip:** Start with small projects to apply what you learn. Building simple programs will solidify your understanding and make the learning process more enjoyable. Consider platforms like Codecademy or freeCodeCamp, which offer structured learning paths for beginners.\n\nAre you leaning towards a specific area of programming, like web development or data science?",
+  "sources": [
+    "SourceRef(label='Web search', kind='web')"
+  ]
+}

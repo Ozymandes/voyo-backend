@@ -1,0 +1,8 @@
+{
+  "query_id": "P005",
+  "query": "I enjoy nature. Are there natural attractions in Egypt?",
+  "answer": "Absolutely, Egypt has some stunning natural attractions that you would love! One standout spot is **El Nayzak Beach**, located in Marsa Alam. This unique beach features a natural pool carved into the coastline, which many believe was formed by a meteorite strike. The crystal-clear waters and beautiful surroundings make it a fantastic spot for swimming, snorkeling, or just relaxing by the beach.\n\n### Why It Matters\nEl Nayzak Beach is not only a beautiful natural site but also a great place to explore the underwater life of the Red Sea. The vibrant coral reefs and diverse marine life offer excellent snorkeling opportunities, making it a favorite among nature lovers and adventure seekers.\n\n### Practical Tip\nIt's best to visit during the early morning or late afternoon when the temperatures are cooler and the beach is less crowded. Make sure to bring your snorkeling gear if you want to explore the underwater beauty!\n\nAre you interested in more natural sites or specific activities like hiking or diving?",
+  "sources": [
+    "SourceRef(label='El Nayzak Beach', kind='database')"
+  ]
+}

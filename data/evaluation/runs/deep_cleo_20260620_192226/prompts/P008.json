@@ -1,0 +1,12 @@
+{
+  "query_id": "P008",
+  "query": "I'm interested in modern Egypt, not just ancient. What should I see?",
+  "answer": "Ah, modern Egypt has so much to offer! Here are some fantastic spots where you can experience the contemporary side of Egyptian culture, history, and art:\n\n### 1. **National Museum of Egyptian Civilization (NMEC)**\nLocated in Fustat, this modern museum showcases the rich tapestry of Egyptian history through 50,000 artifacts and features the Royal Mummies Hall. It beautifully traces the evolution of Egyptian civilization from ancient times to the present. 🌟\n\n**Practical Tip:** Allocate at least 2-3 hours to fully explore the exhibits and enjoy the museum's architecture, which is a blend of modern design and traditional motifs.\n\n### 2. **Bibliotheca Alexandrina**\nThis stunning modern library in Alexandria pays homage to the ancient Library of Alexandria. It serves as a cultural center and houses millions of books, museums, and exhibition spaces. The architecture alone, with its unique sloping roof, is worth the visit!\n\n**Practical Tip:** Check their schedule for cultural events, lectures, or art exhibitions, as they often host fascinating programs.\n\n### 3. **Mahmoud Said Museum**\nAlso in Alexandria, this museum is dedicated to the works of Egypt’s renowned modern painter, Mahmoud Said. Set in his former villa, the museum offers insight into modern Egyptian art and culture.\n\n**Practical Tip:** Make sure to stroll through the surrounding neighborhood, which has beautiful Mediterranean architecture.\n\n### 4. **Al-Rifa'i Mosque**\nWhile it has historical significance, this grand mosque was built in the 19th century and serves as a burial place for Egypt's last royal family. It’s an excellent representation of modern Islamic architecture.\n\n### 5. **Qasr Ibrim**\nThough it's located in Aswan, this fortress is the only Nubian site remaining in its original location. It's now an island fortress in Lake Nasser, showcasing modern efforts to preserve Nubian heritage.\n\nWould you like me to give you more information about any of these attractions or help plan a visit? 😊.",
+  "sources": [
+    "SourceRef(label='Qasr Ibrim', kind='database')",
+    "SourceRef(label='National Museum of Egyptian Civilization (NMEC)', kind='database')",
+    "SourceRef(label='Mahmoud Said Museum', kind='database')",
+    "SourceRef(label=\"Al-Rifa'i Mosque\", kind='database')",
+    "SourceRef(label='Bibliotheca Alexandrina', kind='database')"
+  ]
+}

@@ -1,0 +1,172 @@
+{
+  "status": "ok",
+  "overview": "Embark on a 5-day adventure exploring the natural beauty and cultural richness of Egypt, focusing on the stunning coastal city of Hurghada and the historical treasures of Alexandria. Enjoy a blend of diving experiences, serene gardens, and local dining that showcases the essence of Egyptian hospitality.",
+  "days": [
+    {
+      "day": 1,
+      "date": "2026-07-15",
+      "title": "Alexandria — Day 1",
+      "theme": "Fun & Adventure & Shopping",
+      "stops": [
+        {
+          "poi_id": 325,
+          "name": "Shallalat Gardens",
+          "category": "natural",
+          "time": "08:06",
+          "departure_time": "09:36",
+          "service_duration_min": 90,
+          "transport_to_next_min": 4.5,
+          "transport_to_next_km": 3.8,
+          "transport_mode": "Taxi / drive",
+          "description": "Features waterfalls and remains of the city’s Islamic walls.",
+          "cost_egp": null,
+          "address": "6W37+3RF, Bab Sharqi WA Wabour Al Meyah, Bab Shar', Alexandria Governorate 5423005, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        },
+        {
+          "poi_id": 324,
+          "name": "Antoniadis Gardens",
+          "category": "natural",
+          "time": "09:40",
+          "departure_time": "11:10",
+          "service_duration_min": 90,
+          "transport_to_next_min": 0.0,
+          "transport_to_next_km": 0.0,
+          "transport_mode": "Walk",
+          "description": "Vast botanical gardens containing Greco-Roman style statues.",
+          "cost_egp": 20.0,
+          "address": "ش البرت الأول، Smoha Sq., Sidi Gabir, Sidi Gaber, Alexandria Governorate 5432034, Egypt",
+          "tip": "Check opening hours before visiting"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "date": "2026-07-16",
+      "title": "Alexandria — Day 2",
+      "theme": "Natural Beauty",
+      "stops": [
+        {
+          "poi_id": 305,
+          "name": "Royal Jewelry Museum",
+          "category": "cultural",
+          "time": "09:00",
+          "departure_time": "10:30",
+          "service_duration_min": 90,
+          "transport_to_next_min": 57.1,
+          "transport_to_next_km": 73.4,
+          "transport_mode": "Taxi / drive",
+          "description": "Houses the exquisite jewels of the Muhammad Ali dynasty.",
+          "cost_egp": 100.0,
+          "address": "27 Ahmed Yehia, San Stefano, El Raml 2, Alexandria Governorate 5451010, Egypt",
+          "tip": "Check opening hours before visiting"
+        },
+        {
+          "poi_id": 319,
+          "name": "Monastery of Abu Mina",
+          "category": "religious",
+          "time": "11:27",
+          "departure_time": "12:57",
+          "service_duration_min": 90,
+          "transport_to_next_min": 0.0,
+          "transport_to_next_km": 0.0,
+          "transport_mode": "Walk",
+          "description": "UNESCO-listed pilgrimage site with ancient ruins and a modern monastery.",
+          "cost_egp": null,
+          "address": "9 Mar-Mina Rd, Qetaa Maryout, Borg El Arab, Alexandria Governorate 21934, Egypt",
+          "tip": "Free entry — great for a budget stop"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "date": "2026-07-17",
+      "title": "Alexandria — Day 3",
+      "theme": "Cultural Treasures & Sacred Heritage",
+      "stops": [
+        {
+          "poi_id": 332,
+          "name": "Smouha Club",
+          "category": "entertainment",
+          "time": null,
+          "departure_time": null,
+          "service_duration_min": null,
+          "transport_to_next_min": null,
+          "transport_to_next_km": null,
+          "transport_mode": "Walk",
+          "description": "Massive social and sporting club in the heart of the city.",
+          "cost_egp": null,
+          "address": "Victor Emanouil Al Thaleth, Ezbet Saad, Sidi Gaber, Alexandria Governorate 5432080, Egypt",
+          "tip": null
+        },
+        {
+          "poi_id": 326,
+          "name": "San Stefano Mall",
+          "category": "entertainment",
+          "time": null,
+          "departure_time": null,
+          "service_duration_min": null,
+          "transport_to_next_min": null,
+          "transport_to_next_km": null,
+          "transport_mode": "Walk",
+          "description": "Upscale shopping and dining in the city's tallest building.",
+          "cost_egp": null,
+          "address": "El-Gaish Rd, San Stefano, El Raml 2, Alexandria Governorate 5452053, Egypt",
+          "tip": null
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "date": "2026-07-18",
+      "title": "Alexandria — Day 4",
+      "theme": "Ancient Wonders & Sacred Heritage",
+      "stops": [
+        {
+          "poi_id": 329,
+          "name": "Gleem Bay",
+          "category": "entertainment",
+          "time": null,
+          "departure_time": null,
+          "service_duration_min": null,
+          "transport_to_next_min": null,
+          "transport_to_next_km": null,
+          "transport_mode": "Walk",
+          "description": "A modern hub for restaurants built directly over the sea.",
+          "cost_egp": null,
+          "address": "Glime Beach, San Stefano, El Raml 1, Alexandria Governorate 5452033, Egypt",
+          "tip": null
+        }
+      ]
+    }
+  ],
+  "tips": [
+    "Consider booking diving excursions in advance to secure your spots.",
+    "Try local seafood dishes at the Port Said Fish Market for an authentic experience.",
+    "Take your time exploring the gardens in Alexandria for a peaceful retreat.",
+    "Check the opening hours of each site to plan your visits effectively.",
+    "Engage with local guides to enrich your understanding of the historical sites."
+  ],
+  "summary": "Enjoy your journey through Egypt, filled with unforgettable experiences and cherished memories.",
+  "total_cost_egp": 120.0,
+  "budget_breakdown": {
+    "activities_egp": 240.0,
+    "accommodation_egp_estimate": 12500,
+    "food_egp_estimate": 3000,
+    "transport_egp_estimate": 1000
+  },
+  "provenance": {
+    "poi_selection": "llm",
+    "times": "vroom",
+    "costs": "database_ticket_prices",
+    "descriptions": "database_narratives",
+    "llm_available": true,
+    "vroom_available": true,
+    "candidate_pool_size": 25,
+    "geo_reclustered": true,
+    "geo_trimmed_cities": [
+      "Hurghada",
+      "Unknown"
+    ]
+  }
+}

@@ -576,3 +576,246 @@ class GroqClient:
         except Exception as e:
             logger.error(f"Groq API connection test failed: {e}")
             return False
+
+
+# ---------------------------------------------------------------------------
+# OPTO LLM gateway client (OpenAI-compatible)
+# ---------------------------------------------------------------------------
+#
+# An alternate LLM backend for evaluation / load runs that would otherwise
+# exhaust the Groq free-tier quota. OPTO (optollm.optomatica.com) is a local
+# multi-model gateway exposing an OpenAI-compatible ``/v1/chat/completions``
+# endpoint, so we drive it with the stock ``openai`` SDK pointed at a custom
+# ``base_url`` — no Anthropic-format translation, and CLEO's existing
+# OpenAI-shape tool-calling works unchanged.
+#
+# Default OPTO model = ``gpt-4o-mini`` (locked 2026-06-20). It is the ONLY
+# model on the gateway that passes BOTH of the pipeline's distinct tasks in
+# head-to-head probing: (a) the planner's raw structured-JSON POI selection
+# (``_llm_select``) and (b) CLEO's OpenAI-style tool/function calling.
+# gemma4-26b and gemma4-31b return empty content on (a); llama-4-scout-17b
+# produces malformed nested tool calls on (b). Using one model across all
+# three eval pipelines (ablation, planner benchmark, deep CLEO) keeps the
+# results section airtight and reproducible.
+#
+# Opt-in via env: set ``VOYO_LLM_BACKEND=opto`` (default ``groq`` leaves the
+# production/demo path on Groq, untouched). The factory ``get_llm_client()``
+# is the single switch; the three call sites (CLEO agent, Safarny planner,
+# LLM judge) instantiate through it.
+#
+# Note on wire format: OPTO's server has an HTTP/2 quirk that breaks curl's
+# default, but the openai SDK uses HTTP/1.1 by default, so Python callers are
+# unaffected (verified: ~1s latency, correct tool-call emission).
+
+
+class OptoClient:
+    """OpenAI-compatible client for the OPTO gateway.
+
+    Mirrors ``GroqClient``'s public surface (``generate_async`` / ``generate``
+    / ``generate_streaming`` / ``test_connection``) and returns the same
+    ``LLMResponse`` objects, so it is a drop-in replacement at every call
+    site. Tool calls are passed through in OpenAI format unchanged.
+    """
+
+    def __init__(self):
+        self.api_key = os.getenv("OPTO_LLM_API_KEY", "")
+        if not self.api_key:
+            raise ValueError(
+                "OPTO_LLM_API_KEY not found. Set VOYO_LLM_BACKEND=groq or "
+                "add OPTO_LLM_API_KEY to .env."
+            )
+        self.base_url = os.getenv(
+            "OPTO_LLM_BASE_URL", "https://optollm.optomatica.com/v1"
+        )
+        self.model = os.getenv("OPTO_LLM_MODEL", "gpt-4o-mini")
+        try:
+            from openai import AsyncOpenAI, OpenAI
+            self.async_client = AsyncOpenAI(
+                api_key=self.api_key, base_url=self.base_url
+            )
+            self.sync_client = OpenAI(
+                api_key=self.api_key, base_url=self.base_url
+            )
+            # Safe startup banner: model + host only. Never logs the key.
+            # This is the single authoritative line that proves which model
+            # the backend is wired to.
+            logger.info(
+                "[LLM-STARTUP] provider=opto model=%s base_url=%s "
+                "(CLEO_CHAT_MODEL=ITINERARY_MODEL=PLANNER_MODEL=%s)",
+                self.model,
+                self.base_url,
+                self.model,
+            )
+            logger.info(f"OPTO client initialized with model: {self.model}")
+        except ImportError:
+            raise ImportError("openai package not installed. Run: pip install openai")
+        except Exception as e:
+            logger.error(f"Failed to initialize OPTO client: {e}")
+            raise
+
+    async def generate_async(
+        self,
+        messages: list,
+        tools: Optional[list] = None,
+        temperature: Optional[float] = None,
+        force_tool: Any = None,
+    ) -> LLMResponse:
+        """Async OPTO call. Same contract as ``GroqClient.generate_async``."""
+        max_retries = 3
+        last_error: Optional[Exception] = None
+        for attempt in range(max_retries):
+            try:
+                params: Dict[str, Any] = {
+                    "model": self.model,
+                    "messages": messages,
+                    "temperature": temperature if temperature is not None else config.temperature,
+                    "max_tokens": config.max_tokens,
+                }
+                if tools:
+                    params["tools"] = tools
+                    if force_tool is True:
+                        params["tool_choice"] = "required"
+                    elif isinstance(force_tool, str):
+                        params["tool_choice"] = {
+                            "type": "function",
+                            "function": {"name": force_tool},
+                        }
+                    else:
+                        params["tool_choice"] = "auto"
+                response = await self.async_client.chat.completions.create(**params)
+                message = response.choices[0].message
+                tool_calls = (
+                    message.tool_calls
+                    if hasattr(message, "tool_calls") and message.tool_calls
+                    else None
+                )
+                return LLMResponse(
+                    content=message.content,
+                    tool_calls=tool_calls,
+                    finish_reason=response.choices[0].finish_reason,
+                )
+            except Exception as e:
+                last_error = e
+                error_str = str(e).lower()
+                logger.warning(
+                    f"[OPTO ERROR] attempt {attempt + 1}/{max_retries} — "
+                    f"{type(e).__name__}: {e}"
+                )
+                is_retryable = (
+                    "429" in error_str or "503" in error_str
+                    or "502" in error_str or "timeout" in error_str
+                    or "connection" in error_str or "protocol" in error_str
+                )
+                if is_retryable and attempt < max_retries - 1:
+                    wait = 2 ** attempt
+                    logger.info(f"[OPTO] Retrying in {wait}s...")
+                    await asyncio.sleep(wait)
+                    continue
+                break
+        logger.error(
+            f"OPTO generate_async failed after {max_retries} attempts: {last_error}"
+        )
+        return LLMResponse(content=CLEO_FALLBACK_MESSAGE)
+
+    async def generate_streaming(
+        self,
+        messages: list,
+        tools: Optional[list] = None,
+        temperature: Optional[float] = None,
+    ) -> AsyncGenerator[str, None]:
+        """Yield response chunks. Drop-in for ``GroqClient.generate_streaming``."""
+        params: Dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": temperature if temperature is not None else config.temperature,
+            "max_tokens": config.max_tokens,
+            "stream": True,
+        }
+        if tools:
+            params["tools"] = tools
+            params["tool_choice"] = "auto"
+        try:
+            stream = await self.async_client.chat.completions.create(**params)
+            async for chunk in stream:
+                delta = chunk.choices[0].delta
+                if getattr(delta, "content", None):
+                    yield delta.content
+                if hasattr(delta, "tool_calls") and delta.tool_calls:
+                    return
+        except Exception as e:
+            logger.error(f"OPTO streaming error: {e}")
+            yield "[Error streaming response]"
+
+    def generate(self, messages: list, tools: Optional[list] = None) -> Any:
+        """Sync OPTO call. Same contract as ``GroqClient.generate``."""
+        max_retries = 3
+        last_error: Optional[Exception] = None
+        import time
+        for attempt in range(max_retries):
+            try:
+                params = {
+                    "model": self.model,
+                    "messages": messages,
+                    "temperature": config.temperature,
+                    "max_tokens": config.max_tokens,
+                }
+                if tools:
+                    params["tools"] = tools
+                    params["tool_choice"] = "auto"
+                response = self.sync_client.chat.completions.create(**params)
+                message = response.choices[0].message
+                if hasattr(message, "tool_calls") and message.tool_calls:
+                    return {
+                        "content": message.content,
+                        "tool_calls": message.tool_calls,
+                        "finish_reason": response.choices[0].finish_reason,
+                    }
+                return message.content
+            except Exception as e:
+                last_error = e
+                error_str = str(e).lower()
+                logger.warning(
+                    f"[OPTO ERROR] attempt {attempt + 1}/{max_retries} — "
+                    f"{type(e).__name__}: {e}"
+                )
+                is_retryable = (
+                    "429" in error_str or "503" in error_str
+                    or "502" in error_str or "timeout" in error_str
+                    or "connection" in error_str
+                )
+                if is_retryable and attempt < max_retries - 1:
+                    wait = 2 ** attempt
+                    logger.info(f"[OPTO] Retrying in {wait}s...")
+                    time.sleep(wait)
+                    continue
+                break
+        logger.error(f"OPTO generate failed after {max_retries} attempts: {last_error}")
+        return CLEO_FALLBACK_MESSAGE
+
+    async def test_connection(self) -> bool:
+        """Test OPTO connection (async)."""
+        try:
+            await self.async_client.chat.completions.create(
+                model=self.model,
+                messages=[{"role": "user", "content": "Hello"}],
+                max_tokens=10,
+            )
+            logger.info("OPTO API connection test successful")
+            return True
+        except Exception as e:
+            logger.error(f"OPTO API connection test failed: {e}")
+            return False
+
+
+def get_llm_client():
+    """Factory returning the configured LLM backend.
+
+    ``VOYO_LLM_BACKEND=opto`` → OPTO gateway (free, for eval/load runs).
+    Default (unset / ``groq``) → ``GroqClient`` (production/demo path,
+    unchanged). Every LLM call site instantiates through this so the backend
+    is a single env switch with no code change required to flip back.
+    """
+    backend = os.getenv("VOYO_LLM_BACKEND", "groq").lower().strip()
+    if backend == "opto":
+        return OptoClient()
+    return GroqClient()

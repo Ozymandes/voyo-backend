@@ -1,0 +1,15 @@
+{
+  "query_id": "C003",
+  "query": "Should I visit Abu Simbel or Philae Temple first?",
+  "answer": "Both Abu Simbel and Philae Temple are stunning, but they offer different experiences. \n\n### Abu Simbel\n- **Description:** The Abu Simbel Temples are massive rock-cut temples built by Ramesses II and his wife Nefertari, showcasing incredible ancient Egyptian architecture. They were famously relocated to avoid flooding from Lake Nasser.\n- **Ticket Price:** 420 EGP\n- **Average Rating:** 4.8/5\n- **Travel Tip:** Visiting Abu Simbel typically involves a scenic 280km drive, often done in a convoy that departs early in the morning. This allows you to experience the stunning desert landscape at dawn.\n\n### Philae Temple\n- **Description:** The Philae Temple, dedicated to the goddess Isis, is beautifully situated on Agilkia Island, having been relocated from its original site on Philae Island. It's known for its stunning columns and intricate reliefs.\n- **Ticket Price:** 230 EGP\n- **Average Rating:** 4.7/5\n- **Travel Tip:** You can reach Philae Temple via a short boat ride, which adds a charming touch to your visit.\n\n### Recommendation\nIf you're keen on experiencing both, I suggest visiting **Philae Temple first**. It's more accessible and provides a wonderful introduction to the history of ancient Egypt. Then, plan a day trip to Abu Simbel for a more awe-inspiring, monumental experience. \n\nWould you like help planning the logistics for your visits? 🗺️.",
+  "sources": [
+    "SourceRef(label='Aswan to Abu Simbel Road Trip', kind='database')",
+    "SourceRef(label='Lake Nasser Cruise', kind='database')",
+    "SourceRef(label='Abu Simbel Temples', kind='database')",
+    "SourceRef(label='Philae Temple (Temple of Isis)', kind='database')",
+    "SourceRef(label='Temple of Dakka', kind='database')",
+    "SourceRef(label='Khufu Mortuary Temple', kind='database')",
+    "SourceRef(label='El-Kab (Nekheb)', kind='database')",
+    "SourceRef(label='Deir el-Medina', kind='database')"
+  ]
+}

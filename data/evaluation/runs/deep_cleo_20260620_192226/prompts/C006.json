@@ -1,0 +1,14 @@
+{
+  "query_id": "C006",
+  "query": "What's more impressive: the Valley of the Kings or Valley of the Queens?",
+  "answer": "Both the Valley of the Kings and the Valley of the Queens are remarkable sites in Luxor, but they offer different experiences and highlights.\n\n### Valley of the Kings\n- **Description:** This is the burial ground of pharaohs, featuring 63 tombs, including the famous tomb of Tutankhamun (KV62). The tombs are known for their intricate wall paintings and inscriptions that depict the journey to the afterlife.\n- **Ticket Price:** 300 EGP\n- **Average Rating:** 4.8/5\n- **Notable Tomb:** The Tomb of Seti I (KV17) is the longest and deepest tomb here, renowned for its stunning wall art.\n\n### Valley of the Queens\n- **Description:** This site served as the burial place for queens and royal children, housing over 75 tombs. The tombs here are known for their beautiful decoration and often depict scenes of daily life and mythology.\n- **Ticket Price:** 140 EGP\n- **Average Rating:** 4.6/5\n- **Notable Tomb:** The Tomb of Nefertari (QV66), the most beautiful tomb in Egypt, is celebrated for its vivid wall paintings and the artistry that embodies the elegance of its occupant, the wife of Ramesses II.\n\n### Practical Tip\nIf you have to choose, the **Valley of the Kings** might be considered more impressive due to its association with powerful pharaohs and the grandeur of its tombs. However, if you're particularly interested in art and the stories of royal women, the **Valley of the Queens** offers breathtaking artistry, especially in Nefertari's tomb. \n\nMany visitors choose to see both to appreciate the full spectrum of ancient Egyptian burial practices. Would you like more tips on visiting either site? 🏺✨.",
+  "sources": [
+    "SourceRef(label='Valley of the Kings', kind='database')",
+    "SourceRef(label='Tomb of Seti I (KV17)', kind='database')",
+    "SourceRef(label='Suez Canal Authority Building', kind='database')",
+    "SourceRef(label='Luxor Corniche', kind='database')",
+    "SourceRef(label='Lighthouse Reef', kind='database')",
+    "SourceRef(label='Valley of the Queens', kind='database')",
+    "SourceRef(label='Tomb of Nefertari (QV66)', kind='database')"
+  ]
+}

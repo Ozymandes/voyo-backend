@@ -1,0 +1,11 @@
+{
+  "query_id": "P013",
+  "query": "I'm traveling with elderly parents. What's suitable for them?",
+  "answer": "Traveling with elderly parents is a wonderful opportunity to share Egypt's rich history and culture while ensuring their comfort. Here are some historical sites and experiences that are more suitable for them, especially in Luxor:\n\n### 1. **Luxor Temple**\nThis temple is relatively small, making it easier to navigate. It's beautifully illuminated at night and offers a stunning glimpse into ancient Egyptian architecture. The temple was built during the reign of Amenhotep III and later expanded by Ramses II, serving as a center for significant festivals. \n\n**Practical Tip:** Visit in the evening when it's cooler and the temple is lit up, creating a magical atmosphere. There are many benches around for rest.\n\n### 2. **Karnak Temple**\nAlthough larger, it has well-maintained pathways and seating areas throughout. The temple complex is famous for its massive columns and the Sacred Lake. It provides a comprehensive insight into ancient Egyptian worship.\n\n**Practical Tip:** Consider hiring a golf cart for a guided tour around the temple grounds, which will reduce walking distance.\n\n### 3. **Tomb of Ti**\nThis tomb is renowned for its exquisite low-relief carvings and is less strenuous to visit. It's located relatively close to other attractions, making it easy to incorporate into a day trip without too much walking.\n\n**Practical Tip:** Ensure to visit in the morning when it's cooler, and the site is less crowded.\n\n### 4. **Museums**\nWhile there are no specific museums listed in your area, you might want to check out local museums in Luxor that often have accessible facilities and provide a rich context of the historical sites.\n\n### Transportation Tips\nFor getting around, consider hiring a private driver or using a taxi service to minimize walking distances and ensure comfort for your parents.\n\nWould you like more information on any specific site or assistance with organizing transportation?",
+  "sources": [
+    "SourceRef(label='Tomb of Ti', kind='database')",
+    "SourceRef(label='Catacombs of Kom El Shoqafa', kind='database')",
+    "SourceRef(label='Tombs of the Nobles (Aswan)', kind='database')",
+    "SourceRef(label='VOYO verified database', kind='database')"
+  ]
+}

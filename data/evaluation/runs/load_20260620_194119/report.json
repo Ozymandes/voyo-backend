@@ -1,0 +1,122 @@
+{
+  "run_id": "load_20260620_194119",
+  "name": "load",
+  "timestamp": "2026-06-20T19:41:20.789745",
+  "git_commit": "5971e2b",
+  "host": "TITAN",
+  "base": "http://localhost:8000",
+  "endpoints": [
+    "/health",
+    "/docs"
+  ],
+  "levels": [
+    1,
+    5,
+    10,
+    20,
+    40
+  ],
+  "per_level": 60,
+  "authenticated": false,
+  "summary": [
+    {
+      "concurrency": 1,
+      "throughput_rps": 157.69,
+      "error_rate": 0.0,
+      "p50_ms": 1.6,
+      "p95_ms": 3.2,
+      "p99_ms": 4.3,
+      "max_ms": 274.1
+    },
+    {
+      "concurrency": 5,
+      "throughput_rps": 213.08,
+      "error_rate": 0.0,
+      "p50_ms": 1.5,
+      "p95_ms": 278.7,
+      "p99_ms": 279.2,
+      "max_ms": 280.0
+    },
+    {
+      "concurrency": 10,
+      "throughput_rps": 751.31,
+      "error_rate": 0.0,
+      "p50_ms": 9.0,
+      "p95_ms": 25.3,
+      "p99_ms": 32.8,
+      "max_ms": 34.1
+    },
+    {
+      "concurrency": 20,
+      "throughput_rps": 186.91,
+      "error_rate": 0.0,
+      "p50_ms": 13.6,
+      "p95_ms": 312.2,
+      "p99_ms": 315.0,
+      "max_ms": 315.3
+    },
+    {
+      "concurrency": 40,
+      "throughput_rps": 387.0,
+      "error_rate": 0.0,
+      "p50_ms": 75.2,
+      "p95_ms": 138.1,
+      "p99_ms": 141.2,
+      "max_ms": 150.5
+    }
+  ],
+  "results": [
+    {
+      "concurrency": 1,
+      "requests": 60,
+      "wall_s": 0.381,
+      "throughput_rps": 157.69,
+      "ok": 60,
+      "errors": 0
+    },
+    {
+      "concurrency": 5,
+      "requests": 60,
+      "wall_s": 0.282,
+      "throughput_rps": 213.08,
+      "ok": 60,
+      "errors": 0
+    },
+    {
+      "concurrency": 10,
+      "requests": 60,
+      "wall_s": 0.08,
+      "throughput_rps": 751.31,
+      "ok": 60,
+      "errors": 0
+    },
+    {
+      "concurrency": 20,
+      "requests": 60,
+      "wall_s": 0.321,
+      "throughput_rps": 186.91,
+      "ok": 60,
+      "errors": 0
+    },
+    {
+      "concurrency": 40,
+      "requests": 60,
+      "wall_s": 0.155,
+      "throughput_rps": 387.0,
+      "ok": 60,
+      "errors": 0
+    }
+  ],
+  "figures": [
+    {
+      "name": "load_latency",
+      "png": "C:\\Users\\yasee\\OneDrive\\Desktop\\VOYO_Backend\\voyo-backend\\data\\evaluation\\runs\\load_20260620_194119\\figures\\load_latency.png",
+      "pdf": "C:\\Users\\yasee\\OneDrive\\Desktop\\VOYO_Backend\\voyo-backend\\data\\evaluation\\runs\\load_20260620_194119\\figures\\load_latency.pdf"
+    },
+    {
+      "name": "load_throughput",
+      "png": "C:\\Users\\yasee\\OneDrive\\Desktop\\VOYO_Backend\\voyo-backend\\data\\evaluation\\runs\\load_20260620_194119\\figures\\load_throughput.png",
+      "pdf": "C:\\Users\\yasee\\OneDrive\\Desktop\\VOYO_Backend\\voyo-backend\\data\\evaluation\\runs\\load_20260620_194119\\figures\\load_throughput.pdf"
+    }
+  ]
+}

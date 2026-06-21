@@ -270,9 +270,24 @@ async def preview_add(request: PreviewAddRequest, user=Depends(get_current_user)
         # Itinerary not found / doesn't belong to the user.
         raise HTTPException(status_code=404, detail=str(e))
     except RuntimeError as e:
-        # Routing backend (VROOM/OSRM) unreachable.
-        logger.error(f"preview-add failed: {e}")
-        raise HTTPException(status_code=503, detail=str(e))
+        # Routing backend (VROOM/OSRM) unreachable OR a matrix was
+        # rejected because the candidate is too far from the day's stops
+        # (Valhalla 400 "Path distance exceeds the max distance limit").
+        # Map both to a user-safe message so the UI never shows raw
+        # routing internals; the full error is still in the backend log.
+        msg = str(e)
+        logger.error(f"preview-add failed: {msg}")
+        if "exceeds the max distance" in msg or "400" in msg:
+            user_msg = (
+                "That place is too far from the stops on this day to fit "
+                "realistically. Try a different day, or pick a nearby stop."
+            )
+        else:
+            user_msg = (
+                "VOYO couldn't verify this route safely right now. Try "
+                "again in a moment, or pick a nearby stop."
+            )
+        raise HTTPException(status_code=503, detail=user_msg)
 
     return result
 

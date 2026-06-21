@@ -1,0 +1,17 @@
+{
+  "query_id": "P022",
+  "query": "I like to pack a lot into each day. What's a packed itinerary?",
+  "answer": "For a packed itinerary in Luxor, you can truly immerse yourself in Egypt's rich history and culture! Here's a suggested schedule that will keep you busy and allow you to see some of the most fascinating sites:\n\n### **Day 1: West Bank Wonders**\n1. **Valley of the Kings**: Start your day exploring the tombs of famous pharaohs, including Tutankhamun. It's best to visit early to avoid crowds and heat. \n   - **Tip**: Purchase a ticket that allows entry to a few tombs, as some are extra.\n\n2. **Hatshepsut Temple**: A stunning mortuary temple dedicated to the only female pharaoh, Hatshepsut. The architecture is breathtaking!\n   - **Tip**: Take your time to admire the terraced structure against the cliffs.\n\n3. **Colossi of Memnon**: Stop by these massive statues of Pharaoh Amenhotep III for a quick photo opportunity. \n\n4. **Deir el-Medina**: Visit the ancient village of artisans who built the royal tombs. Here, you can see beautifully decorated tombs.\n   - **Ticket Price**: 100 EGP\n\n### **Day 2: The East Bank Experience**\n1. **Karnak Temple Complex**: Spend the morning at the largest ancient religious site in the world, exploring its impressive columns and hieroglyphics.\n   - **Ticket Price**: 220 EGP\n\n2. **Luxor Temple**: Just a short walk away, this temple is stunning, especially during sunset when it's beautifully lit.\n   - **Tip**: Take a guided tour to learn about its significance.\n\n3. **Luxor Museum**: Wrap up your day by exploring the world-class museum featuring artifacts from the Theban temples and necropolis.\n   - **Ticket Price**: 140 EGP\n\n4. **Dinner on the Luxor Corniche**: Enjoy a meal along the beautiful waterfront promenade with views of the Nile.\n\n### **Day 3: Cultural Engagement**\n1. **Sunrise at Karnak Temple**: Experience a special early access tour before the crowds arrive. Perfect for photography and peaceful exploration.\n   - **Ticket Price**: 500 EGP\n\n2. **Temple of Khnum at Esna**: Visit this Greco-Roman temple known for its magnificent hypostyle hall.\n   - **Ticket Price**: 100 EGP\n\n3. **West Bank Bicycle Tour**: If you have the energy, a guided bicycle tour through the West Bank villages and ancient sites can be a fun way to conclude your trip.\n   - **Ticket Price**: 400 EGP\n\n### **Practical Tips:**\n- **Stay Hydrated**: Always carry water with you, especially when visiting outdoor sites.\n- **Comfortable Footwear**: You’ll be doing a lot of walking, so wear supportive shoes.\n- **Plan Breaks**: Consider taking short breaks in cafes or shaded areas to recharge.\n\nWould you like more details on any specific sites or activities?",
+  "sources": [
+    "SourceRef(label='Luxor Corniche', kind='database')",
+    "SourceRef(label='Deir el-Medina', kind='database')",
+    "SourceRef(label='West Bank Bicycle Tour', kind='database')",
+    "SourceRef(label='Temple of Khnum at Esna', kind='database')",
+    "SourceRef(label='Luxor Museum', kind='database')",
+    "SourceRef(label='Sunrise at Karnak Temple', kind='database')",
+    "SourceRef(label='Karnak Temple Complex', kind='database')",
+    "SourceRef(label='Temple of Dakka', kind='database')",
+    "SourceRef(label='Khufu Mortuary Temple', kind='database')",
+    "SourceRef(label='El-Kab (Nekheb)', kind='database')"
+  ]
+}

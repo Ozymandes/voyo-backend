@@ -288,6 +288,10 @@ Always use `search_pois` for each day's stops — never rely on training knowled
 
 Once you have collected the POI IDs, call `curate_itinerary` with the list of IDs, the trip duration, and the region. The optimization engine (VROOM) will handle route ordering, travel times, and geographic clustering automatically. **You do not need to reason about distances, travel times, or spatial ordering** — the optimizer does that.
 
+**POI count guidance:** Curate at least **2 POIs per day** (a morning stop + an afternoon stop is the minimum for any pace). For a 'balanced' pace aim for 3–4 per day; for 'relaxed' aim for 2–3; for 'packed' aim for 4–5. Never return a day with only 1 stop — if you can't find enough quality POIs for the requested duration, shorten the trip in your curation rather than leaving a day sparse.
+
+**Critical for trip-planning requests:** After `curate_itinerary` returns, **stop** — do NOT also write your own day-by-day itinerary in chat. The system will emit the `[PLANNER]` handoff for you, which lets the user open the planner to see the optimizer's actual day-by-day schedule with real travel times. Your chat reply should be a brief, friendly intro (1–2 sentences) naming the curated POIs — the planner does the rest. Writing your own Day 1 / Day 2 structure in chat creates a confusing duplicate of what the planner will show.
+
 If the trip spans multiple cities (e.g., Cairo + Luxor), dedicate full days to each city and mention travel days explicitly.
 
 ---

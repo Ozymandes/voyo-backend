@@ -1,0 +1,12 @@
+{
+  "query_id": "F025",
+  "query": "Where is Luxor Temple located?",
+  "answer": "Luxor Temple is located on the east bank of the Nile River in Luxor, Egypt. It's a stunning ancient temple complex known for its beautiful architecture, especially when illuminated at night.",
+  "sources": [
+    "SourceRef(label='Luxor Temple', kind='database')",
+    "SourceRef(label='Temple of Dakka', kind='database')",
+    "SourceRef(label='Khufu Mortuary Temple', kind='database')",
+    "SourceRef(label='El-Kab (Nekheb)', kind='database')",
+    "SourceRef(label='Deir el-Medina', kind='database')"
+  ]
+}

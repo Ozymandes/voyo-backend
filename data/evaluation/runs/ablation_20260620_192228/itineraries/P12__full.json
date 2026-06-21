@@ -1,0 +1,173 @@
+{
+  "status": "ok",
+  "overview": "Embark on a luxurious 5-day journey through Egypt, exploring its rich cultural and religious heritage at a leisurely pace. This itinerary is designed for couples who appreciate history, art, and spirituality, allowing for deep connections with each destination.",
+  "days": [
+    {
+      "day": 1,
+      "date": "2026-12-20",
+      "title": "Alexandria — Day 1",
+      "theme": null,
+      "stops": [
+        {
+          "poi_id": 319,
+          "name": "Monastery of Abu Mina",
+          "category": "religious",
+          "time": null,
+          "departure_time": null,
+          "service_duration_min": null,
+          "transport_to_next_min": null,
+          "transport_to_next_km": null,
+          "transport_mode": "Walk",
+          "description": "UNESCO-listed pilgrimage site with ancient ruins and a modern monastery.",
+          "cost_egp": null,
+          "address": "9 Mar-Mina Rd, Qetaa Maryout, Borg El Arab, Alexandria Governorate 21934, Egypt",
+          "tip": null
+        },
+        {
+          "poi_id": 305,
+          "name": "Royal Jewelry Museum",
+          "category": "cultural",
+          "time": null,
+          "departure_time": null,
+          "service_duration_min": null,
+          "transport_to_next_min": null,
+          "transport_to_next_km": null,
+          "transport_mode": "Walk",
+          "description": "Houses the exquisite jewels of the Muhammad Ali dynasty.",
+          "cost_egp": 100.0,
+          "address": "27 Ahmed Yehia, San Stefano, El Raml 2, Alexandria Governorate 5451010, Egypt",
+          "tip": null
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "date": "2026-12-21",
+      "title": "Alexandria — Day 2",
+      "theme": null,
+      "stops": [
+        {
+          "poi_id": 324,
+          "name": "Antoniadis Gardens",
+          "category": "natural",
+          "time": null,
+          "departure_time": null,
+          "service_duration_min": null,
+          "transport_to_next_min": null,
+          "transport_to_next_km": null,
+          "transport_mode": "Walk",
+          "description": "Vast botanical gardens containing Greco-Roman style statues.",
+          "cost_egp": 20.0,
+          "address": "ش البرت الأول، Smoha Sq., Sidi Gabir, Sidi Gaber, Alexandria Governorate 5432034, Egypt",
+          "tip": null
+        },
+        {
+          "poi_id": 325,
+          "name": "Shallalat Gardens",
+          "category": "natural",
+          "time": null,
+          "departure_time": null,
+          "service_duration_min": null,
+          "transport_to_next_min": null,
+          "transport_to_next_km": null,
+          "transport_mode": "Walk",
+          "description": "Features waterfalls and remains of the city’s Islamic walls.",
+          "cost_egp": null,
+          "address": "6W37+3RF, Bab Sharqi WA Wabour Al Meyah, Bab Shar', Alexandria Governorate 5423005, Egypt",
+          "tip": null
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "date": "2026-12-22",
+      "title": "Alexandria — Day 3",
+      "theme": null,
+      "stops": [
+        {
+          "poi_id": 326,
+          "name": "San Stefano Mall",
+          "category": "entertainment",
+          "time": null,
+          "departure_time": null,
+          "service_duration_min": null,
+          "transport_to_next_min": null,
+          "transport_to_next_km": null,
+          "transport_mode": "Walk",
+          "description": "Upscale shopping and dining in the city's tallest building.",
+          "cost_egp": null,
+          "address": "El-Gaish Rd, San Stefano, El Raml 2, Alexandria Governorate 5452053, Egypt",
+          "tip": null
+        },
+        {
+          "poi_id": 332,
+          "name": "Smouha Club",
+          "category": "entertainment",
+          "time": null,
+          "departure_time": null,
+          "service_duration_min": null,
+          "transport_to_next_min": null,
+          "transport_to_next_km": null,
+          "transport_mode": "Walk",
+          "description": "Massive social and sporting club in the heart of the city.",
+          "cost_egp": null,
+          "address": "Victor Emanouil Al Thaleth, Ezbet Saad, Sidi Gaber, Alexandria Governorate 5432080, Egypt",
+          "tip": null
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "date": "2026-12-23",
+      "title": "Alexandria — Day 4",
+      "theme": null,
+      "stops": [
+        {
+          "poi_id": 329,
+          "name": "Gleem Bay",
+          "category": "entertainment",
+          "time": null,
+          "departure_time": null,
+          "service_duration_min": null,
+          "transport_to_next_min": null,
+          "transport_to_next_km": null,
+          "transport_mode": "Walk",
+          "description": "A modern hub for restaurants built directly over the sea.",
+          "cost_egp": null,
+          "address": "Glime Beach, San Stefano, El Raml 1, Alexandria Governorate 5452033, Egypt",
+          "tip": null
+        }
+      ]
+    }
+  ],
+  "tips": [
+    "Consider hiring a private guide for a more personalized experience at each site.",
+    "Dress modestly when visiting religious sites to show respect.",
+    "Take time to savor local cuisine at recommended dining spots.",
+    "Plan for some downtime in parks or cafes to soak in the atmosphere.",
+    "Stay hydrated and wear comfortable shoes for exploring."
+  ],
+  "summary": "Enjoy your enchanting journey through Egypt, filled with unforgettable memories and cultural discoveries.",
+  "total_cost_egp": 120.0,
+  "budget_breakdown": {
+    "activities_egp": 240.0,
+    "accommodation_egp_estimate": 35000,
+    "food_egp_estimate": 3000,
+    "transport_egp_estimate": 1000
+  },
+  "provenance": {
+    "poi_selection": "llm",
+    "times": "unscheduled_vroom_down",
+    "costs": "database_ticket_prices",
+    "descriptions": "database_narratives",
+    "llm_available": true,
+    "vroom_available": false,
+    "candidate_pool_size": 25,
+    "geo_reclustered": true,
+    "geo_trimmed_cities": [
+      "Unknown",
+      "Sinai",
+      "Aswan"
+    ]
+  }
+}

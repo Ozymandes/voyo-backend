@@ -1,0 +1,11 @@
+{
+  "query_id": "F045",
+  "query": "What should I buy in Khan el-Khalili?",
+  "answer": "Khan el-Khalili is a vibrant market in the heart of Islamic Cairo and a must-visit for any traveler! It's not only famous for its historical significance but also for the unique shopping experience it offers. Here’s what you should consider buying:\n\n### 1. **Handcrafted Jewelry**\nYou’ll find stunning silver and gold jewelry, often adorned with traditional Egyptian designs. Look for pieces with intricate filigree work and gemstones. \n\n### 2. **Textiles**\nFrom colorful scarves to elaborate tapestries, the textiles in Khan el-Khalili are rich in tradition. Don’t miss out on purchasing a beautiful hand-embroidered galabeya, which is a traditional Egyptian garment.\n\n### 3. **Spices and Herbal Teas**\nThe scent of exotic spices fills the air! You can buy a variety of spices like saffron, cumin, and sumac. Herbal teas, especially mint and hibiscus, are also popular and make great souvenirs.\n\n### 4. **Papyrus Art**\nLook for hand-painted papyrus scrolls depicting ancient Egyptian scenes or hieroglyphics. These make for unique decorative pieces that tell a story of Egypt’s rich history.\n\n### 5. **Traditional Crafts**\nConsider buying handcrafted items like wooden boxes, ceramics, and lanterns. These crafts showcase the artistry of Egyptian artisans and would be lovely additions to your home.\n\n### Practical Tip\nBargaining is part of the shopping experience in Khan el-Khalili, so don’t hesitate to negotiate prices! Start with a lower offer and work your way up to a price that feels fair to both you and the seller.\n\nAre you looking for any specific item or type of souvenir?",
+  "sources": [
+    "SourceRef(label='Khan el-Khalili', kind='database')",
+    "SourceRef(label='Al-Hussein Mosque', kind='database')",
+    "SourceRef(label='Sultan Barquq Complex', kind='database')",
+    "SourceRef(label='Al-Ghuri Complex', kind='database')"
+  ]
+}

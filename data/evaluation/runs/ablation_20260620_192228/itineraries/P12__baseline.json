@@ -1,0 +1,87 @@
+{
+  "days": [
+    {
+      "day": 1,
+      "stops": [
+        {
+          "poi_id": 319,
+          "arrival_time": "09:00:00",
+          "service_duration_min": 60,
+          "travel_to_next_min": 0,
+          "travel_to_next_km": 0.0,
+          "_arrival_sec": 32400,
+          "_service_sec": 3600
+        },
+        {
+          "poi_id": 305,
+          "arrival_time": "10:15:00",
+          "service_duration_min": 60,
+          "travel_to_next_min": 0,
+          "travel_to_next_km": 0.0,
+          "_arrival_sec": 36900,
+          "_service_sec": 3600
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "stops": [
+        {
+          "poi_id": 324,
+          "arrival_time": "09:00:00",
+          "service_duration_min": 60,
+          "travel_to_next_min": 0,
+          "travel_to_next_km": 0.0,
+          "_arrival_sec": 32400,
+          "_service_sec": 3600
+        },
+        {
+          "poi_id": 325,
+          "arrival_time": "10:15:00",
+          "service_duration_min": 60,
+          "travel_to_next_min": 0,
+          "travel_to_next_km": 0.0,
+          "_arrival_sec": 36900,
+          "_service_sec": 3600
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "stops": [
+        {
+          "poi_id": 326,
+          "arrival_time": "09:00:00",
+          "service_duration_min": 60,
+          "travel_to_next_min": 0,
+          "travel_to_next_km": 0.0,
+          "_arrival_sec": 32400,
+          "_service_sec": 3600
+        },
+        {
+          "poi_id": 332,
+          "arrival_time": "10:15:00",
+          "service_duration_min": 60,
+          "travel_to_next_min": 0,
+          "travel_to_next_km": 0.0,
+          "_arrival_sec": 36900,
+          "_service_sec": 3600
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "stops": [
+        {
+          "poi_id": 329,
+          "arrival_time": "09:00:00",
+          "service_duration_min": 60,
+          "travel_to_next_min": 0,
+          "travel_to_next_km": 0.0,
+          "_arrival_sec": 32400,
+          "_service_sec": 3600
+        }
+      ]
+    }
+  ]
+}

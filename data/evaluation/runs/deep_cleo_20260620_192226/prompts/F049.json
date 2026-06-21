@@ -1,0 +1,12 @@
+{
+  "query_id": "F049",
+  "query": "What currency is used in Egypt?",
+  "answer": "In Egypt, the official currency is the Egyptian Pound, abbreviated as EGP. You’ll find that it’s widely used for all transactions, including shopping, dining, and entrance fees at various attractions.\n\n### Why This Matters\nUsing the local currency can help you avoid unfavorable exchange rates and ensure you’re getting the best prices, especially in markets and while bargaining. ATMs are readily available in major cities, and credit cards are accepted at many hotels and restaurants, but it's always good to have cash on hand for smaller vendors and markets.\n\n### Practical Tip\nWhen exchanging money, try to do so at banks or official exchange offices to get better rates. Avoid street vendors for currency exchange, as they may offer less favorable rates. Make sure to keep some small denominations for tips and small purchases!\n\nAre you planning to visit any specific markets or attractions where you might need to use cash?",
+  "sources": [
+    "SourceRef(label='Temple of Dakka', kind='database')",
+    "SourceRef(label='Qasr Ibrim', kind='database')",
+    "SourceRef(label='Hurghada Marina', kind='database')",
+    "SourceRef(label='Ben Ezra Synagogue', kind='database')",
+    "SourceRef(label='Tomb of Queen Hetepheres I', kind='database')"
+  ]
+}

@@ -89,6 +89,12 @@ class ScopeDetector:
 
         # Non-travel locations
         "countries": r"\b(france|germany|spain|italy|england|britain|japan|china|korea|australia)\b",
+        # Middle East / North Africa neighbors commonly confused with
+        # Egypt. Without these, "Plan a trip to Petra, Jordan" scored
+        # in_scope ("trip" keyword) with zero out_of_scope signals, so
+        # the agent ran search_pois → 0 rows → LLM hallucinated prices,
+        # hours, and tips from parametric knowledge. (Demo regression fix.)
+        "mena_neighbors": r"\b(jordan|petra|saudi arabia|mecca|medina|israel|jerusalem|bethlehem|palestine|uae|united arab emirates|dubai|abu dhabi|qatar|kuwait|bahrain|oman|lebanon|beirut|syria|iraq|iran|turkey|istanbul|cappadocia|hagia sophia|morocco|marrakech|casablanca|tunisia|algeria|libya|greece|athens|santorini|cyprus|malta)\b",
         "us_cities": r"\b(new york|los angeles|chicago|houston|phoenix|seattle|boston|miami)\b",
 
         # Politics/current events
@@ -102,6 +108,14 @@ class ScopeDetector:
 
         # Inappropriate content
         "inappropriate": r"\b(hack|crack|pirat|smuggl|illegal|criminal)\b",
+
+        # Transactional / booking intents (VOYO is informational + planning,
+        # NOT a booking platform). Caught here so the agent loop is never
+        # entered for "book / reserve / buy / purchase" requests — those
+        # would otherwise spin search_pois and hit max-iter. The scope
+        # layer returns a polite redirect instead.
+        "booking": r"\b(book|booking|reserve|reservation|buy|buying|purchase|purchasing|checkout|pay for)\b.{0,40}\b(hotel|motel|room|suite|flight|airfare|ticket to|airline|airbnb|villa|cabin|cruise\s+booking|tour\s+package)\b",
+        "booking_reverse": r"\b(hotel|motel|flight|airline|airbnb|villa|cruise)\b.{0,40}\b(book|booking|reserve|reservation|buy|purchase)\b",
 
         # Completely unrelated
         "unrelated": r"\b(recipe|cook|bake|knit|sew|gardening|fitness|workout|diet|weight\s*loss)\b"
@@ -159,6 +173,22 @@ class ScopeDetector:
             self.OUT_OF_SCOPE_PATTERNS["inappropriate"],
             re.IGNORECASE
         )
+        # Compile foreign-destination patterns separately. VOYO is
+        # region-locked to Egypt, so a user naming a specific foreign
+        # country / city / landmark is the STRONGEST possible
+        # out-of-scope signal — stronger than "trip" is in-scope. Without
+        # a hard check here, the generic scoring path lets "Plan a trip
+        # to Petra, Jordan" through because "trip" boosts in_scope to
+        # ~1.0 while the foreign-country signal only contributes 0.3.
+        # (Demo regression fix: Jordan trip being built instead of declined.)
+        self.foreign_destination_pattern = re.compile(
+            "|".join([
+                self.OUT_OF_SCOPE_PATTERNS["countries"],
+                self.OUT_OF_SCOPE_PATTERNS["mena_neighbors"],
+                self.OUT_OF_SCOPE_PATTERNS["us_cities"],
+            ]),
+            re.IGNORECASE,
+        )
 
     def check_scope(self, query: str, conversation_context: Optional[str] = None) -> ScopeDecision:
         """
@@ -190,6 +220,29 @@ class ScopeDetector:
                 reasoning="Query contains inappropriate content",
                 redirection="I cannot assist with that request. I'm designed to help with Egyptian travel and tourism.",
                 matched_patterns=[inappropriate_match.group()]
+            )
+
+        # Strategy 3b: Hard check for foreign destinations.
+        # VOYO is Egypt-only. If the user names a foreign country/city/
+        # landmark AND no Egyptian entity is present, decline immediately
+        # — do NOT let the LLM hallucinate prices/hours/tips from
+        # parametric knowledge. (Demo regression fix.)
+        foreign_match = self.foreign_destination_pattern.search(query_lower)
+        if foreign_match and not egyptian_entities:
+            return ScopeDecision(
+                in_scope=False,
+                confidence=0.95,
+                category=ScopeCategory.OUT_OF_SCOPE_TOPIC,
+                reasoning=f"Query targets a non-Egypt destination ({foreign_match.group()})",
+                redirection=(
+                    "I specialize in travel within Egypt — Cairo, Luxor, Aswan, "
+                    "Alexandria, the Red Sea, and Sinai. I can't plan trips to "
+                    "other countries, but if you're thinking about Egypt, I can "
+                    "build you a full day-by-day itinerary with real admission "
+                    "prices, hours, and optimized routes. Where in Egypt would "
+                    "you like to go?"
+                ),
+                matched_patterns=[foreign_match.group()]
             )
 
         # Strategy 4: Calculate confidence scores

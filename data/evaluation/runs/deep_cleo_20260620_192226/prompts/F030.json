@@ -1,0 +1,12 @@
+{
+  "query_id": "F030",
+  "query": "How do I get to Saqqara?",
+  "answer": "To get to Saqqara, which is about 30 kilometers (19 miles) southwest of Cairo, you have several options:\n\n1. **By Car:** Renting a car or hiring a taxi is a convenient way to reach Saqqara. The journey takes around 30-45 minutes depending on traffic. Just head southwest from Cairo and follow the signs towards Giza, then continue to Saqqara.\n\n2. **Public Transport:** You can take a microbus or a bus from Cairo to Giza, and then transfer to a local bus heading to Saqqara. This option is more budget-friendly but may take longer and requires some navigation.\n\n3. **Guided Tour:** Many tour companies offer packages that include transportation to Saqqara, along with a guided experience. This can be a great way to learn more about the site without the hassle of planning the journey yourself.\n\n### Historical Significance\nSaqqara is famous for housing the Step Pyramid of Djoser, the world's oldest stone pyramid, and a major part of ancient Egyptian history. The site is rich with other fascinating structures like the Serapeum, which contains massive granite sarcophagi of sacred bulls.\n\n### Practical Tip\nIf you're planning to visit, try to go early in the morning to avoid the heat and crowds. Don’t forget to bring water, a hat, and your camera for the stunning views! \n\nWould you like to know more about what to see at Saqqara?",
+  "sources": [
+    "SourceRef(label='Serapeum of Saqqara', kind='database')",
+    "SourceRef(label='Saqqara (Step Pyramid)', kind='database')",
+    "SourceRef(label='Abusir Pyramid Field', kind='database')",
+    "SourceRef(label='Tomb of Ti', kind='database')",
+    "SourceRef(label='Imhotep Museum', kind='database')"
+  ]
+}

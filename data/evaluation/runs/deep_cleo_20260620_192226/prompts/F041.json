@@ -1,0 +1,12 @@
+{
+  "query_id": "F041",
+  "query": "What should I wear when visiting the Pyramids?",
+  "answer": "When visiting the Pyramids of Giza, dressing appropriately is essential for comfort and respect for local customs. Here’s what I recommend:\n\n### Clothing Tips\n1. **Lightweight Fabrics**: Egypt can get quite hot, especially during the day. Wear breathable, lightweight fabrics like cotton or linen to keep cool.\n2. **Modest Attire**: While Egypt is generally welcoming, it’s respectful to dress modestly, especially near religious sites. Long skirts or pants and tops with sleeves are ideal.\n3. **Comfortable Shoes**: You’ll be doing a lot of walking on uneven surfaces, so wear sturdy shoes, like sneakers or hiking sandals. Flip-flops might not provide enough support.\n\n### Accessories\n- **Sun Protection**: Don’t forget a wide-brimmed hat and sunglasses to shield yourself from the sun. A lightweight scarf can also be useful for covering your shoulders or head if needed.\n- **Sunscreen**: Apply sunscreen generously before heading out to protect your skin from the strong sun.\n\n### Practical Tip\nVisiting the Pyramids is best done early in the morning or late afternoon to avoid the heat and crowds. Be sure to stay hydrated, as you'll be exploring for a few hours!\n\nIf you need more tips or have questions about any specific sites, just let me know! 🌞.",
+  "sources": [
+    "SourceRef(label='Pyramids Sound and Light Show', kind='database')",
+    "SourceRef(label=\"Queen's Pyramids of Menkaure\", kind='database')",
+    "SourceRef(label='Mena House Hotel', kind='database')",
+    "SourceRef(label='Dahshur Pyramids', kind='database')",
+    "SourceRef(label=\"Queen's Pyramids of Khufu\", kind='database')"
+  ]
+}

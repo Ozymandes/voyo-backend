@@ -71,6 +71,35 @@ class SupabaseTool:
             if category:
                 results = [p for p in results if self._matches_category(p, category)]
 
+            # --- Tier 4: Region-top fallback (discovery-intent rescue) ---
+            # Keyword tiers 1–2 return [] for "hidden gems" / "best places"
+            # because those phrases aren't stored in POI text. If a region is
+            # specified and we have <3 grounded hits, serve the top POIs for
+            # that region by popularity so the LLM grounds on real records.
+            #
+            # Discovery-intent detection: "hidden gems" / "lesser known" /
+            # "underrated" / "off the beaten path" inversions of popularity
+            # so we return actual hidden gems, not the Pyramids.
+            if region and len(results) < 3:
+                q_lower = query.lower()
+                discovery_intent = any(phrase in q_lower for phrase in (
+                    "hidden gem", "lesser known", "lesser-known",
+                    "off the beaten", "off-beaten", "underrated",
+                    "secret spot", "secret places", "overlooked",
+                    "not touristy", "non-touristy", "local favorite",
+                ))
+                top = self._search_by_region_top(
+                    region, limit=limit, discovery_intent=discovery_intent,
+                )
+                before = len(results)
+                results = self._deduplicate(results + top)
+                strategy = "discovery-inverted" if discovery_intent else "popularity-desc"
+                logger.debug(
+                    f"Tier 4 (region-top fallback for '{region}'): "
+                    f"{len(results) - before} POIs added (keyword tiers had {before}, "
+                    f"strategy={strategy}, candidate_count={len(top)})"
+                )
+
             # Personalize ranking when a profile is supplied
             if user_profile:
                 results = self._personalize_ranking(results, user_profile)
@@ -239,6 +268,68 @@ class SupabaseTool:
             logger.error(f"Tier 2 description search error: {e}")
             return []
 
+    def _search_by_region_top(self, region: str, limit: int = 10, discovery_intent: bool = False) -> List[Dict]:
+        """Tier 4 (fallback): top POIs by popularity for a region.
+
+        Discovery queries ("hidden gems", "best places", "must see") search
+        for literal keywords that rarely appear in POI names/descriptions,
+        so tiers 1–2 return [] and the LLM falls back to parametric memory
+        — a silent grounding failure. When a region is specified and the
+        keyword tiers came up empty, we list the highest-popularity POIs
+        for that region (category-diversified so we don't return 5 mosques).
+
+        When ``discovery_intent`` is True (query was "hidden gems" / "lesser
+        known" / "off the beaten path" / "underrated"), invert the ranking:
+        prefer LOWER popularity but still HIGH rating — i.e. the actual
+        hidden gems, not the Pyramids and Sphinx (which are globally famous
+        and by definition NOT hidden).
+        """
+        try:
+            # Greater Cairo equivalence: also admit Giza when Cairo is asked.
+            cities = ("Cairo", "Giza") if region.strip().lower() == "cairo" else (region,)
+            or_clause = ",".join(f"city.eq.{c}" for c in cities)
+            # Discovery intent: sort by LOWEST popularity first (hidden gems),
+            # but require a respectable rating so we don't surface duds.
+            # Regular fallback: sort by HIGHEST popularity first.
+            if discovery_intent:
+                response = (
+                    self.db.admin_client.table("pois")
+                    .select("*")
+                    .eq("is_active", True)
+                    .or_(or_clause)
+                    .gte("average_rating", 4.0)  # quality floor
+                    .order("popularity_score", desc=False)  # LEAST popular first
+                    .order("average_rating", desc=True)      # tie-break: higher rating
+                    .limit(limit * 4)  # over-fetch for category diversity
+                    .execute()
+                )
+            else:
+                response = (
+                    self.db.admin_client.table("pois")
+                    .select("*")
+                    .eq("is_active", True)
+                    .or_(or_clause)
+                    .order("popularity_score", desc=True)
+                    .order("average_rating", desc=True)
+                    .limit(limit * 3)
+                    .execute()
+                )
+            rows = response.data if response.data else []
+            # Category diversification: keep at most 2 per category, then fill.
+            seen_cats: Dict[str, int] = {}
+            diversified: List[Dict] = []
+            for p in rows:
+                cat = p.get("category") or "other"
+                if seen_cats.get(cat, 0) < 2:
+                    diversified.append(p)
+                    seen_cats[cat] = seen_cats.get(cat, 0) + 1
+                if len(diversified) >= limit:
+                    break
+            return diversified
+        except Exception as e:
+            logger.error(f"Tier 4 region-top fallback error: {e}")
+            return []
+
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
@@ -257,11 +348,27 @@ class SupabaseTool:
 
     @staticmethod
     def _matches_region(poi: Dict, region: str) -> bool:
-        """Check if a POI belongs to the given region name."""
-        region_name = poi.get("region_name", "")
-        if not region_name:
-            return True  # Can't filter — keep it
-        return region.lower() in region_name.lower()
+        """Check if a POI belongs to the given region.
+
+        Uses the ``city`` column. The pois table has no ``region_name``
+        field — the previous implementation read a non-existent key and so
+        ALWAYS returned True, making the region filter a silent no-op. That
+        was the root cause of "Hidden gems in Cairo" returning Sinai POIs
+        like Wadi Wishwashi.
+
+        Greater Cairo equivalence: a "Cairo" query also admits Giza
+        (contiguous metro across the Nile). Other regions use a
+        case-insensitive substring match on ``city``.
+        """
+        poi_city = (poi.get("city") or "").strip().lower()
+        if not poi_city:
+            # Untagged POIs must NOT leak into region-filtered results.
+            return False
+        region_l = region.strip().lower()
+        if region_l == "cairo":
+            # Greater Cairo metro: Cairo + Giza (contiguous across the Nile).
+            return poi_city in {"cairo", "giza"}
+        return region_l in poi_city or poi_city in region_l
 
     @staticmethod
     def _matches_category(poi: Dict, category: str) -> bool:

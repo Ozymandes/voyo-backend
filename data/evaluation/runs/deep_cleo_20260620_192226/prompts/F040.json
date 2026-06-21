@@ -1,0 +1,12 @@
+{
+  "query_id": "F040",
+  "query": "What's the historical context of Karnak Temple?",
+  "answer": "The **Karnak Temple Complex** is an awe-inspiring reflection of ancient Egypt's religious fervor and architectural prowess. Located near Luxor, it is the largest ancient religious site in the world, featuring a sprawling mix of temples, pylons, chapels, and other structures developed over 2,000 years. Construction began during the reign of Pharaoh Senusret I in the Middle Kingdom, but the majority of the existing buildings were added during the New Kingdom, particularly devoted to the god Amun, who was the chief deity of the Theban Triad.\n\n### Historical Significance\nKarnak served as the principal place of worship for the ancient Egyptians, known as Ipet-isut or \"The Most Select of Places.\" It was not merely a static temple but a dynamic project that evolved over millennia, showcasing the power and devotion of the pharaohs to their gods. The site illustrates the complex religious practices and beliefs of the time, with grand columns adorned with extensive hieroglyphics depicting scenes of worship and ceremonial life.\n\n### What to Expect\nWhen visiting Karnak, you'll be struck by the monumental scale of its structures, particularly the Great Temple of Amun, which is considered the heart of the complex. Plan your visit for early morning or late afternoon to avoid the heat and crowds, allowing you to fully appreciate the intricate details and vastness of the site. The entrance fee is around 220 EGP, making it a worthwhile investment for a glimpse into ancient history.\n\n### Practical Tip\nConsider hiring a licensed guide to enhance your understanding of the site's significance, especially regarding the 18th Dynastic Theban Triad depicted on the walls. It's also wise to wear sturdy walking shoes, as you’ll be navigating uneven stones throughout this expansive site.\n\nIf you'd like to explore more about nearby attractions or need help planning your visit, just let me know!",
+  "sources": [
+    "SourceRef(label='Sunrise at Karnak Temple', kind='database')",
+    "SourceRef(label='Karnak Temple Complex', kind='database')",
+    "SourceRef(label='Temple of Dakka', kind='database')",
+    "SourceRef(label='Khufu Mortuary Temple', kind='database')",
+    "SourceRef(label='El-Kab (Nekheb)', kind='database')"
+  ]
+}

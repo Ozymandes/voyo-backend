@@ -1,0 +1,17 @@
+{
+  "query_id": "I007",
+  "query": "Plan a week in Egypt including Cairo and Luxor.",
+  "answer": "I apologize, I'm having difficulty processing that request. Could you rephrase it?",
+  "sources": [
+    "SourceRef(label=\"Tentmakers' Street\", kind='database')",
+    "SourceRef(label='Ben Ezra Synagogue', kind='database')",
+    "SourceRef(label='The Egyptian Museum', kind='database')",
+    "SourceRef(label='Bab al-Futuh', kind='database')",
+    "SourceRef(label='National Museum of Egyptian Civilization (NMEC)', kind='database')",
+    "SourceRef(label='Luxor Corniche', kind='database')",
+    "SourceRef(label='Deir el-Medina', kind='database')",
+    "SourceRef(label='West Bank Bicycle Tour', kind='database')",
+    "SourceRef(label='Temple of Khnum at Esna', kind='database')",
+    "SourceRef(label='Luxor Museum', kind='database')"
+  ]
+}

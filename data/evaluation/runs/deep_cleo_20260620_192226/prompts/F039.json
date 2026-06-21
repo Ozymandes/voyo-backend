@@ -1,0 +1,12 @@
+{
+  "query_id": "F039",
+  "query": "Tell me about Islamic Cairo's history",
+  "answer": "Islamic Cairo is a treasure trove of history, showcasing the rich Islamic heritage of Egypt. This area, often referred to as **Old Cairo**, is home to numerous historical sites that date back to the Fatimid period and beyond.\n\n### Historical Significance\n1. **Ben Ezra Synagogue**: This medieval synagogue, located in Coptic Cairo, is famous for the discovery of the **Cairo Geniza** manuscripts, which are crucial for understanding Jewish life in the Middle Ages. According to local legend, it's situated where baby Moses was found, adding a layer of historical intrigue.\n\n2. **The Egyptian Museum**: Known as the world's largest collection of ancient Egyptian antiquities, it houses treasures from the tomb of **Tutankhamun** and many other significant artifacts. It serves as a vital institution for understanding Egypt's pharaonic history.\n\n3. **National Museum of Egyptian Civilization (NMEC)**: This modern museum in Fustat showcases 50,000 artifacts, including a Royal Mummies Hall. It provides a comprehensive look at Egyptian civilization from its ancient roots to contemporary times.\n\n4. **Bab al-Futuh**: This impressive northern gate of the Fatimid city walls, built in the 10th century, features two semi-circular towers. It's one of the remaining historical gates that once protected the city, showcasing the architectural prowess of the era.\n\n5. **Nile Corniche**: While primarily a modern promenade, it stretches along the Nile and is a popular spot for locals and tourists alike, offering stunning views and a vibrant atmosphere.\n\n### Practical Tip\nTo fully appreciate Islamic Cairo, consider joining a guided walking tour. This way, you'll gain insights into the historical contexts and cultural significance of each site. Early morning visits are ideal to avoid crowds and enjoy the cooler temperatures.\n\nWould you like more information on exploring any specific sites or perhaps recommendations for guided tours?",
+  "sources": [
+    "SourceRef(label='Ben Ezra Synagogue', kind='database')",
+    "SourceRef(label='The Egyptian Museum', kind='database')",
+    "SourceRef(label='Bab al-Futuh', kind='database')",
+    "SourceRef(label='National Museum of Egyptian Civilization (NMEC)', kind='database')",
+    "SourceRef(label='Nile Corniche', kind='database')"
+  ]
+}

@@ -18,6 +18,13 @@ class WebSearchTool:
         self.api_key = os.getenv("SEARCH_API_KEY", "")
         self.provider = os.getenv("SEARCH_PROVIDER", "tavily")
 
+        # Safe startup log — configured flag only, NEVER the key itself.
+        # QA uses this line to verify Tavily wiring without log scraping.
+        logger.info(
+            "[TAVILY] configured=%s provider=%s",
+            bool(self.api_key),
+            self.provider,
+        )
         if self.api_key:
             logger.info(f"Web search tool initialized with {self.provider}")
         else:
@@ -70,7 +77,7 @@ class WebSearchTool:
 
             data = response.json()
 
-            return [
+            results = [
                 {
                     "title": result.get("title", ""),
                     "url": result.get("url", ""),
@@ -78,12 +85,28 @@ class WebSearchTool:
                 }
                 for result in data.get("results", [])
             ]
+            # Per-call instrumentation. Query is logged for routing audits;
+            # the api_key is NEVER logged (it lives in `params`, not here).
+            logger.info(
+                "[TAVILY] called=true query=%r result_count=%d status=success",
+                query,
+                len(results),
+            )
+            return results
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error in Tavily search: {e}")
+            logger.warning(
+                "[TAVILY] called=true query=%r status=error error_type=%s",
+                query,
+                type(e).__name__,
+            )
             return [{"error": str(e)}]
         except Exception as e:
-            logger.error(f"Unexpected error in web search: {e}")
+            logger.warning(
+                "[TAVILY] called=true query=%r status=error error_type=%s",
+                query,
+                type(e).__name__,
+            )
             return [{"error": str(e)}]
 
     def find_current_events(self, location: str, dates: str = None) -> List[Dict]:

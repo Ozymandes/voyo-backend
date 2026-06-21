@@ -1,0 +1,13 @@
+{
+  "query_id": "C007",
+  "query": "How does Egyptian Museum compare to the new Grand Egyptian Museum?",
+  "answer": "Both the Egyptian Museum and the Grand Egyptian Museum (GEM) are incredible cultural experiences, but they offer distinct features that make each one unique.\n\n### The Egyptian Museum\n- **Location:** Cairo\n- **Ticket Price:** 200 EGP\n- **Average Rating:** 4.5/5\n- **Description:** Home to the world's largest collection of ancient Egyptian antiquities, the Egyptian Museum showcases over 120,000 artifacts, including treasures from Tutankhamun's tomb. It’s a historical landmark with a classic museum feel, allowing you to explore the rich history of ancient Egypt in a traditional setting.\n\n### Grand Egyptian Museum (GEM)\n- **Location:** Giza, near the Pyramids\n- **Ticket Price:** 150 EGP\n- **Average Rating:** 4.7/5\n- **Description:** The GEM is a modern architectural marvel designed to enhance the visitor experience. It will house an extensive collection of artifacts, including the complete Tutankhamun collection, and features advanced exhibition techniques, making it an immersive experience. The views of the Pyramids from the museum add to its allure.\n\n### Practical Tip\nIf you have time, I highly recommend visiting both! The Egyptian Museum provides a deeper historical context, while the GEM is all about modern presentation and a breathtaking setting. To maximize your experience, consider spending a few hours at each, with the GEM being perfect for a visit after exploring the Pyramids.\n\nAre you planning to visit one of them soon, or do you need more information about what to see at either museum? 🏺✨.",
+  "sources": [
+    "SourceRef(label='The Egyptian Museum', kind='database')",
+    "SourceRef(label='Grand Egyptian Museum (GEM)', kind='database')",
+    "SourceRef(label='Temple of Dakka', kind='database')",
+    "SourceRef(label='Hurghada Marina', kind='database')",
+    "SourceRef(label='Tomb of Queen Hetepheres I', kind='database')",
+    "SourceRef(label='Suez Canal Authority Building', kind='database')"
+  ]
+}

@@ -13,10 +13,10 @@ class PlannerScreen extends StatefulWidget {
   const PlannerScreen({super.key});
 
   @override
-  State<PlannerScreen> createState() => _PlannerScreenState();
+  State<PlannerScreen> createState() => PlannerScreenState();
 }
 
-class _PlannerScreenState extends State<PlannerScreen> {
+class PlannerScreenState extends State<PlannerScreen> {
   final _service = SupabaseService();
   final _supabase = Supabase.instance.client;
 
@@ -72,6 +72,15 @@ class _PlannerScreenState extends State<PlannerScreen> {
   void initState() {
     super.initState();
     _load();
+  }
+
+  /// Public reload hook so external navigations (e.g. CLEO's "Open
+  /// Planner" CTA after a fresh /itinerary/plan save) can force the
+  /// planner to re-fetch the current itinerary. PlannerScreen is kept
+  /// alive across tab switches by main_shell, so without this it would
+  /// keep showing the boot-time snapshot. (P0 fix.)
+  void reload() {
+    if (mounted) _load();
   }
 
   Future<void> _load() async {

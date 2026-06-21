@@ -1,0 +1,8 @@
+{
+  "query_id": "O005",
+  "query": "Can you explain the theory of relativity?",
+  "answer": "The theory of relativity, formulated by Albert Einstein, consists of two main components: **special relativity** and **general relativity**. Special relativity, introduced in 1905, focuses on the relationship between space and time in the absence of gravity. It revolutionized our understanding of physics by establishing that the laws of physics are the same for all non-accelerating observers, and it introduced the famous equation \\(E=mc^2\\), revealing the equivalence of mass and energy.\n\nGeneral relativity, published in 1915, expands on these principles by describing how gravity influences the curvature of space and time. It posits that massive objects, like planets and stars, warp the fabric of spacetime, affecting the motion of other objects. This idea transformed our view of gravity from a force acting at a distance to a geometric property of spacetime itself.\n\n**Practical Tip:** If you're interested in seeing the effects of relativity in action, observe the famous experiment where light from distant stars is bent around massive objects like the sun, which was dramatically confirmed during a solar eclipse in 1919. This event not only validated Einstein's theory but also catapulted him to global fame!\n\nWould you like to delve deeper into either special or general relativity?",
+  "sources": [
+    "SourceRef(label='Web search', kind='web')"
+  ]
+}

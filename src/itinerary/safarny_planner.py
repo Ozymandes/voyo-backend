@@ -31,7 +31,7 @@ import math
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
-from src.cleo.config import GroqClient, config
+from src.cleo.config import GroqClient, config, get_llm_client
 from src.itinerary.engine import ItineraryEngine
 from src.recommendations.engine import RecommendationEngine
 
@@ -86,6 +86,37 @@ def _pace_desc_cap(pace: str) -> int:
         "balanced": 200,
         "packed_schedule": 120,
     }.get(pace or "balanced", 200)
+
+
+_TRAILING_COMMA_RE = re.compile(r",(\s*[}\]])")
+
+
+def _tolerant_json_loads(content: str) -> Dict:
+    """Parse the planner's JSON object, tolerating common smaller-model quirks.
+
+    Smaller / faster models (e.g. gemma4-26b on the OPTO gateway) occasionally
+    emit near-valid JSON: a trailing comma before ``}``/``]``, smart quotes,
+    or a control char inside a string. Rather than discard the whole plan and
+    fall back to the recommendation engine (which loses the LLM's per-day
+    selection + copy — the planner's whole point), this repairs the common
+    cases and re-parses. ``json.loads`` is tried first so well-formed output
+    is never altered.
+    """
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError:
+        pass
+    # Extract the outermost object in case the model wrapped it in prose.
+    start = content.find("{")
+    end = content.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        raise json.JSONDecodeError("no JSON object found", content, 0)
+    body = content[start:end + 1]
+    # Smart quotes → straight.
+    body = body.replace("\u201c", '"').replace("\u201d", '"')
+    # Strip trailing commas (the single most common smaller-model error).
+    body = _TRAILING_COMMA_RE.sub(r"\1", body)
+    return json.loads(body)  # raises if still broken → caller degrades
 
 
 def _safarny_prompt(profile: Dict[str, Any], candidates: List[Dict]) -> str:
@@ -167,7 +198,7 @@ class SafarnyPlanner:
     def __init__(self):
         self.recommender = RecommendationEngine()
         self.itinerary_engine = ItineraryEngine()
-        self.llm = GroqClient()
+        self.llm = get_llm_client()
 
     async def plan(
         self,
@@ -584,26 +615,37 @@ class SafarnyPlanner:
              "content": "You are a JSON-only planner. Output valid JSON, nothing else."},
             {"role": "user", "content": prompt},
         ]
-        try:
-            resp = await self.llm.generate_async(messages, temperature=0.6)
-            content = (resp.content or "").strip()
-            # Strip any stray markdown fences the model sometimes adds.
-            if content.startswith("```"):
-                content = content.split("\n", 1)[-1]
-                if content.endswith("```"):
-                    content = content.rsplit("```", 1)[0]
-            plan = json.loads(content)
-            # Validate: only allow candidate IDs (drops any hallucinated IDs).
-            valid_ids = {p["id"] for p in candidates}
-            for day in plan.get("days", []):
-                day["poi_ids"] = [
-                    int(i) for i in day.get("poi_ids", [])
-                    if int(i) in valid_ids
-                ]
-            return plan
-        except Exception as e:
-            logger.warning(f"Safarny LLM selection failed (degrading): {e}")
-            return None
+        # gemma-class models are less reliable at strict JSON than llama-70b;
+        # lower temperature (deterministic selection) + one retry on parse
+        # failure keeps the LLM participating instead of silently degrading.
+        for attempt, temp in enumerate((0.3, 0.2)):
+            try:
+                resp = await self.llm.generate_async(messages, temperature=temp)
+                content = (resp.content or "").strip()
+                # Strip any stray markdown fences the model sometimes adds.
+                if content.startswith("```"):
+                    content = content.split("\n", 1)[-1]
+                    if content.endswith("```"):
+                        content = content.rsplit("```", 1)[0]
+                plan = _tolerant_json_loads(content)
+                # Validate: only allow candidate IDs (drops any hallucinated IDs).
+                valid_ids = {p["id"] for p in candidates}
+                for day in plan.get("days", []):
+                    day["poi_ids"] = [
+                        int(i) for i in day.get("poi_ids", [])
+                        if int(i) in valid_ids
+                    ]
+                # Reject an empty selection (all IDs filtered / no days) and retry.
+                if plan.get("days") and any(d.get("poi_ids") for d in plan["days"]):
+                    return plan
+                logger.info("Safarny LLM selection empty after validation; retrying.")
+            except Exception as e:
+                if attempt == 0:
+                    logger.info("Safarny LLM selection parse failed (%s); retrying cooler.", e)
+                    continue
+                logger.warning("Safarny LLM selection failed (degrading): %s", e)
+                return None
+        return None
 
     def _shape(
         self,

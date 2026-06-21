@@ -1,0 +1,11 @@
+{
+  "query_id": "P003",
+  "query": "I love shopping. Where should I go in Cairo?",
+  "answer": "Cairo offers a fantastic shopping experience, especially at **Khan el-Khalili**, a historic souk that is a must-visit! This bustling market, located in the heart of Islamic Cairo, dates back to the 14th century and is famous for its vibrant atmosphere, traditional crafts, and a wide array of goods.\n\n### What to Expect\nAs you wander through the narrow alleys of Khan el-Khalili, you'll find an eclectic mix of shops selling everything from handcrafted jewelry, textiles, spices, and souvenirs to beautiful ceramics. The sights, sounds, and scents create an immersive experience that truly captures the essence of Egyptian culture. Don't forget to take a break at one of the local cafes for a cup of mint tea or traditional Egyptian coffee!\n\n### Practical Tip\nBargaining is part of the experience, so don’t hesitate to negotiate prices! It's best to visit in the morning or late afternoon when the weather is cooler and the market is lively but not too crowded. \n\nWould you like recommendations for specific shops or other shopping areas in Cairo?",
+  "sources": [
+    "SourceRef(label='San Stefano Mall', kind='database')",
+    "SourceRef(label='Green Plaza Mall', kind='database')",
+    "SourceRef(label='Genena City', kind='database')",
+    "SourceRef(label='Khan el-Khalili', kind='database')"
+  ]
+}

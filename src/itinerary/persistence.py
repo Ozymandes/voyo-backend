@@ -100,16 +100,20 @@ class ItineraryPersistence:
         await asyncio.to_thread(self._archive_current, user_id)
 
         # Create itinerary record
+        # NOTE: the itineraries table does not have a 'metadata' column
+        # (PGRST204 schema-cache error on insert). Solver provenance is
+        # logged here instead — the demo doesn't need it on the row.
+        solver_status = optimized_schedule.get("optimization_metadata", {}).get("solver_status")
+        logger.info(
+            f"[PERSIST] saving itinerary title={title!r} "
+            f"solver_status={solver_status} computed_with=vroom_v1.13"
+        )
         itinerary_data = {
             "user_id": user_id,
             "title": title,
             "region_id": region_id,
             "status": "current",
             "start_date": datetime.utcnow().isoformat(),
-            "metadata": {
-                "solver_status": optimized_schedule.get("optimization_metadata", {}).get("solver_status"),
-                "computed_with": "vroom_v1.13",
-            },
         }
 
         itinerary = await asyncio.to_thread(
@@ -126,23 +130,40 @@ class ItineraryPersistence:
         for day in optimized_schedule.get("days", []):
             day_number = day.get("day_number", 1)
             for stop in day.get("stops", []):
+                # Map VROOM stop fields to the ACTUAL itinerary_items
+                # schema. The previous insert used columns that don't exist
+                # (sequence, arrival_time, departure_time,
+                # travel_to_next_minutes, travel_to_next_km, notes) which
+                # caused PGRST204 schema-cache errors. Real columns:
+                # sequence_order, start_time, end_time, poi_id, day_number,
+                # agent_suggested, custom_title/description/location.
+                tip = stop.get("tip") or ""
                 item_data = {
                     "itinerary_id": itinerary_id,
                     "poi_id": stop.get("poi_id"),
                     "day_number": day_number,
-                    "sequence": stop.get("sequence", 0),
-                    "arrival_time": stop.get("arrival_time"),
-                    "departure_time": stop.get("departure_time"),
-                    "travel_to_next_minutes": stop.get("travel_to_next_minutes", 0),
-                    "travel_to_next_km": stop.get("travel_to_next_km", 0),
-                    "notes": stop.get("tip", ""),
+                    "sequence_order": stop.get("sequence", 0),
+                    "start_time": stop.get("arrival_time"),
+                    "end_time": stop.get("departure_time"),
+                    "agent_suggested": True,
                 }
+                # If there's a tip, fold it into custom_description so it
+                # survives (there's no dedicated notes/tip column).
+                if tip:
+                    item_data["custom_description"] = tip
                 items.append(item_data)
 
-        # Batch insert items
+        # Batch insert items. Use the ADMIN client to bypass row-level
+        # security — the parent itineraries row is already inserted with
+        # use_admin=True above, and the items insert was failing with
+        # "new row violates row-level security policy for table
+        # itinerary_items" (42501) when using the anon client. RLS for
+        # itinerary_items expects a session JWT to scope user_id, but we
+        # are writing server-side after a VROOM solve. The admin role
+        # key is the correct escape hatch here. (Demo save-path fix.)
         if items:
             await asyncio.to_thread(
-                self.db.client.table("itinerary_items").insert(items).execute
+                self.db.admin_client.table("itinerary_items").insert(items).execute
             )
 
         logger.info(
@@ -309,12 +330,27 @@ class ItineraryPersistence:
             return []
 
     def _fetch_pois_by_ids(self, poi_ids: List[int]) -> List[Dict]:
-        """Fetch POI records by IDs."""
+        """Fetch POI records by IDs.
+
+        Server-side filter by ID set — only the requested POIs, not all
+        active rows. The previous full-table fetch was the root cause of
+        preview-add 503s: Valhalla rejected the 316-POI matrix as
+        exceeding the 400km max-distance limit (cross-country pairs).
+        """
+        if not poi_ids:
+            return []
         try:
-            all_pois = self.db.get_records(
-                "pois", filters={"is_active": True}, use_admin=True
+            unique_ids = list(dict.fromkeys(int(pid) for pid in poi_ids if pid is not None))
+            if not unique_ids:
+                return []
+            response = (
+                self.db.admin_client.table("pois")
+                .select("*")
+                .eq("is_active", True)
+                .in_("id", unique_ids[:100])
+                .execute()
             )
-            return [p for p in all_pois if p.get("id") in poi_ids]
+            return response.data if response.data else []
         except Exception as e:
             logger.error(f"Error fetching POIs: {e}")
             return []

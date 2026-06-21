@@ -1,0 +1,12 @@
+{
+  "query_id": "F034",
+  "query": "What's the story behind the Citadel of Saladin?",
+  "answer": "The **Citadel of Saladin**, also known as the **Citadel of Cairo**, is a remarkable historical fortress that stands as a testament to Egypt's rich medieval history. Built between 1176 and 1183 by Saladin, the founder of the Ayyubid dynasty, the citadel was strategically positioned on a hilltop to defend Cairo against Crusader invasions. Its walls and towers served not only as a military stronghold but also as a royal residence, showcasing the power and architectural ingenuity of the time.\n\n### Historical Significance\nThe Citadel is home to several important structures, including the **Mosque of Muhammad Ali**, which dominates the skyline with its Ottoman-style architecture and distinctive alabaster façade. This mosque was commissioned by Muhammad Ali Pasha in the 19th century and symbolizes the transition of Cairo's architectural style from the medieval period to the modern era. The Citadel also includes the **Al-Nasir Muhammad Mosque**, another significant Mamluk-era structure, illustrating the evolution of Islamic architecture in Egypt.\n\n### What to Expect\nVisitors to the Citadel can explore its grand halls and admire stunning vistas of Cairo from its elevated position. The complex is a blend of military and religious structures, reflecting the diverse history of the site. Walking through the ancient walls, you can feel the weight of history and the stories that have unfolded within these fortifications.\n\n### Practical Tip\nTo make the most of your visit, aim to go in the late afternoon when the lighting enhances the beauty of the mosque's alabaster walls. Combine your trip with a tour of the surrounding fortifications to fully appreciate the historical context of this magnificent site.\n\nWould you like to know more about specific attractions within the Citadel or nearby places?",
+  "sources": [
+    "SourceRef(label=\"Al-Rifa'i Mosque\", kind='database')",
+    "SourceRef(label='Al-Nasir Muhammad Mosque', kind='database')",
+    "SourceRef(label='Mosque of Muhammad Ali', kind='database')",
+    "SourceRef(label='Citadel of Qaitbay', kind='database')",
+    "SourceRef(label=\"Pharaoh's Island\", kind='database')"
+  ]
+}

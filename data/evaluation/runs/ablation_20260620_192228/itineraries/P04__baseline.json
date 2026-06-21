@@ -1,0 +1,86 @@
+{
+  "days": [
+    {
+      "day": 1,
+      "stops": [
+        {
+          "poi_id": 355,
+          "arrival_time": "09:00:00",
+          "service_duration_min": 60,
+          "travel_to_next_min": 0,
+          "travel_to_next_km": 0.0,
+          "_arrival_sec": 32400,
+          "_service_sec": 3600
+        },
+        {
+          "poi_id": 342,
+          "arrival_time": "10:15:00",
+          "service_duration_min": 60,
+          "travel_to_next_min": 0,
+          "travel_to_next_km": 0.0,
+          "_arrival_sec": 36900,
+          "_service_sec": 3600
+        },
+        {
+          "poi_id": 373,
+          "arrival_time": "11:30:00",
+          "service_duration_min": 60,
+          "travel_to_next_min": 0,
+          "travel_to_next_km": 0.0,
+          "_arrival_sec": 41400,
+          "_service_sec": 3600
+        },
+        {
+          "poi_id": 340,
+          "arrival_time": "12:45:00",
+          "service_duration_min": 60,
+          "travel_to_next_min": 0,
+          "travel_to_next_km": 0.0,
+          "_arrival_sec": 45900,
+          "_service_sec": 3600
+        },
+        {
+          "poi_id": 377,
+          "arrival_time": "14:00:00",
+          "service_duration_min": 60,
+          "travel_to_next_min": 0,
+          "travel_to_next_km": 0.0,
+          "_arrival_sec": 50400,
+          "_service_sec": 3600
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "stops": [
+        {
+          "poi_id": 347,
+          "arrival_time": "09:00:00",
+          "service_duration_min": 60,
+          "travel_to_next_min": 0,
+          "travel_to_next_km": 0.0,
+          "_arrival_sec": 32400,
+          "_service_sec": 3600
+        },
+        {
+          "poi_id": 355,
+          "arrival_time": "10:15:00",
+          "service_duration_min": 60,
+          "travel_to_next_min": 0,
+          "travel_to_next_km": 0.0,
+          "_arrival_sec": 36900,
+          "_service_sec": 3600
+        },
+        {
+          "poi_id": 373,
+          "arrival_time": "11:30:00",
+          "service_duration_min": 60,
+          "travel_to_next_min": 0,
+          "travel_to_next_km": 0.0,
+          "_arrival_sec": 41400,
+          "_service_sec": 3600
+        }
+      ]
+    }
+  ]
+}

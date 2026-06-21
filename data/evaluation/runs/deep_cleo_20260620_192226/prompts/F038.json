@@ -1,0 +1,10 @@
+{
+  "query_id": "F038",
+  "query": "What's the history of the Sphinx?",
+  "answer": "The **Great Sphinx of Giza** is one of the most iconic symbols of ancient Egypt and is considered the oldest known monumental sculpture in the country. This magnificent limestone statue features the body of a lion and the head of a human, believed to represent Pharaoh Khafre, who reigned during the Fourth Dynasty (around 2570 BC). Carved directly from the bedrock of the Giza Plateau, the Sphinx faces east, standing as a guardian to the nearby pyramids.\n\n### Historical Significance\nThe Sphinx is part of the **Memphite Necropolis**, a UNESCO World Heritage Site, and is thought to have served a protective role over the burial sites of the pharaohs. Its construction is shrouded in mystery, with theories suggesting it was built to commemorate Khafre's reign or to symbolize strength and wisdom. The Sphinx has endured centuries of erosion and damage, yet it remains a testament to the architectural and artistic achievements of ancient Egyptian civilization.\n\n### What to Expect\nWhen visiting, you'll be awed by the sheer size of the Sphinx; it measures about 73 meters long and 20 meters high! It's an incredible photo opportunity, especially against the backdrop of the Great Pyramids. You'll also find a rich history and lore surrounding the Sphinx, including stories about its lost nose and the various restoration efforts it has undergone.\n\n### Practical Tip\nThe entrance fee to see the Sphinx is around 240 EGP. Aim to visit early in the morning or late afternoon to avoid the crowds and enjoy the cooler temperatures while taking in the stunning views of this ancient wonder. \n\nWould you like to know more about the nearby pyramids or other attractions in Giza?",
+  "sources": [
+    "SourceRef(label='Alabaster Sphinx of Memphis', kind='database')",
+    "SourceRef(label='Great Sphinx of Giza', kind='database')",
+    "SourceRef(label='Avenue of Sphinxes', kind='database')"
+  ]
+}

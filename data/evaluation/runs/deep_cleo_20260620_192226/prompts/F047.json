@@ -1,0 +1,8 @@
+{
+  "query_id": "F047",
+  "query": "What's the best time of year to visit Egypt?",
+  "answer": "The best time to visit Egypt is generally during the cooler months, from October to April. This period offers pleasant temperatures, making it ideal for exploring the historical sites and enjoying outdoor activities. \n\n### Why This Time?\n- **Comfortable Weather:** Temperatures range from 20°C to 25°C (68°F to 77°F) during the day, perfect for sightseeing.\n- **Festivals and Events:** This season also features various cultural festivals, so you might catch special events or celebrations.\n\n### What to Expect\nIf you visit in winter (December to February), you can enjoy milder weather, but it can get chilly at night, especially in desert areas. Remember, summer (June to August) can be extremely hot, with temperatures soaring above 40°C (104°F), which can be uncomfortable for outdoor exploration.\n\n### Practical Tip\nTry to schedule your visits in the early morning or late afternoon to avoid the peak heat, especially if you’re visiting places like the Pyramids or Luxor Temple. \n\nWould you like to know more about specific events happening during your visit?",
+  "sources": [
+    "SourceRef(label='OpenWeather (Cairo)', kind='weather')"
+  ]
+}

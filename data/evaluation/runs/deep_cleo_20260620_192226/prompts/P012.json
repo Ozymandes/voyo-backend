@@ -1,0 +1,12 @@
+{
+  "query_id": "P012",
+  "query": "I have trouble walking long distances. What do you recommend?",
+  "answer": "I've noted your preference for shorter distances while exploring! If you have trouble walking long distances, here are some recommendations for experiencing Luxor and its historical sites without too much strain:\n\n### Luxor Temple\n- **Description:** This stunning ancient Egyptian temple complex is located on the east bank of the Nile and is beautifully illuminated at night. The temple is not very large, making it easier to navigate.\n- **Historical Significance:** Luxor Temple was built during the reign of Amenhotep III and later expanded by Ramses II. It served as a center for the annual Opet Festival, celebrating the connection between the pharaoh and the gods.\n- **Practical Tip:** Visit in the early morning or late afternoon for cooler temperatures and fewer crowds. You can also hire a guide who can provide insights without requiring you to walk far.\n\n### Nearby Accessible Attractions\n1. **Temple of Dakka** (Aswan) - This Greco-Roman temple is dedicated to Thoth and has been relocated close to Wadi es-Sebua. It's a smaller site, making it easier to explore.\n2. **Deir el-Medina** (Luxor) - This area was home to the artisans who built the royal tombs, with beautifully decorated private tombs. The site is relatively compact.\n3. **El-Kab (Nekheb)** (Luxor) - An ancient city with rock-cut tombs and temple remains, which is also manageable in size.\n\nWould you like more details about any of these sites or tips on transportation options in Luxor?",
+  "sources": [
+    "SourceRef(label='Luxor Temple', kind='database')",
+    "SourceRef(label='Temple of Dakka', kind='database')",
+    "SourceRef(label='Khufu Mortuary Temple', kind='database')",
+    "SourceRef(label='El-Kab (Nekheb)', kind='database')",
+    "SourceRef(label='Deir el-Medina', kind='database')"
+  ]
+}

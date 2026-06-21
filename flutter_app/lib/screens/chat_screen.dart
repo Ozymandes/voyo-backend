@@ -219,8 +219,10 @@ class _ChatScreenState extends State<ChatScreen> {
         _messages.add(
           ChatMessage(
             role: 'assistant',
+            // Never surface raw exception text to the user — backend logs
+            // carry the technical detail. (General error-handling req.)
             text:
-                'Cleo is taking a moment. Is the backend running?\n\nError: $e',
+                'Cleo had trouble with that request. Please try again.',
             timestamp: DateTime.now(),
           ),
         );
@@ -973,7 +975,13 @@ class _ChatScreenState extends State<ChatScreen> {
     final cleanedText = _stripImages(withoutJson);
     final (first, rest) = _splitFirstSentence(cleanedText);
     final msgIndex = _messages.indexOf(msg);
-    final showPlannerButton = msgIndex != -1 && msgIndex == _plannerPromptIndex;
+    // Show the planner CTA only on the message that produced an actual
+    // [PLANNER] token. The token itself is stripped from msg.text before
+    // storage (see _sendMessage), so we gate purely on the index —
+    // _plannerPromptIndex is only ever assigned when hasPlanner was true.
+    // (P0 #2: "Open Planner" appearing on every response.)
+    final showPlannerButton =
+        msgIndex != -1 && msgIndex == _plannerPromptIndex;
 
     return Padding(
       padding: const EdgeInsets.only(top: 16, bottom: 4),
@@ -1497,6 +1505,14 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
       _saving = true;
       _error = null;
     });
+    // Capture the user-entered title up-front — both the profile path
+    // and the legacy path should respect it. (Demo fix: user typed
+    // 'MY ISLAMIC CAIRO' but the saved itinerary showed '2-day Egypt Trip'
+    // because the profile path ignored _titleCtrl and fell back to
+    // profile.title ?? default.)
+    final userTitle = _titleCtrl.text.trim();
+    print('[IMPORT-SAVE] start  profile=${widget.profile != null}  '
+        'stops=${widget.stops.length}  title=${userTitle.isEmpty ? "(empty)" : userTitle}');
     try {
       // Option A safarny tie-in: if this plan came from a structured
       // TripProfile (the "Plan a trip" sheet), commit it via the
@@ -1508,15 +1524,34 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
       // the authoritative committer. The two may differ slightly (both draw
       // from the same candidate pool) — that is the thesis-aligned tradeoff.
       if (widget.profile != null) {
+        // Override the profile's title with whatever the user entered in
+        // the import sheet — the user's explicit choice wins over the
+        // auto-generated profile title. (Demo fix: user typed
+        // 'MY ISLAMIC CAIRO' but saved itinerary showed '2-day Egypt Trip'.)
+        final profile = userTitle.isEmpty
+            ? widget.profile!
+            : TripProfile(
+                title: userTitle,
+                startDate: widget.profile!.startDate,
+                endDate: widget.profile!.endDate,
+                travelers: widget.profile!.travelers,
+                budgetTier: widget.profile!.budgetTier,
+                pace: widget.profile!.pace,
+                companions: widget.profile!.companions,
+                interests: widget.profile!.interests,
+                notes: widget.profile!.notes,
+              );
+        print('[IMPORT-SAVE] profile path → /itinerary/plan  title=${profile.title}');
         final id = await _service.planAndSaveItinerary(
           userId: widget.userId,
-          profile: widget.profile!,
+          profile: profile,
         );
         if (id == null) {
           throw Exception(
             'Not signed in — could not commit the plan. Please sign in and try again.',
           );
         }
+        print('[IMPORT-SAVE] profile path OK  id=$id');
         if (mounted) {
           Navigator.pop(context);
           widget.onImported();
@@ -1529,18 +1564,21 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
       // a bare itinerary + fuzzy-matches POI names. Tips/VROOM times are
       // NOT written here — that gap is what the profile path above fixes.
       final title =
-          _titleCtrl.text.trim().isEmpty
+          userTitle.isEmpty
               ? '${widget.stops.map((s) => s.day).reduce((a, b) => a > b ? a : b)}-Day Egypt Trip'
-              : _titleCtrl.text.trim();
+              : userTitle;
+      print('[IMPORT-SAVE] legacy path  title=$title');
       Itinerary? itinerary = await _service.createItinerary(
         userId: widget.userId,
         title: title,
       );
       if (itinerary == null) throw Exception('Could not create itinerary');
+      print('[IMPORT-SAVE] itinerary created id=${itinerary.id}');
 
       // Add each stop, using fuzzy keyword fallback to find a matching POI
       for (final stop in widget.stops) {
         final poiId = await _findPoiId(stop.name);
+        print('[IMPORT-SAVE]   stop="${stop.name}" day=${stop.day} → poiId=$poiId');
 
         await _service.addItineraryItem(
           itineraryId: itinerary.id,
@@ -1550,6 +1588,7 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
           startTime: stop.time,
         );
       }
+      print('[IMPORT-SAVE] legacy path OK');
 
       if (mounted) {
         Navigator.pop(context);
@@ -1558,7 +1597,21 @@ class _ImportStopsSheetState extends State<_ImportStopsSheet> {
     } catch (e) {
       if (mounted)
         setState(() {
-          _error = e.toString();
+          // User-safe message, but include the exception type + first
+          // 120 chars in DEBUG builds so demo-night failures are
+          // diagnosable without a debugger attached. (Temporary —
+          // once the save path is stable, drop to the polished message.)
+          final raw = e.toString();
+          String safe;
+          if (raw.contains('HTTP 401') || raw.contains('HTTP 403')) {
+            safe = 'Please sign in again to save your plan.';
+          } else if (raw.contains('foreign key')) {
+            safe = 'Account setup incomplete. Try signing out and back in.';
+          } else {
+            // Include the real error so we can see tonight what failed.
+            safe = 'Could not save: $raw'.substring(0, (raw.length > 120 ? 120 : raw.length));
+          }
+          _error = safe;
           _saving = false;
         });
     }

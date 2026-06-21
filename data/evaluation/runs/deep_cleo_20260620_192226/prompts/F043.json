@@ -1,0 +1,9 @@
+{
+  "query_id": "F043",
+  "query": "What's the best way to get around Cairo?",
+  "answer": "Getting around Cairo can be an adventure in itself! Here are the best options for navigating this bustling city:\n\n### 1. **Metro**\nCairo's metro system is one of the most efficient and budget-friendly ways to travel. It has several lines that connect key areas, including downtown, Giza, and the pyramids. The trains are generally clean and relatively safe. Just be mindful of rush hour, as it can get quite crowded!\n\n### 2. **Taxis and Ride-Sharing**\nTraditional taxis are widely available, but it's recommended to use ride-sharing apps like Uber or Careem for convenience and fair pricing. This way, you can avoid any language barriers and get an accurate fare estimate.\n\n### 3. **Microbuses and Buses**\nMicrobuses are a popular local transport option, but they can be a bit chaotic. If you’re feeling adventurous, give them a try! Buses cover many routes as well, but they might be less comfortable for tourists.\n\n### 4. **Walking**\nFor shorter distances, walking can be a great way to see the local life and culture up close. Just be cautious of traffic and always stay aware of your surroundings.\n\n### Practical Tip\nWith today's clear skies and warm temperature around 32°C (feels like 30°C), it's a lovely day to explore! Make sure to stay hydrated and wear comfortable shoes, especially if you plan on walking or using the metro.\n\nWould you like more details on any specific transportation option, or perhaps tips for navigating Cairo's busy streets?",
+  "sources": [
+    "SourceRef(label='VOYO verified database', kind='database')",
+    "SourceRef(label='OpenWeather (Cairo)', kind='weather')"
+  ]
+}

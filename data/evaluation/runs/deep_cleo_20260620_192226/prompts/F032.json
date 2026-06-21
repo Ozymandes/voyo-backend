@@ -1,0 +1,12 @@
+{
+  "query_id": "F032",
+  "query": "What's the historical significance of the Egyptian Museum?",
+  "answer": "The Egyptian Museum, located in Cairo, is renowned as the world's largest collection of ancient Egyptian antiquities, showcasing the rich history and culture of ancient Egypt. This museum serves as a national history museum, housing over 120,000 artifacts, including the famous treasures of Tutankhamun. Its significance lies not only in its vast collection but also in its role as a center for the preservation and study of Egypt's ancient civilization.\n\n### Historical Significance\nEstablished in the late 19th century, the museum has played a vital role in Egyptology and the understanding of ancient Egyptian culture. It offers insights into the daily life, religious practices, and funerary customs of the ancient Egyptians. The artifacts range from mummies to elaborate jewelry, providing a comprehensive glimpse into the past. The museum itself has become an iconic symbol of Egypt's cultural heritage.\n\n### What to Expect\nWhen you visit, you'll encounter a staggering array of exhibits, including the Royal Mummy Room, where you can see the remains of some of Egypt's most famous pharaohs. Tutankhamun's treasures, including his golden mask, are a highlight that draws visitors from around the world. \n\n### Practical Tip\nTo make the most of your visit, consider hiring a guide who can provide detailed explanations and context about the artifacts. Also, try to visit during the week to avoid weekend crowds. Remember to wear comfortable shoes, as you'll want to explore every corner of this magnificent museum!\n\nWould you like to know more about specific artifacts or exhibits in the museum?",
+  "sources": [
+    "SourceRef(label='The Egyptian Museum', kind='database')",
+    "SourceRef(label='Grand Egyptian Museum (GEM)', kind='database')",
+    "SourceRef(label='Temple of Dakka', kind='database')",
+    "SourceRef(label='Hurghada Marina', kind='database')",
+    "SourceRef(label='Tomb of Queen Hetepheres I', kind='database')"
+  ]
+}
