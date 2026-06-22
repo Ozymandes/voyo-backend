@@ -268,7 +268,14 @@ class ScopeDetector:
                 )
 
         # Borderline cases - use conversation context
-        if conversation_context:
+        # GUARD: only let conversation context rescue a borderline query
+        # when the CURRENT query has no real out-of-scope signal. Without
+        # this guard, a user mid-Egypt-trip conversation could ask "how do
+        # I invest in stocks?" or "explain quantum physics" and get a
+        # full answer because the prior Egypt messages bumped in_scope.
+        # That re-admits the exact topics the out-of-scope patterns exist
+        # to block. (Demo regression fix — eval Chain D found this.)
+        if conversation_context and out_of_scope_score < 0.2:
             context_egypt_signals = self._count_egypt_keywords(conversation_context.lower())
             if context_egypt_signals > 0:
                 # Conversation is about Egypt travel, assume related
