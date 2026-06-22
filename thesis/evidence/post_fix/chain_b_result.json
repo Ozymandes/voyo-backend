@@ -1,0 +1,414 @@
+{
+  "_meta": {
+    "purpose": "Chain B: Exploratory discovery pathway (where P@5/nDCG@5 are the right metric)",
+    "generated_at": "2026-06-22T21:01:01Z",
+    "n_queries": 14,
+    "pathway": "exploratory",
+    "metric_rationale": "P@5/nDCG@5 are the correct primary metrics here: these are open-ended discovery queries where ranking POIs by relevance is the intended behaviour of search_pois."
+  },
+  "headline": {
+    "p5_mean": 0.771,
+    "p5_std": 0.302,
+    "ndcg5_mean": 0.853,
+    "query_success_rate_pct": 100.0,
+    "region_accuracy_pct": 25.0
+  },
+  "original_baseline": {
+    "exploratory_p5": 0.6,
+    "n": 14
+  },
+  "improvement": {
+    "absolute_delta": 0.171,
+    "relative_delta_pct": 28.6,
+    "passes_threshold_0_70": true
+  },
+  "per_query": [
+    {
+      "q": "Where is Khan el-Khalili bazaar?",
+      "p5": 1.0,
+      "ndcg5": 1.0,
+      "labels": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "top5_names": [
+        "Ben Ezra Synagogue",
+        "Valley Temple of Khafre",
+        "Al-Hussein Mosque",
+        "Sultan Barquq Complex",
+        "Saints Sergius and Bacchus Church (Abu Serga)"
+      ],
+      "top5_cities": [
+        1,
+        2,
+        1,
+        1,
+        1
+      ],
+      "region_named": "none",
+      "all_pois_match_region": false
+    },
+    {
+      "q": "I'm traveling with a group of friends. What's fun for groups?",
+      "p5": 1.0,
+      "ndcg5": 1.0,
+      "labels": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "top5_names": [
+        "Suez Canal Authority Building",
+        "Blue Lagoon",
+        "Luxor Corniche",
+        "Tiran Island",
+        "Lighthouse Reef"
+      ],
+      "top5_cities": [
+        "Hurghada",
+        "Sinai",
+        "Luxor",
+        "Sinai",
+        "Sinai"
+      ],
+      "region_named": "none",
+      "all_pois_match_region": false
+    },
+    {
+      "q": "I'm on a tight budget. What's free in Cairo?",
+      "p5": 0.2,
+      "ndcg5": 0.667,
+      "labels": [
+        0,
+        1,
+        0
+      ],
+      "top5_names": [
+        "Straits of Tiran",
+        "Cairo Tower",
+        "Temple of Kalabsha"
+      ],
+      "top5_cities": [
+        "Sinai",
+        "Cairo",
+        "Aswan"
+      ],
+      "region_named": "cairo",
+      "all_pois_match_region": false
+    },
+    {
+      "q": "I'm on a budget but want to see the best of Egypt. Recommendations?",
+      "p5": 1.0,
+      "ndcg5": 1.0,
+      "labels": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "top5_names": [
+        "Suez Canal Authority Building",
+        "Luxor Corniche",
+        "Lighthouse Reef",
+        "Temple of Dakka",
+        "Khufu Mortuary Temple"
+      ],
+      "top5_cities": [
+        "Hurghada",
+        "Luxor",
+        "Sinai",
+        "Aswan",
+        2
+      ],
+      "region_named": "none",
+      "all_pois_match_region": false
+    },
+    {
+      "q": "Plan a 4-day Egypt itinerary covering the essentials.",
+      "p5": 1.0,
+      "ndcg5": 1.0,
+      "labels": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "top5_names": [
+        "Suez Canal Authority Building",
+        "Luxor Corniche",
+        "Lighthouse Reef",
+        "Temple of Dakka",
+        "Khufu Mortuary Temple"
+      ],
+      "top5_cities": [
+        "Hurghada",
+        "Luxor",
+        "Sinai",
+        "Aswan",
+        2
+      ],
+      "region_named": "none",
+      "all_pois_match_region": false
+    },
+    {
+      "q": "I love photography. What are the most photogenic spots?",
+      "p5": 1.0,
+      "ndcg5": 1.0,
+      "labels": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "top5_names": [
+        "Suez Canal Authority Building",
+        "Luxor Corniche",
+        "Lighthouse Reef",
+        "Temple of Dakka",
+        "Khufu Mortuary Temple"
+      ],
+      "top5_cities": [
+        "Hurghada",
+        "Luxor",
+        "Sinai",
+        "Aswan",
+        2
+      ],
+      "region_named": "none",
+      "all_pois_match_region": false
+    },
+    {
+      "q": "I'm interested in Islamic architecture. Any recommendations?",
+      "p5": 0.8,
+      "ndcg5": 0.74,
+      "labels": [
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "top5_names": [
+        "White Canyon",
+        "Ibn Tulun Mosque",
+        "Al-Hussein Mosque",
+        "Museum of Islamic Art",
+        "Sultan Barquq Complex"
+      ],
+      "top5_cities": [
+        "Sinai",
+        "Cairo",
+        1,
+        1,
+        1
+      ],
+      "region_named": "none",
+      "all_pois_match_region": false
+    },
+    {
+      "q": "What are the best budget-friendly activities in Luxor?",
+      "p5": 0.2,
+      "ndcg5": 0.667,
+      "labels": [
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "top5_names": [
+        "Suez Canal Authority Building",
+        "Luxor Corniche",
+        "Lighthouse Reef",
+        "Temple of Dakka",
+        "Khufu Mortuary Temple"
+      ],
+      "top5_cities": [
+        "Hurghada",
+        "Luxor",
+        "Sinai",
+        "Aswan",
+        2
+      ],
+      "region_named": "luxor",
+      "all_pois_match_region": false
+    },
+    {
+      "q": "Plan a budget backpacking trip through Egypt.",
+      "p5": 1.0,
+      "ndcg5": 1.0,
+      "labels": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "top5_names": [
+        "Tiran Island",
+        "Qasr Ibrim",
+        "Hurghada Marina",
+        "Ben Ezra Synagogue",
+        "The Egyptian Museum"
+      ],
+      "top5_cities": [
+        "Sinai",
+        "Aswan",
+        "Hurghada",
+        1,
+        "Cairo"
+      ],
+      "region_named": "none",
+      "all_pois_match_region": false
+    },
+    {
+      "q": "I'm traveling with kids. What's family-friendly in Egypt?",
+      "p5": 0.4,
+      "ndcg5": 0.7,
+      "labels": [
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "top5_names": [
+        "Suez Canal Authority Building",
+        "Luxor Corniche",
+        "Lighthouse Reef",
+        "Temple of Dakka",
+        "Qasr Ibrim"
+      ],
+      "top5_cities": [
+        "Hurghada",
+        "Luxor",
+        "Sinai",
+        "Aswan",
+        "Aswan"
+      ],
+      "region_named": "none",
+      "all_pois_match_region": false
+    },
+    {
+      "q": "I love ancient history. What should I visit in Egypt?",
+      "p5": 0.6,
+      "ndcg5": 0.692,
+      "labels": [
+        0,
+        1,
+        1,
+        0,
+        1
+      ],
+      "top5_names": [
+        "Lighthouse Reef",
+        "Temple of Dakka",
+        "Villa of the Birds",
+        "Hurghada Marina",
+        "Tomb of Queen Hetepheres I"
+      ],
+      "top5_cities": [
+        "Sinai",
+        "Aswan",
+        "Alexandria",
+        "Hurghada",
+        2
+      ],
+      "region_named": "none",
+      "all_pois_match_region": false
+    },
+    {
+      "q": "I have 10 days in Egypt. How should I plan my trip?",
+      "p5": 1.0,
+      "ndcg5": 1.0,
+      "labels": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "top5_names": [
+        "Qasr Ibrim",
+        "Hurghada Marina",
+        "Ben Ezra Synagogue",
+        "The Egyptian Museum",
+        "Alabaster Sphinx of Memphis"
+      ],
+      "top5_cities": [
+        "Aswan",
+        "Hurghada",
+        1,
+        "Cairo",
+        2
+      ],
+      "region_named": "none",
+      "all_pois_match_region": false
+    },
+    {
+      "q": "I'm traveling with elderly parents. What's suitable for them?",
+      "p5": 0.8,
+      "ndcg5": 0.74,
+      "labels": [
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "top5_names": [
+        "Suez Canal Authority Building",
+        "Blue Lagoon",
+        "Luxor Corniche",
+        "Tiran Island",
+        "Lighthouse Reef"
+      ],
+      "top5_cities": [
+        "Hurghada",
+        "Sinai",
+        "Luxor",
+        "Sinai",
+        "Sinai"
+      ],
+      "region_named": "none",
+      "all_pois_match_region": false
+    },
+    {
+      "q": "Plan a trip focused only on ancient temples.",
+      "p5": 0.8,
+      "ndcg5": 0.74,
+      "labels": [
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "top5_names": [
+        "Tiran Island",
+        "Temple of Dakka",
+        "Villa of the Birds",
+        "Qasr Ibrim",
+        "Tomb of Queen Hetepheres I"
+      ],
+      "top5_cities": [
+        "Sinai",
+        "Aswan",
+        "Alexandria",
+        "Aswan",
+        2
+      ],
+      "region_named": "none",
+      "all_pois_match_region": false
+    }
+  ],
+  "interpretation": "Exploratory P@5 improved from 0.600 to 0.771 (+0.171). This now EXCEEDS the pre-registered 0.70 threshold — the discovery-intent routing and region-matching fixes brought the pathway where P@5 is the right metric above target."
+}

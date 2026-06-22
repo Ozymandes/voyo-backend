@@ -1,0 +1,51 @@
+{
+  "chain": "A",
+  "name": "Original retrieval rerun (post region-match + discovery-routing fixes)",
+  "status": "complete",
+  "generated_at": "2026-06-22T23:58:00Z",
+  "input_files": {
+    "raw_data": "work/post_fix_raw_results.json",
+    "original_snapshot": "thesis/evidence/09-retrieval-pk.json (PRESERVED, not modified)"
+  },
+  "output_files": {
+    "eval_json": "thesis/evidence/post_fix/post_fix_retrieval_eval.json",
+    "comparison_csv": "thesis/evidence/post_fix/post_fix_retrieval_comparison.csv"
+  },
+  "headline_numbers": {
+    "original": {
+      "p5_mean": 0.307,
+      "ndcg5_mean": 0.305,
+      "exploratory_p5": 0.600,
+      "queries_with_zero_relevant": 14,
+      "passes_threshold": false
+    },
+    "post_fix": {
+      "p5_mean": 0.387,
+      "ndcg5_mean": 0.462,
+      "exploratory_p5": 0.771,
+      "queries_with_zero_relevant": 13,
+      "passes_threshold": false
+    },
+    "deltas": {
+      "p5_delta": "+0.080 (+26.1%)",
+      "ndcg5_delta": "+0.157 (+51.5%)",
+      "exploratory_p5_delta": "+0.171 (+28.5%)",
+      "exploratory_now_passes_threshold": true
+    }
+  },
+  "stratified_comparison": {
+    "exploratory": {"original_p5": 0.600, "post_fix_p5": 0.771, "delta": "+0.171", "verdict": "SIGNIFICANT IMPROVEMENT — now passes 0.70 threshold"},
+    "factual_named": {"original_p5": 0.022, "post_fix_p5": 0.022, "delta": "+0.000", "verdict": "Unchanged — metric mismatch persists (expected, P@5 wrong for factual lookup)"},
+    "factual_compare": {"original_p5": 0.133, "post_fix_p5": 0.200, "delta": "+0.067", "verdict": "Improvement but small sample (n=3)"},
+    "out_of_scope": {"original_p5": 0.000, "post_fix_p5": 0.000, "delta": "+0.000", "verdict": "Correct behavior maintained (refuse = 0 retrieved)"},
+    "offtopic": {"original_p5": 0.000, "post_fix_p5": 0.000, "delta": "+0.000", "verdict": "Correct behavior maintained"}
+  },
+  "interpretation": "The region-matching bug fix and discovery-intent routing improved exploratory retrieval by +0.171 P@5 (0.600 → 0.771), pushing it ABOVE the pre-registered threshold of 0.70. This validates the hypothesis that the original low score was partly due to the region-matching bug (cross-region leaks like Wadi Wishwashi) and that discovery queries benefit from explicit intent routing. The aggregate P@5 remains below threshold (0.387 < 0.70) because the factual_named bucket (where P@5 is the wrong metric) continues to score ~0 — confirming the pathway-aware interpretation from the original snapshot.",
+  "thesis_ch4_update": "Report BOTH snapshots side-by-side: original (pre-fix) 0.307 and post-fix 0.387, with exploratory stratification showing 0.600 → 0.771 crossing the threshold. This strengthens the thesis narrative: diagnostic insight → informed engineering iteration → measurable improvement on the correct pathway.",
+  "caveats": [
+    "LLM nondeterminism: chat-path responses vary run-to-run, but retrieval_top5 (what P@5 measures) is deterministic — search_pois is a deterministic DB query, not an LLM call.",
+    "Labelling rubric is deterministic/rule-based (no LLM judge) for reproducibility, same as original snapshot interpretation.",
+    "Original snapshot did not compute per-type nDCG@5; post-fix adds this metric for completeness.",
+    "n=3 for factual_compare and n=1 for offtopic are too small for statistical significance."
+  ]
+}

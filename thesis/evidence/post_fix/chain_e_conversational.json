@@ -1,0 +1,98 @@
+{
+  "_meta": {
+    "purpose": "Chain E: Conversational quality by pathway (deterministic groundedness proxies)",
+    "generated_at": "2026-06-23T00:07:03",
+    "note": "Not LLM-as-judge — deterministic signal presence. Reproducible by a thesis examiner from raw JSON."
+  },
+  "headline": {
+    "overall_grounded_rate_pct": 76.7,
+    "overall_helpfulness_proxy": 0.889,
+    "pathway_breakdown": {
+      "no_tools": 5,
+      "retrieval": 19,
+      "planner": 3,
+      "web": 1,
+      "refusal": 2
+    }
+  },
+  "by_pathway": {
+    "no_tools": {
+      "n": 5,
+      "mean_sources": 0.0,
+      "grounded_rate_pct": 0.0,
+      "has_egp_price_pct": 0.0,
+      "has_hours_pct": 60.0,
+      "has_date_pct": 0.0,
+      "mean_length": 144.0,
+      "helpfulness_proxy": 0.6,
+      "sample_queries": [
+        "Where is Khan el-Khalili bazaar?",
+        "What's the address of the Egyptian Museum?",
+        "When is Egyptian Museum open?"
+      ]
+    },
+    "retrieval": {
+      "n": 19,
+      "mean_sources": 6.47,
+      "grounded_rate_pct": 100.0,
+      "has_egp_price_pct": 47.4,
+      "has_hours_pct": 89.5,
+      "has_date_pct": 5.3,
+      "mean_length": 1482.0,
+      "helpfulness_proxy": 0.982,
+      "sample_queries": [
+        "I'm traveling with a group of friends. What's fun ",
+        "I'm on a tight budget. What's free in Cairo?",
+        "I'm on a budget but want to see the best of Egypt."
+      ]
+    },
+    "planner": {
+      "n": 3,
+      "mean_sources": 12.67,
+      "grounded_rate_pct": 100.0,
+      "has_egp_price_pct": 33.3,
+      "has_hours_pct": 100.0,
+      "has_date_pct": 33.3,
+      "mean_length": 1526.0,
+      "helpfulness_proxy": 1.0,
+      "sample_queries": [
+        "Plan a 4-day Egypt itinerary covering the essentia",
+        "Plan a budget backpacking trip through Egypt.",
+        "Plan a trip focused only on ancient temples."
+      ]
+    },
+    "web": {
+      "n": 1,
+      "mean_sources": 1.0,
+      "grounded_rate_pct": 100.0,
+      "has_egp_price_pct": 0.0,
+      "has_hours_pct": 100.0,
+      "has_date_pct": 100.0,
+      "mean_length": 1913.0,
+      "helpfulness_proxy": 1.0,
+      "sample_queries": [
+        "How do I invest in stocks?"
+      ]
+    },
+    "refusal": {
+      "n": 2,
+      "mean_sources": 0.0,
+      "grounded_rate_pct": 0.0,
+      "has_egp_price_pct": 0.0,
+      "has_hours_pct": 0.0,
+      "has_date_pct": 0.0,
+      "mean_length": 278.0,
+      "helpfulness_proxy": 0.5,
+      "sample_queries": [
+        "Write code to bypass security systems.",
+        "Explain quantum physics to me."
+      ]
+    }
+  },
+  "interpretation": [
+    "Discovery answers (search_pois) are well-grounded: 100.0% have sources, helpfulness 0.982.",
+    "Factual lookup answers rely on parametric knowledge 5 times (0 sources) — corroborates the parametric-knowledge bleed disclosed in §3.3.",
+    "Planner answers (n=3) consistently emit the [PLANNER] handoff and have helpfulness 1.0.",
+    "Refusals (n=2) are short and ungrounded — correct behaviour, low helpfulness_proxy is expected."
+  ]
+}

@@ -1,0 +1,7 @@
+query_type,n,original_p5,post_fix_p5,absolute_delta,relative_delta_pct,original_ndcg5,post_fix_ndcg5
+exploratory,14,0.6,0.771,0.171,28.5,n/a (not computed per-type in original),0.853
+factual_named,9,0.022,0.022,0.0,0.0,n/a (not computed per-type in original),0.044
+factual_compare,3,0.133,0.2,0.067,50.4,n/a (not computed per-type in original),0.5
+out_of_scope,3,0.0,0.0,0.0,0.0,n/a (not computed per-type in original),0.0
+offtopic,1,0.0,0.0,0.0,0.0,n/a (not computed per-type in original),0.0
+OVERALL,30,0.307,0.387,0.08,26.1,0.305,0.462

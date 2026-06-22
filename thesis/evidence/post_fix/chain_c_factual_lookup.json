@@ -1,0 +1,253 @@
+{
+  "_meta": {
+    "purpose": "Chain C: Factual named-POI lookup pathway — the RIGHT metric for this pathway (resolution + field accuracy, not P@5)",
+    "n_factual_named": 9,
+    "n_factual_compare": 3,
+    "generated_at": "2026-06-23T00:07:03"
+  },
+  "headline": {
+    "resolution_accuracy_pct": 75.0,
+    "field_accuracy_pct": 66.7,
+    "grounded_answer_rate_pct": 66.7,
+    "parametric_knowledge_count": 3,
+    "parametric_knowledge_pct": 25.0
+  },
+  "original_baseline_context": "Original snapshot reported factual_named P@5=0.022 (metric mismatch). Groundedness on same queries was ~1.000 per deep_cleo benchmark (key_corroboration in 09-retrieval-pk.json).",
+  "per_query": [
+    {
+      "q": "What's the address of the Egyptian Museum?",
+      "type": "factual_named",
+      "expected_poi": "Egyptian Museum",
+      "resolved": true,
+      "resolution_method": "response_text",
+      "fields_addressed": [
+        "address"
+      ],
+      "fields_correct": [
+        "address"
+      ],
+      "fields_incorrect": [],
+      "grounding_class": "no_answer",
+      "sources_count": 0,
+      "tools_used": [],
+      "reply_excerpt": "The Egyptian Museum is located in Tahrir Square, Cairo, Egypt."
+    },
+    {
+      "q": "Explain the history of Khan el-Khalili",
+      "type": "factual_named",
+      "expected_poi": "Khan el-Khalili",
+      "resolved": true,
+      "resolution_method": "source_chip",
+      "fields_addressed": [
+        "address"
+      ],
+      "fields_correct": [
+        "address"
+      ],
+      "fields_incorrect": [],
+      "grounding_class": "fully_grounded",
+      "sources_count": 5,
+      "tools_used": [
+        "search_pois",
+        "get_historical_info"
+      ],
+      "reply_excerpt": "Khan el-Khalili is a vibrant bazaar located in the heart of Islamic Cairo, and it's a must-visit for anyone interested in the rich tapestry of Egypt's history and culture. Established during the Mamlu"
+    },
+    {
+      "q": "Is the Great Sphinx accessible at night?",
+      "type": "factual_named",
+      "expected_poi": "Great Sphinx",
+      "resolved": true,
+      "resolution_method": "source_chip",
+      "fields_addressed": [
+        "hours"
+      ],
+      "fields_correct": [
+        "hours"
+      ],
+      "fields_incorrect": [],
+      "grounding_class": "fully_grounded",
+      "sources_count": 3,
+      "tools_used": [
+        "search_pois"
+      ],
+      "reply_excerpt": "The Great Sphinx of Giza is not accessible at night. Typically, it is open to visitors from 8 AM to 5 PM daily. With its iconic limestone features and the breathtaking backdrop of the Pyramids, visiti"
+    },
+    {
+      "q": "When is Egyptian Museum open?",
+      "type": "factual_named",
+      "expected_poi": "Egyptian Museum",
+      "resolved": true,
+      "resolution_method": "response_text",
+      "fields_addressed": [
+        "address",
+        "hours",
+        "price"
+      ],
+      "fields_correct": [
+        "hours"
+      ],
+      "fields_incorrect": [
+        "address",
+        "price"
+      ],
+      "grounding_class": "parametric_only",
+      "sources_count": 0,
+      "tools_used": [],
+      "reply_excerpt": "The Egyptian Museum in Cairo is open daily from 9 AM to 5 PM. Be sure to allocate enough time to explore its vast collection of ancient artifacts!"
+    },
+    {
+      "q": "Tell me about the history of the Great Pyramids",
+      "type": "factual_named",
+      "expected_poi": "Great Pyramid",
+      "resolved": true,
+      "resolution_method": "source_chip",
+      "fields_addressed": [
+        "hours"
+      ],
+      "fields_correct": [
+        "hours"
+      ],
+      "fields_incorrect": [],
+      "grounding_class": "fully_grounded",
+      "sources_count": 3,
+      "tools_used": [
+        "search_pois",
+        "get_historical_info"
+      ],
+      "reply_excerpt": "Ah, the Great Pyramids of Giza! These monumental structures are not just ancient tombs; they are a testament to the ingenuity and ambition of the ancient Egyptians. The Great Pyramid of Giza, built fo"
+    },
+    {
+      "q": "What's the price for a Nile dinner cruise?",
+      "type": "factual_named",
+      "expected_poi": "Nile Cruise",
+      "resolved": true,
+      "resolution_method": "response_text_token",
+      "fields_addressed": [
+        "price"
+      ],
+      "fields_correct": [
+        "price"
+      ],
+      "fields_incorrect": [],
+      "grounding_class": "fully_grounded",
+      "sources_count": 5,
+      "tools_used": [
+        "search_pois",
+        "search_pois"
+      ],
+      "reply_excerpt": "The price for a Nile dinner cruise in Cairo typically ranges from 300 to 800 EGP per person, depending on the cruise package and dining options. Prices may vary, so it's a good idea to check with spec"
+    },
+    {
+      "q": "How long does it take to visit the Egyptian Museum?",
+      "type": "factual_named",
+      "expected_poi": "Egyptian Museum",
+      "resolved": true,
+      "resolution_method": "response_text",
+      "fields_addressed": [
+        "hours",
+        "price"
+      ],
+      "fields_correct": [],
+      "fields_incorrect": [
+        "hours",
+        "price"
+      ],
+      "grounding_class": "parametric_only",
+      "sources_count": 0,
+      "tools_used": [],
+      "reply_excerpt": "Visiting the Egyptian Museum typically takes about 2 to 4 hours, depending on your level of interest and whether you want to join a guided tour. It's a treasure trove of ancient artifacts, so take you"
+    },
+    {
+      "q": "How do I get to the Citadel?",
+      "type": "factual_named",
+      "expected_poi": "Citadel",
+      "resolved": true,
+      "resolution_method": "source_chip",
+      "fields_addressed": [
+        "address"
+      ],
+      "fields_correct": [
+        "address"
+      ],
+      "fields_incorrect": [],
+      "grounding_class": "fully_grounded",
+      "sources_count": 5,
+      "tools_used": [
+        "search_pois",
+        "get_poi_details"
+      ],
+      "reply_excerpt": "To visit the **Citadel of Cairo**, also known as the **Citadel of Saladin**, you can find it located at **Al Abageyah, El Khalifa, Cairo Governorate**. The Citadel is a medieval Islamic fortress that "
+    },
+    {
+      "q": "What time does Cairo Tower open?",
+      "type": "factual_named",
+      "expected_poi": "Cairo Tower",
+      "resolved": true,
+      "resolution_method": "response_text",
+      "fields_addressed": [
+        "hours"
+      ],
+      "fields_correct": [
+        "hours"
+      ],
+      "fields_incorrect": [],
+      "grounding_class": "parametric_only",
+      "sources_count": 0,
+      "tools_used": [],
+      "reply_excerpt": "Cairo Tower opens daily at 9:00 AM and closes at 12:00 AM. It's a fantastic spot to catch panoramic views of the city, especially at sunset!"
+    },
+    {
+      "q": "Should I visit Abu Simbel or Philae Temple first?",
+      "type": "factual_compare",
+      "expected_poi": "—",
+      "resolved": false,
+      "resolution_method": "no_truth_available",
+      "fields_addressed": [],
+      "fields_correct": [],
+      "fields_incorrect": [],
+      "grounding_class": "fully_grounded",
+      "sources_count": 6,
+      "tools_used": [
+        "search_pois",
+        "search_pois"
+      ],
+      "reply_excerpt": "Both Abu Simbel and Philae Temple are must-visit sites in Aswan, each offering unique experiences and stunning architecture. Here’s a quick comparison to help you decide which to visit first:\n\n### **A"
+    },
+    {
+      "q": "What's the difference between Luxor Temple and Karnak Temple?",
+      "type": "factual_compare",
+      "expected_poi": "—",
+      "resolved": false,
+      "resolution_method": "no_truth_available",
+      "fields_addressed": [],
+      "fields_correct": [],
+      "fields_incorrect": [],
+      "grounding_class": "fully_grounded",
+      "sources_count": 5,
+      "tools_used": [
+        "search_pois",
+        "search_pois"
+      ],
+      "reply_excerpt": "Luxor Temple and Karnak Temple are both incredible sites in Luxor, but they serve different purposes and have distinct characteristics.\n\n**Luxor Temple** is an ancient temple complex located on the ea"
+    },
+    {
+      "q": "Should I focus on Cairo or Luxor for ancient Egyptian history?",
+      "type": "factual_compare",
+      "expected_poi": "—",
+      "resolved": false,
+      "resolution_method": "no_truth_available",
+      "fields_addressed": [],
+      "fields_correct": [],
+      "fields_incorrect": [],
+      "grounding_class": "fully_grounded",
+      "sources_count": 10,
+      "tools_used": [
+        "search_pois",
+        "search_pois"
+      ],
+      "reply_excerpt": "Both Cairo and Luxor are fantastic destinations for delving into ancient Egyptian history, but they each offer unique experiences.\n\n### **Cairo Highlights:**\n1. **Great Pyramids of Giza**: The largest"
+    }
+  ],
+  "interpretation": "Of 12 factual/compare queries, CLEO resolved the named POI in 9/12 (75.0%) and answered groundedly in 8/12 (66.7%). 3 (25.0%) relied on parametric knowledge (0 sources). This corroborates the metric-mismatch thesis: low P@5 here is NOT a system failure, because the correct behaviour is field lookup rather than top-5 ranking."
+}

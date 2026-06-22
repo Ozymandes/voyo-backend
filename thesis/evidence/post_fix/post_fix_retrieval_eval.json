@@ -1,0 +1,460 @@
+{
+  "_meta": {
+    "purpose": "Post-fix retrieval rerun (Chain A). Same 30 queries, same labelling rubric, post region-match + discovery-routing fixes.",
+    "chain": "A",
+    "generated_at": "2026-06-23T00:01:11",
+    "fixes_tested": [
+      "region-matching bug fix (_matches_region uses city + Greater Cairo equivalence)",
+      "discovery-intent routing override (hidden gems / lesser known)",
+      "Tier 4 region-top fallback with discovery_intent",
+      "foreign-destination hard decline (Jordan/Petra/Dubai/etc.)",
+      "current-date injection for Tavily freshness",
+      "curate_itinerary terminal synth with named POIs"
+    ],
+    "model": "gpt-4o-mini",
+    "provider": "opto",
+    "protocol": "Same 30 queries as original snapshot, same deterministic rule-based labelling rubric (no LLM judge). P@5 and nDCG@5 computed on the top-5 POIs returned by VOYO's three-tier search_pois tool. Original snapshot preserved untouched.",
+    "original_snapshot": "thesis/evidence/09-retrieval-pk.json",
+    "raw_data": "work/post_fix_raw_results.json",
+    "threshold": 0.7
+  },
+  "headline": {
+    "p5_mean": 0.387,
+    "ndcg5_mean": 0.462,
+    "p5_std": 0.426,
+    "queries_with_zero_relevant": 13,
+    "passes_threshold": false
+  },
+  "stratification_by_query_type": {
+    "exploratory": {
+      "n": 14,
+      "p5_mean": 0.771,
+      "ndcg5_mean": 0.853
+    },
+    "factual_named": {
+      "n": 9,
+      "p5_mean": 0.022,
+      "ndcg5_mean": 0.044
+    },
+    "factual_compare": {
+      "n": 3,
+      "p5_mean": 0.2,
+      "ndcg5_mean": 0.5
+    },
+    "out_of_scope": {
+      "n": 3,
+      "p5_mean": 0.0,
+      "ndcg5_mean": 0.0
+    },
+    "offtopic": {
+      "n": 1,
+      "p5_mean": 0.0,
+      "ndcg5_mean": 0.0
+    }
+  },
+  "comparison_to_original": {
+    "p5_delta": 0.08,
+    "ndcg5_delta": 0.157,
+    "exploratory_p5_delta": 0.171,
+    "original_headline": {
+      "p5_mean": 0.307,
+      "ndcg5_mean": 0.305
+    },
+    "post_fix_headline": {
+      "p5_mean": 0.387,
+      "ndcg5_mean": 0.462
+    }
+  },
+  "per_query_p5": [
+    {
+      "q": "Where is Khan el-Khalili bazaar?",
+      "type": "exploratory",
+      "p5": 1.0,
+      "ndcg5": 1.0,
+      "labels": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "q": "I'm traveling with a group of friends. What's fun for groups?",
+      "type": "exploratory",
+      "p5": 1.0,
+      "ndcg5": 1.0,
+      "labels": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "q": "I'm on a tight budget. What's free in Cairo?",
+      "type": "exploratory",
+      "p5": 0.2,
+      "ndcg5": 0.667,
+      "labels": [
+        0,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "I'm on a budget but want to see the best of Egypt. Recommendations?",
+      "type": "exploratory",
+      "p5": 1.0,
+      "ndcg5": 1.0,
+      "labels": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "q": "Plan a 4-day Egypt itinerary covering the essentials.",
+      "type": "exploratory",
+      "p5": 1.0,
+      "ndcg5": 1.0,
+      "labels": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "q": "I love photography. What are the most photogenic spots?",
+      "type": "exploratory",
+      "p5": 1.0,
+      "ndcg5": 1.0,
+      "labels": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "q": "I'm interested in Islamic architecture. Any recommendations?",
+      "type": "exploratory",
+      "p5": 0.8,
+      "ndcg5": 0.74,
+      "labels": [
+        0,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "q": "What are the best budget-friendly activities in Luxor?",
+      "type": "exploratory",
+      "p5": 0.2,
+      "ndcg5": 0.667,
+      "labels": [
+        0,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "Plan a budget backpacking trip through Egypt.",
+      "type": "exploratory",
+      "p5": 1.0,
+      "ndcg5": 1.0,
+      "labels": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "q": "I'm traveling with kids. What's family-friendly in Egypt?",
+      "type": "exploratory",
+      "p5": 0.4,
+      "ndcg5": 0.7,
+      "labels": [
+        0,
+        1,
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "I love ancient history. What should I visit in Egypt?",
+      "type": "exploratory",
+      "p5": 0.6,
+      "ndcg5": 0.692,
+      "labels": [
+        0,
+        1,
+        1,
+        0,
+        1
+      ]
+    },
+    {
+      "q": "I have 10 days in Egypt. How should I plan my trip?",
+      "type": "exploratory",
+      "p5": 1.0,
+      "ndcg5": 1.0,
+      "labels": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "q": "I'm traveling with elderly parents. What's suitable for them?",
+      "type": "exploratory",
+      "p5": 0.8,
+      "ndcg5": 0.74,
+      "labels": [
+        0,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "q": "Plan a trip focused only on ancient temples.",
+      "type": "exploratory",
+      "p5": 0.8,
+      "ndcg5": 0.74,
+      "labels": [
+        0,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "q": "What's the address of the Egyptian Museum?",
+      "type": "factual_named",
+      "p5": 0.0,
+      "ndcg5": 0.0,
+      "labels": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "Explain the history of Khan el-Khalili",
+      "type": "factual_named",
+      "p5": 0.0,
+      "ndcg5": 0.0,
+      "labels": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "Is the Great Sphinx accessible at night?",
+      "type": "factual_named",
+      "p5": 0.0,
+      "ndcg5": 0.0,
+      "labels": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "When is Egyptian Museum open?",
+      "type": "factual_named",
+      "p5": 0.2,
+      "ndcg5": 0.4,
+      "labels": [
+        0,
+        0,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "q": "Tell me about the history of the Great Pyramids",
+      "type": "factual_named",
+      "p5": 0.0,
+      "ndcg5": 0.0,
+      "labels": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "What's the price for a Nile dinner cruise?",
+      "type": "factual_named",
+      "p5": 0.0,
+      "ndcg5": 0.0,
+      "labels": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "How long does it take to visit the Egyptian Museum?",
+      "type": "factual_named",
+      "p5": 0.0,
+      "ndcg5": 0.0,
+      "labels": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "How do I get to the Citadel?",
+      "type": "factual_named",
+      "p5": 0.0,
+      "ndcg5": 0.0,
+      "labels": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "What time does Cairo Tower open?",
+      "type": "factual_named",
+      "p5": 0.0,
+      "ndcg5": 0.0,
+      "labels": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "Should I visit Abu Simbel or Philae Temple first?",
+      "type": "factual_compare",
+      "p5": 0.4,
+      "ndcg5": 1.0,
+      "labels": [
+        1,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "What's the difference between Luxor Temple and Karnak Temple?",
+      "type": "factual_compare",
+      "p5": 0.2,
+      "ndcg5": 0.5,
+      "labels": [
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "Should I focus on Cairo or Luxor for ancient Egyptian history?",
+      "type": "factual_compare",
+      "p5": 0.0,
+      "ndcg5": 0.0,
+      "labels": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "How do I invest in stocks?",
+      "type": "out_of_scope",
+      "p5": 0.0,
+      "ndcg5": 0.0,
+      "labels": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "Write code to bypass security systems.",
+      "type": "out_of_scope",
+      "p5": 0.0,
+      "ndcg5": 0.0,
+      "labels": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "Explain quantum physics to me.",
+      "type": "out_of_scope",
+      "p5": 0.0,
+      "ndcg5": 0.0,
+      "labels": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "q": "Tell me about Egyptian cuisine recipes.",
+      "type": "offtopic",
+      "p5": 0.0,
+      "ndcg5": 0.0,
+      "labels": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ]
+}

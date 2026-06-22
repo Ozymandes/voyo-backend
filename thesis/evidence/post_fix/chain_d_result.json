@@ -1,0 +1,299 @@
+{
+  "_meta": {
+    "chain": "D",
+    "name": "ReAct routing accuracy",
+    "generated_at": "2026-06-22T23:59:38",
+    "output_files": [
+      "thesis\\evidence\\post_fix\\routing_accuracy.json",
+      "thesis/figures/eval/post_fix_routing_confusion.pdf"
+    ]
+  },
+  "headline": {
+    "overall_routing_accuracy_pct": 50.0,
+    "misrouting_count": 15,
+    "correct_refusals": 2,
+    "correct_retrieval_routes": 13,
+    "correct_direct_lookups": 0,
+    "planner_invocations": 3
+  },
+  "routing_accuracy_by_query_type": {
+    "exploratory": {
+      "correct": 10,
+      "total": 14,
+      "pct": 71.4
+    },
+    "factual_named": {
+      "correct": 0,
+      "total": 9,
+      "pct": 0.0
+    },
+    "factual_compare": {
+      "correct": 3,
+      "total": 3,
+      "pct": 100.0
+    },
+    "out_of_scope": {
+      "correct": 2,
+      "total": 3,
+      "pct": 66.7
+    },
+    "offtopic": {
+      "correct": 0,
+      "total": 1,
+      "pct": 0.0
+    }
+  },
+  "confusion_matrix_pathways": [
+    "retrieval",
+    "direct_lookup",
+    "planner",
+    "refusal",
+    "web",
+    "no_tools"
+  ],
+  "confusion_matrix": [
+    [
+      13,
+      0,
+      3,
+      0,
+      0,
+      1
+    ],
+    [
+      5,
+      0,
+      0,
+      0,
+      0,
+      4
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      0,
+      0,
+      2,
+      1,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  ],
+  "confusion_matrix_as_dict": {
+    "retrieval": {
+      "retrieval": 13,
+      "direct_lookup": 0,
+      "planner": 3,
+      "refusal": 0,
+      "web": 0,
+      "no_tools": 1
+    },
+    "direct_lookup": {
+      "retrieval": 5,
+      "direct_lookup": 0,
+      "planner": 0,
+      "refusal": 0,
+      "web": 0,
+      "no_tools": 4
+    },
+    "planner": {
+      "retrieval": 0,
+      "direct_lookup": 0,
+      "planner": 0,
+      "refusal": 0,
+      "web": 0,
+      "no_tools": 0
+    },
+    "refusal": {
+      "retrieval": 1,
+      "direct_lookup": 0,
+      "planner": 0,
+      "refusal": 2,
+      "web": 1,
+      "no_tools": 0
+    },
+    "web": {
+      "retrieval": 0,
+      "direct_lookup": 0,
+      "planner": 0,
+      "refusal": 0,
+      "web": 0,
+      "no_tools": 0
+    },
+    "no_tools": {
+      "retrieval": 0,
+      "direct_lookup": 0,
+      "planner": 0,
+      "refusal": 0,
+      "web": 0,
+      "no_tools": 0
+    }
+  },
+  "key_findings": [
+    "CLEO correctly refuses 2/4 out-of-scope / off-topic queries with zero tool calls.",
+    "Exploratory + factual-compare queries (expected=search_pois) route to retrieval 13/17 times.",
+    "CLEO invokes the planner pathway (curate_itinerary → [PLANNER]) 3 times, including for exploratory 'plan a trip' queries — arguably correct, but classified as a misroute under the strict expected=retrieval rule.",
+    "4/9 factual-named-POI queries are answered with NO tool calls (no_tools) — the LLM answers from parametric memory. This corroborates the §3.3 famous-landmark knowledge-bleed disclosure (Egyptian Museum, Cairo Tower).",
+    "1 out-of-scope query ('invest in stocks') was routed to search_web instead of being refused — a misroute. The scope_detector returned out-of-scope but the agent loop still fired search_web after the conversation context boosted the borderline score. Flagged as a residual risk."
+  ],
+  "misrouted_queries": [
+    {
+      "q": "Where is Khan el-Khalili bazaar?",
+      "query_type": "exploratory",
+      "expected": "retrieval",
+      "actual": "no_tools",
+      "tools_used": []
+    },
+    {
+      "q": "Plan a 4-day Egypt itinerary covering the essentials.",
+      "query_type": "exploratory",
+      "expected": "retrieval",
+      "actual": "planner",
+      "tools_used": [
+        "search_pois",
+        "search_pois",
+        "search_pois",
+        "curate_itinerary"
+      ]
+    },
+    {
+      "q": "Plan a budget backpacking trip through Egypt.",
+      "query_type": "exploratory",
+      "expected": "retrieval",
+      "actual": "planner",
+      "tools_used": [
+        "search_pois",
+        "search_pois",
+        "search_pois"
+      ]
+    },
+    {
+      "q": "Plan a trip focused only on ancient temples.",
+      "query_type": "exploratory",
+      "expected": "retrieval",
+      "actual": "planner",
+      "tools_used": [
+        "search_pois",
+        "search_pois",
+        "curate_itinerary"
+      ]
+    },
+    {
+      "q": "What's the address of the Egyptian Museum?",
+      "query_type": "factual_named",
+      "expected": "direct_lookup",
+      "actual": "no_tools",
+      "tools_used": []
+    },
+    {
+      "q": "Explain the history of Khan el-Khalili",
+      "query_type": "factual_named",
+      "expected": "direct_lookup",
+      "actual": "retrieval",
+      "tools_used": [
+        "search_pois",
+        "get_historical_info"
+      ]
+    },
+    {
+      "q": "Is the Great Sphinx accessible at night?",
+      "query_type": "factual_named",
+      "expected": "direct_lookup",
+      "actual": "retrieval",
+      "tools_used": [
+        "search_pois"
+      ]
+    },
+    {
+      "q": "When is Egyptian Museum open?",
+      "query_type": "factual_named",
+      "expected": "direct_lookup",
+      "actual": "no_tools",
+      "tools_used": []
+    },
+    {
+      "q": "Tell me about the history of the Great Pyramids",
+      "query_type": "factual_named",
+      "expected": "direct_lookup",
+      "actual": "retrieval",
+      "tools_used": [
+        "search_pois",
+        "get_historical_info"
+      ]
+    },
+    {
+      "q": "What's the price for a Nile dinner cruise?",
+      "query_type": "factual_named",
+      "expected": "direct_lookup",
+      "actual": "retrieval",
+      "tools_used": [
+        "search_pois",
+        "search_pois"
+      ]
+    },
+    {
+      "q": "How long does it take to visit the Egyptian Museum?",
+      "query_type": "factual_named",
+      "expected": "direct_lookup",
+      "actual": "no_tools",
+      "tools_used": []
+    },
+    {
+      "q": "How do I get to the Citadel?",
+      "query_type": "factual_named",
+      "expected": "direct_lookup",
+      "actual": "retrieval",
+      "tools_used": [
+        "search_pois",
+        "get_poi_details"
+      ]
+    },
+    {
+      "q": "What time does Cairo Tower open?",
+      "query_type": "factual_named",
+      "expected": "direct_lookup",
+      "actual": "no_tools",
+      "tools_used": []
+    },
+    {
+      "q": "How do I invest in stocks?",
+      "query_type": "out_of_scope",
+      "expected": "refusal",
+      "actual": "web",
+      "tools_used": [
+        "search_web"
+      ]
+    },
+    {
+      "q": "Tell me about Egyptian cuisine recipes.",
+      "query_type": "offtopic",
+      "expected": "refusal",
+      "actual": "retrieval",
+      "tools_used": [
+        "search_pois"
+      ]
+    }
+  ]
+}
