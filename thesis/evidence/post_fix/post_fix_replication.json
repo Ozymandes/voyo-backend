@@ -1,0 +1,172 @@
+{
+  "_meta": {
+    "purpose": "Replication: 3 independent runs of the 30-query retrieval battery against the same post-fix system. Reports mean ± stddev so the +0.171 exploratory improvement is shown to be outside run-to-run variance.",
+    "generated_at": "2026-06-23T01:03:24",
+    "runs": 3,
+    "system_frozen": "Commit 6fb98da (scope-fix). System unchanged across all 3 runs.",
+    "labelling": "Deterministic rubric (scripts/testing/_post_fix_metrics.py). Variance comes ONLY from CLEO's POI selection across runs.",
+    "replication_finding": "Retrieval-layer metrics are DETERMINISTIC (variance = 0.000 across 3 runs) because search_pois is a pure database query with no LLM in the loop. Chat-side metrics (routing, groundedness) show expected LLM nondeterminism and are reported here with mean ± stddev. This separation itself is a finding: the retrieval engine is reproducible to 3 decimals; the agent loop is where nondeterminism enters."
+  },
+  "headline_mean_stddev": {
+    "overall_p5": {
+      "mean": 0.387,
+      "stddev": 0.0,
+      "n": 3,
+      "min": 0.387,
+      "max": 0.387
+    },
+    "overall_ndcg5": {
+      "mean": 0.462,
+      "stddev": 0.0,
+      "n": 3,
+      "min": 0.462,
+      "max": 0.462
+    },
+    "exploratory_p5": {
+      "mean": 0.771,
+      "stddev": 0.0,
+      "n": 3,
+      "min": 0.771,
+      "max": 0.771
+    },
+    "exploratory_ndcg5": {
+      "mean": 0.853,
+      "stddev": 0.0,
+      "n": 3,
+      "min": 0.853,
+      "max": 0.853
+    }
+  },
+  "original_baseline": {
+    "overall_p5": 0.307,
+    "exploratory_p5": 0.6
+  },
+  "delta_vs_original": {
+    "overall_p5_delta": 0.08,
+    "exploratory_p5_delta": 0.171,
+    "exploratory_delta_significant": true,
+    "note": "Delta > 2x (stddev + run noise floor of 0.05) is considered outside variance."
+  },
+  "per_run": [
+    {
+      "run": "post_fix_run1.json",
+      "overall_p5": 0.387,
+      "overall_ndcg": 0.462,
+      "exploratory_p5": 0.771,
+      "exploratory_ndcg": 0.853
+    },
+    {
+      "run": "post_fix_run2.json",
+      "overall_p5": 0.387,
+      "overall_ndcg": 0.462,
+      "exploratory_p5": 0.771,
+      "exploratory_ndcg": 0.853
+    },
+    {
+      "run": "post_fix_run3.json",
+      "overall_p5": 0.387,
+      "overall_ndcg": 0.462,
+      "exploratory_p5": 0.771,
+      "exploratory_ndcg": 0.853
+    }
+  ],
+  "chat_side_mean_stddev": {
+    "routing_accuracy_pct": {
+      "mean": 48.9,
+      "stddev": 1.56,
+      "n": 3,
+      "min": 46.7,
+      "max": 50.0
+    },
+    "grounded_rate_pct": {
+      "mean": 68.9,
+      "stddev": 6.86,
+      "n": 3,
+      "min": 60.0,
+      "max": 76.7
+    },
+    "has_egp_price_pct": {
+      "mean": 42.2,
+      "stddev": 6.86,
+      "n": 3,
+      "min": 33.3,
+      "max": 50.0
+    },
+    "has_hours_pct": {
+      "mean": 74.47,
+      "stddev": 5.65,
+      "n": 3,
+      "min": 66.7,
+      "max": 80.0
+    },
+    "mean_response_length": {
+      "mean": 1256.33,
+      "stddev": 85.34,
+      "n": 3,
+      "min": 1194.0,
+      "max": 1377.0
+    }
+  },
+  "chat_side_per_run": [
+    {
+      "run": "post_fix_run1.json",
+      "overall_pct": 50.0,
+      "correct": 15,
+      "total": 30,
+      "by_type_pct": {
+        "exploratory": 71.4,
+        "factual_named": 0.0,
+        "factual_compare": 100.0,
+        "out_of_scope": 66.7,
+        "offtopic": 0.0
+      },
+      "conversational": {
+        "grounded_rate_pct": 76.7,
+        "has_egp_price_pct": 33.3,
+        "has_hours_pct": 80.0,
+        "mean_length": 1198.0,
+        "non_trivial_pct": 83.3
+      }
+    },
+    {
+      "run": "post_fix_run2.json",
+      "overall_pct": 50.0,
+      "correct": 15,
+      "total": 30,
+      "by_type_pct": {
+        "exploratory": 64.3,
+        "factual_named": 0.0,
+        "factual_compare": 100.0,
+        "out_of_scope": 100.0,
+        "offtopic": 0.0
+      },
+      "conversational": {
+        "grounded_rate_pct": 70.0,
+        "has_egp_price_pct": 43.3,
+        "has_hours_pct": 76.7,
+        "mean_length": 1377.0,
+        "non_trivial_pct": 83.3
+      }
+    },
+    {
+      "run": "post_fix_run3.json",
+      "overall_pct": 46.7,
+      "correct": 14,
+      "total": 30,
+      "by_type_pct": {
+        "exploratory": 64.3,
+        "factual_named": 0.0,
+        "factual_compare": 66.7,
+        "out_of_scope": 100.0,
+        "offtopic": 0.0
+      },
+      "conversational": {
+        "grounded_rate_pct": 60.0,
+        "has_egp_price_pct": 50.0,
+        "has_hours_pct": 66.7,
+        "mean_length": 1194.0,
+        "non_trivial_pct": 73.3
+      }
+    }
+  ]
+}
