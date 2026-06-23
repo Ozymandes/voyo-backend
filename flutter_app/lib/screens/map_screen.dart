@@ -13,9 +13,7 @@ import '../services/supabase_service.dart';
 import '../services/routing_service.dart';
 import '../theme.dart';
 import '../widgets/map_isochrone_overlay.dart';
-import '../widgets/map_poi_preview_card.dart';
 import '../widgets/poi_detail_sheet.dart';
-import '../widgets/add_to_itinerary_sheet.dart';
 import 'chat_screen.dart';
 
 // Day-slot colors (cycle for day 6+)
@@ -29,9 +27,6 @@ const _kDayColors = [
 
 Color _dayColor(int dayNumber) =>
     _kDayColors[(dayNumber - 1) % _kDayColors.length];
-
-/// Map zoom at/above which POI name labels appear beside markers.
-const _kPoiLabelZoomThreshold = 12.0;
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -49,38 +44,18 @@ class _MapScreenState extends State<MapScreen> {
   // ── POI state ───────────────────────────────────────────────────────────────
   List<Poi> _pois = [];
   List<ItineraryPoi> _itineraryPois = [];
-  // Canonical (enriched) Poi records for the itinerary stops above, keyed
-  // by poi_id. Hydrated once when stops load so that tapping an itinerary
-  // marker opens the SAME MapPoiPreviewCard (with real Supabase image /
-  // description / price) as a regular map POI — instead of the prior
-  // Wikipedia-lookup sheet that showed stale, inconsistent data.
-  Map<int, Poi> _itineraryPoiDetails = {};
   Timer? _debounceTimer;
   bool _isLoading = false;
-  // Non-fatal POI/network error surfaced as a dismissible banner so the user
-  // sees the real problem (DNS fail, offline, Supabase down) instead of a
-  // silent debugPrint + blank map.
-  String? _poisError;
 
   // ── Routing state ───────────────────────────────────────────────────────────
   Map<int, List<LatLng>> _routesByDay = {};
   bool _routeLoading = false;
   bool _routeVisible = true;
-  // Route-engine honesty (#5): true when at least one day's route could
-  // not be fetched (Valhalla down, etc.). Drives the honest fallback banner
-  // instead of silently drawing straight-line polylines through the markers.
-  bool _routesUnavailable = false;
 
   // ── Isochrone ("Explore from here") ───────────────────────────────────────
   // Owned entirely by widgets/map_isochrone_overlay.dart. Slider / profile
-  // controls live there too — not here.
+  // controls live there too — not here (avoids colliding with region work).
   final _isochrone = IsochroneController();
-
-  // ── Zoom-aware POI name labels ──────────────────────────────────────────────
-  // When the map zooms in past [_kPoiLabelZoomThreshold], each POI's name is
-  // shown as a small label beside its marker (Google-Maps-style). Toggled only
-  // on threshold crossing to avoid rebuilds on every frame of a pan/zoom.
-  bool _labelsVisible = false;
 
   // ── Day filter ──────────────────────────────────────────────────────────────
   int? _selectedDay; // null = show all days
@@ -139,11 +114,6 @@ class _MapScreenState extends State<MapScreen> {
   // ── Data loading ─────────────────────────────────────────────────────────────
 
   void _onPositionChanged(MapCamera camera, bool hasGesture) {
-    // Toggle zoom-aware POI labels only on threshold crossing.
-    final labelsVisible = camera.zoom >= _kPoiLabelZoomThreshold;
-    if (labelsVisible != _labelsVisible) {
-      setState(() => _labelsVisible = labelsVisible);
-    }
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
       _loadPoisForBounds(camera.visibleBounds);
@@ -168,14 +138,7 @@ class _MapScreenState extends State<MapScreen> {
       }
     } catch (e) {
       debugPrint('Error loading POIs: $e');
-      // Keep any POIs already loaded (don't blank the map on a transient
-      // failure) but surface the error as a banner so the user knows.
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _poisError = e.toString();
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -185,16 +148,7 @@ class _MapScreenState extends State<MapScreen> {
     final pois = await _supabaseService.getCurrentItineraryPois(userId);
     if (!mounted) return;
     setState(() => _itineraryPois = pois);
-    // Hydrate the canonical enriched records for these stop POIs in the
-    // background. This is what makes tapping a stop marker open the same
-    // rich MapPoiPreviewCard (real image / description / price) as a
-    // regular POI — fixing the 'stale stop card' bug. Non-blocking: if it
-    // fails or returns partial data, the marker still opens the preview
-    // with whatever canonical fields it has (Poi.fromJson is defensive).
     if (pois.isNotEmpty) {
-      final ids = pois.map((p) => p.poiId).toSet();
-      final details = await _supabaseService.getPoisByIds(ids);
-      if (mounted) setState(() => _itineraryPoiDetails = details);
       // Defer until after the rebuild so the map controller is ready
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _fitRouteBounds(pois);
@@ -207,17 +161,9 @@ class _MapScreenState extends State<MapScreen> {
     setState(() => _routeLoading = true);
     final routes = await _routingService.fetchRoutesByDay(pois);
     if (mounted) {
-      // Detect the route-engine-unavailable case: there are multi-stop days
-      // in the itinerary but the fetch returned fewer day-routes than days.
-      // This is the signal that Valhalla is down — we must NOT render the
-      // missing days as straight-line polylines (the prior silent fallback).
-      final expectedDayCount =
-          pois.map((p) => p.dayNumber).toSet().length;
-      final missingDays = expectedDayCount - routes.length;
       setState(() {
         _routesByDay = routes;
         _routeLoading = false;
-        _routesUnavailable = missingDays > 0;
       });
     }
   }
@@ -226,7 +172,12 @@ class _MapScreenState extends State<MapScreen> {
   // All state/logic/presentation live in widgets/map_isochrone_overlay.dart.
   // This helper just feeds the loaded POI coordinates in for the reach count.
   Future<void> _onMapLongPress(LatLng point) async {
-    await _isochrone.explore(point, _pois, mapController: _mapController);
+    await _isochrone.explore(
+      point,
+      [for (final p in _pois) LatLng(p.latitude, p.longitude)],
+      mapController: _mapController,
+      context: context,
+    );
   }
 
   void _fitRouteBounds(List<ItineraryPoi> pois) {
@@ -244,45 +195,7 @@ class _MapScreenState extends State<MapScreen> {
 
   // ── Bottom sheets ────────────────────────────────────────────────────────────
 
-  void _showPoiBottomSheet(Poi poi, {int? itineraryDay, int? itineraryStop}) {
-    // Geotag tap → compact preview card (canonical enriched POI, truncated
-    // copy, two actions). The full `PoiDetailSheet` opens only when the user
-    // taps 'View details'. Keeps the map interaction light while preserving
-    // the same data source as Planner/Explore.
-    //
-    // itineraryDay/Stop are passed ONLY when opening from an itinerary stop
-    // marker (_showStopInfo), so the revamped card renders the restored
-    // "Day N · Stop M" label (#1). Plain geotag taps omit them.
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder:
-          (sheetCtx) => Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(sheetCtx).viewInsets.bottom,
-            ),
-            child: MapPoiPreviewCard(
-              poi: poi,
-              itineraryDay: itineraryDay,
-              itineraryStop: itineraryStop,
-              onViewDetails: () {
-                Navigator.pop(sheetCtx); // close preview
-                _showPoiDetailSheet(poi);
-              },
-              onAddToTrip: () {
-                Navigator.pop(sheetCtx); // close preview, then run add flow
-                _addPoiToItinerary(poi);
-              },
-            ),
-          ),
-    );
-  }
-
-  /// Full enriched detail modal. Opened from the map preview's 'View details'
-  /// action — identical sheet used across the app, so the detail view is the
-  /// single canonical deep-dive.
-  void _showPoiDetailSheet(Poi poi) {
+  void _showPoiBottomSheet(Poi poi) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -296,38 +209,6 @@ class _MapScreenState extends State<MapScreen> {
             },
           ),
     );
-  }
-
-  /// Opens the shared add-to-itinerary flow for a POI. Used by the isochrone
-  /// top-5 ranked rows. Mirrors the pattern in explore_screen.dart.
-  Future<void> _addPoiToItinerary(Poi poi) async {
-    final userId = Supabase.instance.client.auth.currentUser?.id;
-    if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sign in to save places to your trip.')),
-      );
-      return;
-    }
-    final added = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder:
-          (_) => AddToItineraryFlow(
-            poi: poi,
-            service: _supabaseService,
-            userId: userId,
-          ),
-    );
-    if (added == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${poi.name} added to your itinerary!'),
-          backgroundColor: VoyoColors.terra,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
   }
 
   void _showRoutePanel() {
@@ -382,20 +263,8 @@ class _MapScreenState extends State<MapScreen> {
             ),
             children: [
               TileLayer(
-                // CartoDB Voyager tiles — the same VOYO-styled basemap the
-                // Explore home uses. The bare OSM tile server is rate-limited
-                // and frequently 403s from mobile clients; this subdomain-
-                // load-balanced source is far more reliable.
-                urlTemplate:
-                    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-                subdomains: const ['a', 'b', 'c', 'd'],
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.voyo.app',
-                // Soft fallback: a failed tile (DNS/offline/403) logs a
-                // debug message and renders a transparent tile instead of
-                // throwing into the console as an uncaught exception.
-                errorTileCallback: (tile, error, stackTrace) {
-                  debugPrint('Map tile load failed: $error');
-                },
               ),
               // Isochrone reachable-area rings + center marker
               // (long-press the map to generate). Self-contained widgets:
@@ -465,26 +334,6 @@ class _MapScreenState extends State<MapScreen> {
                         )
                         .toList(),
               ),
-              // Zoom-aware POI name labels — appear beside markers once the
-              // map zooms in past the threshold (Google-Maps-style).
-              if (_labelsVisible)
-                MarkerLayer(
-                  markers:
-                      _pois
-                          .map(
-                            (poi) => Marker(
-                              point: LatLng(poi.latitude, poi.longitude),
-                              width: 112,
-                              height: 24,
-                              alignment: Alignment.centerLeft,
-                              child: _PoiLabel(
-                                text: poi.name,
-                                onTap: () => _showPoiBottomSheet(poi),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                ),
               if (_itineraryPois.isNotEmpty)
                 MarkerLayer(
                   markers:
@@ -618,42 +467,9 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
 
-          // Isochrone reachability panel: travel-mode chips + time-budget
-          // slider + clear. Positioned directly under the Stack — a
-          // ParentDataWidget can't live inside the widget's own
-          // ListenableBuilder (causes "Incorrect use of ParentDataWidget").
-          // Top-centred so it reads like Google Maps' travel-mode selector and
-          // leaves the ranked-POI summary card clear at the bottom.
-          Positioned(
-            top: topPad + 12,
-            left: 12,
-            right: 72,
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 320),
-                child: IsochroneControls(
-                  controller: _isochrone,
-                  mapController: _mapController,
-                ),
-              ),
-            ),
-          ),
-
-          // Non-modal reachable-area summary card: slides up over the map with
-          // no scrim so the isochrone bloom stays visible beside the ranked
-          // top-5 POI list. Positioned directly under the Stack.
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom:
-                MediaQuery.of(context).padding.bottom +
-                (_days.length > 1 ? 56 : 12),
-            child: IsochroneSummaryCard(
-              controller: _isochrone,
-              onPoiTap: _addPoiToItinerary,
-            ),
-          ),
+          // Isochrone clear button (+ future sliders). Self-positioning widget
+          // owned by map_isochrone_overlay.dart.
+          IsochroneControls(controller: _isochrone, topPad: topPad),
 
           Positioned(
             top: topPad + 12,
@@ -708,67 +524,12 @@ class _MapScreenState extends State<MapScreen> {
               },
             ),
           ),
-          // ── Offline / error banner ────────────────────────────────────────────
-          // When POIs fail to load (DNS down, offline, Supabase unreachable)
-          // we surface a warm VOYO-styled banner with a retry, instead of
-          // leaving the user staring at a blank map with raw console errors.
-          if (_poisError != null && _pois.isEmpty)
-            Positioned(
-              top: topPad + 12,
-              left: 16,
-              right: 16,
-              child: _OfflineBanner(
-                message: _poisError!,
-                onRetry: () {
-                  setState(() => _poisError = null);
-                  _loadPoisForBounds(_mapController.camera.visibleBounds);
-                },
-                onDismiss: () => setState(() => _poisError = null),
-              ),
-            ),
-
-          // ── Route-engine unavailable banner (#5) ────────────────────────────
-          // Honesty layer: when Valhalla is down, route lines for the
-          // affected day(s) are omitted (we never draw a straight line as a
-          // fake route). This banner surfaces the real status + offers the
-          // Google Maps redirect as the trusted external fallback. Per the
-          // spec: "Do not fake route intelligence."
-          if (_routesUnavailable && _itineraryPois.isNotEmpty)
-            Positioned(
-              bottom: MediaQuery.of(context).padding.bottom + 72,
-              left: 16,
-              right: 16,
-              child: _RouteUnavailableBanner(
-                onOpenGoogleMaps: () =>
-                    _routingService.openInGoogleMaps(_visiblePois),
-                onRetry: () => _fetchRoutes(_itineraryPois),
-              ),
-            ),
         ],
       ),
     );
   }
 
   void _showStopInfo(ItineraryPoi poi) {
-    // Resolve the canonical enriched record for this stop POI, then open
-    // the SAME preview card a regular map POI uses — so itinerary stops
-    // show identical data (real Supabase image / description / price) as
-    // Explore / Planner / Details. Falls back to the dedicated stop sheet
-    // only if the canonical record isn't hydrated yet (e.g. the background
-    // fetch is still in flight or failed), so the marker is never dead.
-    //
-    // Pass the day/stop so the revamped card shows the "Day N · Stop M"
-    // label (#1) — the regression the partner flagged was this exact label
-    // vanishing when the card moved to the canonical enriched layout.
-    final canonical = _itineraryPoiDetails[poi.poiId];
-    if (canonical != null) {
-      _showPoiBottomSheet(
-        canonical,
-        itineraryDay: poi.dayNumber,
-        itineraryStop: poi.sequenceOrder,
-      );
-      return;
-    }
     showModalBottomSheet(
       context: context,
       backgroundColor: VoyoColors.paper,
@@ -781,183 +542,6 @@ class _MapScreenState extends State<MapScreen> {
 }
 
 // ── Small shared widgets ────────────────────────────────────────────────────────
-
-/// Honest fallback banner shown when the route engine (Valhalla) is
-/// unavailable. The map omits the affected day's route line entirely
-/// rather than rendering a straight-line fake; this banner explains why
-/// and offers the trusted Google Maps redirect as the external fallback.
-class _RouteUnavailableBanner extends StatelessWidget {
-  final VoidCallback onOpenGoogleMaps;
-  final VoidCallback onRetry;
-
-  const _RouteUnavailableBanner({
-    required this.onOpenGoogleMaps,
-    required this.onRetry,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
-        decoration: BoxDecoration(
-          color: VoyoColors.paper.withValues(alpha: 0.97),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: VoyoColors.caution.withValues(alpha: 0.45)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 12,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.route_outlined, size: 18, color: VoyoColors.caution),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Route engine unavailable',
-                    style: GoogleFonts.instrumentSans(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: VoyoColors.ink,
-                    ),
-                  ),
-                  const SizedBox(height: 1),
-                  Text(
-                    'Showing approximate connections — real routes need the Valhalla engine.',
-                    style: GoogleFonts.instrumentSans(
-                      fontSize: 10.5,
-                      color: VoyoColors.stone,
-                      height: 1.35,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Primary: trusted external fallback.
-            FilledButton.icon(
-              onPressed: onOpenGoogleMaps,
-              style: FilledButton.styleFrom(
-                backgroundColor: VoyoColors.expedition,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                minimumSize: const Size(0, 32),
-                textStyle: GoogleFonts.instrumentSans(
-                    fontSize: 11, fontWeight: FontWeight.w600),
-              ),
-              icon: const Icon(Icons.map_outlined, size: 14, color: Colors.white),
-              label: const Text('Open in Maps',
-                  style: TextStyle(color: Colors.white)),
-            ),
-            IconButton(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh_rounded, size: 16),
-              color: VoyoColors.stone,
-              tooltip: 'Retry',
-              visualDensity: VisualDensity.compact,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _OfflineBanner extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-  final VoidCallback onDismiss;
-
-  const _OfflineBanner({
-    required this.message,
-    required this.onRetry,
-    required this.onDismiss,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      elevation: 6,
-      borderRadius: BorderRadius.circular(14),
-      color: VoyoColors.paper,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.cloud_off_outlined,
-              size: 22,
-              color: VoyoColors.caution,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Map offline',
-                    style: GoogleFonts.fraunces(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: VoyoColors.ink,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'We couldn\'t reach the map or places. Check your connection and retry.',
-                    style: GoogleFonts.instrumentSans(
-                      fontSize: 11,
-                      color: VoyoColors.stone,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            GestureDetector(
-              onTap: onRetry,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 7,
-                ),
-                decoration: BoxDecoration(
-                  color: VoyoColors.expedition,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Text(
-                  'Retry',
-                  style: GoogleFonts.instrumentSans(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close, size: 16, color: VoyoColors.stone),
-              onPressed: onDismiss,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              visualDensity: VisualDensity.compact,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _MapIconButton extends StatelessWidget {
   final IconData icon;
@@ -989,92 +573,6 @@ class _MapIconButton extends StatelessWidget {
           ],
         ),
         child: Icon(icon, color: color, size: 20),
-      ),
-    );
-  }
-}
-
-/// Small Google-Maps-style name label rendered beside a POI marker when the
-/// map is zoomed in. Anchored via `Marker(alignment: Alignment.centerLeft)` so
-/// its left edge sits at the POI coordinate; the internal left padding clears
-/// the dot marker drawn by the layer below.
-///
-/// Transparent (no white pillbox) — legibility comes from a text stroke +
-/// soft shadow, like Google Maps. Tappable: opens the same POI preview as the
-/// marker dot. Color shifts to the VOYO accent on press for feedback. Does
-/// NOT block the long-press isochrone gesture (no onLongPress defined → the
-/// map's long-press recognizer wins the gesture arena).
-class _PoiLabel extends StatefulWidget {
-  final String text;
-  final VoidCallback onTap;
-  const _PoiLabel({required this.text, required this.onTap});
-
-  @override
-  State<_PoiLabel> createState() => _PoiLabelState();
-}
-
-class _PoiLabelState extends State<_PoiLabel> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    // Transparent label: no fill, no border. Legibility on any basemap comes
-    // from a white stroke (drawn by stacking two shadows) + a soft drop
-    // shadow — the same trick Google Maps uses for its POI labels.
-    final color = _pressed ? VoyoColors.expedition : VoyoColors.ink;
-    return GestureDetector(
-      onTap: widget.onTap,
-      onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) => setState(() => _pressed = false),
-      onTapCancel: () => setState(() => _pressed = false),
-      // translucent so the label still receives taps inside its padded box,
-      // but doesn't claim a long-press (no onLongPress → map wins isochrone).
-      behavior: HitTestBehavior.translucent,
-      child: Padding(
-        // Clear the marker dot (radius ~11) plus a small gap.
-        padding: const EdgeInsets.only(left: 15),
-        child: Stack(
-          children: [
-            // Stroke layer: white text with an outline, drawn underneath for
-            // legibility on any basemap (Google Maps uses the same trick).
-            // Implemented via 4-direction white shadows rather than a Paint
-            // cascade so the TextStyle composes cleanly.
-            Text(
-              widget.text,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.instrumentSans(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                height: 1.2,
-                color: Colors.white,
-                shadows: const [
-                  Shadow(color: Colors.white, offset: Offset(-0.8, -0.8)),
-                  Shadow(color: Colors.white, offset: Offset(0.8, -0.8)),
-                  Shadow(color: Colors.white, offset: Offset(-0.8, 0.8)),
-                  Shadow(color: Colors.white, offset: Offset(0.8, 0.8)),
-                  Shadow(
-                    color: Colors.black26,
-                    offset: Offset(0, 1),
-                    blurRadius: 2,
-                  ),
-                ],
-              ),
-            ),
-            // Fill layer: the label colour; pressed-state shifts to accent.
-            Text(
-              widget.text,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.instrumentSans(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                height: 1.2,
-                color: color,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -1724,3 +1222,4 @@ class _StopInfoSheetState extends State<_StopInfoSheet> {
     );
   }
 }
+
