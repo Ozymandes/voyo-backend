@@ -203,7 +203,11 @@ class PoiDetailSheet extends StatelessWidget {
             ? 'Free'
             : 'Egyptian ${e.toStringAsFixed(0)} EGP\nForeigner ${f.toStringAsFixed(0)} EGP',
         label: 'Entry',
-        valueMaxLines: bothFree ? 1 : 2,
+        // maxLines 4 (not 2): each pill shares ~1/3 of the row width, so at
+        // the dual-tier font size 'Egyptian 100 EGP' can wrap across two
+        // lines and push 'Foreigner 1000 EGP' past the old maxLines:2 ceiling,
+        // where ellipsis clipped it entirely. 4 guarantees both tiers render.
+        valueMaxLines: bothFree ? 1 : 4,
         valueFontSize: bothFree ? 16 : 13,
       ));
     } else if (poi.ticketPrice != null) {
