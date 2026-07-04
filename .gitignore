@@ -75,3 +75,23 @@ work/
 
 # Source upload dir for brand assets (canonical copies in flutter_app/assets/brand + /cleo)
 VOYO_flutter_assets/
+
+# Strategic roadmap - deliberately untracked (not for repo/thesis)
+VOYO_ROADMAP_TO_PRODUCTION.md
+VOYO_MASTER_STRATEGY.md
+
+# Thesis intermediate/source material — local reference only.
+# The canonical thesis lives in the separate bachelor-thesis-ngu repo.
+# These are pre-migration chapter drafts + source screenshots kept
+# locally for forensics, never committed to the backend repo.
+thesis/LaTEX Chapters/
+thesis/figures/App_Screenshots/
+thesis/figures/VOYO_FINAL_System_Architecture.png
+
+# Stray source PDFs (PRD, early draft) — local reference, not for repo
+CSAI 490- PRD*.pdf
+Voyo_First_Thesis_Draft.pdf
+
+# Compiled Python bytecode — never commit (regenerable, platform-specific)
+**/__pycache__/
+*.pyc
