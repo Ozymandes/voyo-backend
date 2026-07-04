@@ -42,7 +42,7 @@ def test_cleo():
 
     print("\n" + "="*60)
     print("All tests passed! CLEO is working perfectly.")
-    print("\nTo chat with CLEO, run: python cleo_cli.py")
+    print("\nTo chat with CLEO, run: python scripts/cleo_cli.py")
 
 if __name__ == "__main__":
     test_cleo()

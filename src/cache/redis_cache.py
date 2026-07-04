@@ -67,7 +67,7 @@ class RedisCache:
         # The recommendation engine benchmark (p95 1.662 ms) is unaffected
         # because it is LLM-free arithmetic; the only observable cost is CLEO
         # re-running for repeated factual queries. This is acceptable for the
-        # demo and is documented as such in HANDOFF_TO_TEAM.md.
+        # demo and is documented as such in docs/handoffs/HANDOFF_TO_TEAM.md.
         if self.redis_client is None:
             logger.info(
                 "Redis unavailable \u2014 running uncached (expected on free tier; "

@@ -95,3 +95,6 @@ Voyo_First_Thesis_Draft.pdf
 # Compiled Python bytecode — never commit (regenerable, platform-specific)
 **/__pycache__/
 *.pyc
+
+# Regenerable test output (tests recreate these fresh each run)
+cleo_test_results.json

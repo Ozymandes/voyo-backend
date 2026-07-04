@@ -1,6 +1,6 @@
 # Documentation & Repository Organization
 
-> **Last updated:** 2026-06-30 (post-thesis-submission cleanup pass)
+> **Last updated:** 2026-06-30 (root-directory organization pass)
 > **State:** Thesis submitted; backend at clean HEAD; ready for post-viva development per `VOYO_ROADMAP_TO_PRODUCTION.md`.
 
 ---
@@ -81,11 +81,37 @@ voyo-backend/
 ├── docker-compose.yml            # Valhalla + OSRM + VROOM containers
 ├── requirements.txt              # Python deps
 ├── .env.example                  # Environment template (real .env is gitignored)
-├── HANDOFF_TO_TEAM.md            # Team-facing system overview
-├── HANDOFF_TO_NAZMY.md           # Supervisor-facing handoff
-├── VOYO_ROADMAP_TO_PRODUCTION.md # ★ 7-phase dev roadmap (gitignored, local-only)
+├── HANDOFF_PARTNER.md            # Task spec (agent-anchored — see note below)
+├── rebuild_database.py           # DB rebuild pipeline (agent-anchored — see note below)
+├── enrich_narratives.py          # Narrative backfill (agent-anchored — see note below)
+├── validate_database.py          # DB integrity validator (agent-anchored — see note below)
 └── THIS FILE
 ```
+
+### Why some scripts remain at root (agent-anchoring)
+
+A few maintenance scripts and one handoff doc remain at the repository root
+rather than under `scripts/` or `docs/`. This is deliberate: the pi-agent
+subagent definitions in `.pi/agents/` and chain definitions in `.pi/chains/`
+reference these files by exact path, often with line-number citations
+(e.g. `rebuild_database.py:161-162`). Moving them would break those
+references. The files kept at root for this reason:
+
+- `rebuild_database.py` — cited by 5 agent files with line-specific instructions
+- `enrich_narratives.py` — the narratives agent runs it directly
+- `validate_database.py` — 6 agents reference it as the integrity check
+- `HANDOFF_PARTNER.md` — the map-ui agent and task4 chain build from it
+
+All other maintenance scripts live under `scripts/maintenance/`.
+
+### Where moved files went
+
+| Moved to | Files |
+|---|---|
+| `config/sql/` | `database_schema.sql`, `user_and_itinerary_schema.sql` (join existing migrations 001–004) |
+| `scripts/maintenance/` | `clean_master_list.py`, `dedup_variants.py`, `run_enrichment_pipeline.py`, `run_optimized_pipeline.py`, `validate_structure.py` |
+| `scripts/` | `cleo_cli.py` (CLI entry), `run_tests.py` (test runner) |
+| `docs/handoffs/` | `HANDOFF_TO_TEAM.md`, `HANDOFF_TO_NAZMY.md` |
 
 ---
 
@@ -166,9 +192,18 @@ See **[`docs/INDEX.md`](docs/INDEX.md)** for the full file-level navigation.
 - **Archived** 12 orphan probe scripts → `scripts/testing/archive/` (declutters active workspace, preserves reproducibility)
 - **Removed** stray tracked `.pyc` (`src/database/__pycache__/`) — bytecode should never be in git
 - **Removed** untracked regenerable logs/db (`enrichment_pipeline.log`, `rebuild_all.log`, `rebuild_report.json`, `voyo.db`)
-- **Untracked** stale `Voyo_First_Thesis_Draft.pdf` (early draft; canonical thesis is in `bachelor-thesis-ngu`)
+- **Untracked** stale `Voyo_First_Thesis_Draft.pdf` and `CSAI 490- PRD (1).pdf` (canonical thesis is in `bachelor-thesis-ngu`)
+- **Untracked** `cleo_test_results.json` (regenerable — tests recreate it fresh each run)
+- **Organized root directory** (24 → 12 tracked files):
+  - SQL schemas → `config/sql/`
+  - Orphan pipeline scripts → `scripts/maintenance/`
+  - CLI + test runner → `scripts/`
+  - Team/supervisor handoffs → `docs/handoffs/`
+  - Agent-anchored files kept at root (see "Why some scripts remain at root" above)
 - **Gitignored** thesis intermediate material (`thesis/LaTEX Chapters/`, source screenshots) — local reference only
-- **Verified** no regressions: 156 unit tests pass (3 pre-existing failures unchanged), Flutter 0 errors, all `src/` imports clean, `.pi/` byte-identical before/after
+- **Updated** 3 stale test print-strings and 1 src comment to reflect new paths
+- **Rewrote** `DOCUMENTATION_ORGANIZATION_SUMMARY.md` (was stale from 2026-05-20)
+- **Verified** no regressions: 156 unit tests pass (3 pre-existing failures unchanged), Flutter 0 errors/0 new warnings, all `src/` imports clean, `.pi/` byte-identical before/after (`5101eddb...`)
 
 ## Conventions maintained
 
