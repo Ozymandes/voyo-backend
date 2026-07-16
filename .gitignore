@@ -43,7 +43,7 @@ __pycache__/
 *.pyc
 
 # Local Claude settings
-.claude/settings.local.json
+.claude/
 
 # Local-only prompt documents (intended to stay untracked — pasted into fresh pi sessions,
 # not shared via the repo)
