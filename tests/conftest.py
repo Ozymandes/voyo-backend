@@ -31,7 +31,7 @@ def test_env():
         "test_mode": True,
         "groq_api_key": os.getenv("GROQ_API_KEY"),
         "supabase_url": os.getenv("SUPABASE_URL"),
-        "supabase_key": os.getenv("SUPABASE_SERVICE_KEY"),
+        "supabase_key": os.getenv("SUPABASE_SECRET_KEY"),
     }
 
 

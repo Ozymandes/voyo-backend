@@ -228,11 +228,11 @@ class SupabaseInserter:
 
     def __init__(self):
         self.supabase_url = os.getenv('SUPABASE_URL')
-        self.supabase_key = os.getenv('SUPABASE_SERVICE_KEY')
+        self.supabase_key = os.getenv('SUPABASE_SECRET_KEY')
 
         if not self.supabase_url or not self.supabase_key:
             logger.error("Supabase credentials not found")
-            raise ValueError("SUPABASE_URL and SUPABASE_SERVICE_KEY are required")
+            raise ValueError("SUPABASE_URL and SUPABASE_SECRET_KEY are required")
 
     def insert_poi(self, poi_data: Dict[str, Any]) -> bool:
         """Insert a single POI into Supabase"""

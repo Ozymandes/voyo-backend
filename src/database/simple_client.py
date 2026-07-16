@@ -20,8 +20,8 @@ class SimpleDatabaseClient:
         load_dotenv()
 
         self.supabase_url: str = os.getenv("SUPABASE_URL")
-        self.service_key: str = os.getenv("SUPABASE_SERVICE_KEY")
-        self.anon_key: str = os.getenv("SUPABASE_KEY")
+        self.service_key: str = os.getenv("SUPABASE_SECRET_KEY")
+        self.anon_key: str = os.getenv("SUPABASE_PUBLISHABLE_KEY")
 
         if not self.supabase_url or not self.service_key:
             raise ValueError("Missing required Supabase credentials in environment variables")

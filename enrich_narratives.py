@@ -5,7 +5,7 @@ and writes it to the `narrative` column in Supabase.
 
 Prerequisites:
     1. Run config/sql/002_add_narrative.sql in Supabase SQL editor.
-    2. Set env vars: GROQ_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+    2. Set env vars: GROQ_API_KEY, SUPABASE_URL, SUPABASE_SECRET_KEY
 
 Usage:
     python enrich_narratives.py               # enrich all unenriched POIs
@@ -39,7 +39,7 @@ load_dotenv()
 
 GROQ_API_KEY  = os.getenv('GROQ_API_KEY')
 SUPABASE_URL  = os.getenv('SUPABASE_URL')
-SUPABASE_KEY  = os.getenv('SUPABASE_SERVICE_ROLE_KEY') or os.getenv('SUPABASE_ANON_KEY')
+SUPABASE_KEY  = os.getenv('SUPABASE_SECRET_KEY')
 # The Tavily key is stored as SEARCH_API_KEY in .env (SEARCH_PROVIDER=tavily),
 # consistent with src/cleo/tools/web_search_tool.py. Fall back to the explicit
 # TAVILY_API_KEY name in case the operator sets it that way instead.
@@ -328,7 +328,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if not SUPABASE_URL or not SUPABASE_KEY:
-        sys.exit('Missing env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY')
+        sys.exit('Missing env vars: SUPABASE_URL, SUPABASE_SECRET_KEY')
     if USE_ZAI:
         if not Z_AI_API_KEY:
             sys.exit('USE_ZAI path selected but Z_AI_API_KEY missing in .env')

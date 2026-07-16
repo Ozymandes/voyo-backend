@@ -225,7 +225,7 @@ class OptimizedSupabaseInserter:
 
     def __init__(self, config: PipelineConfig):
         self.supabase_url = os.getenv('SUPABASE_URL')
-        self.supabase_key = os.getenv('SUPABASE_SERVICE_KEY')
+        self.supabase_key = os.getenv('SUPABASE_SECRET_KEY')
         self.config = config
 
         if not self.supabase_url or not self.supabase_key:

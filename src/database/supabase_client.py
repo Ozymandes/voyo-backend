@@ -20,8 +20,8 @@ class SupabaseClient:
     def __init__(self):
         """Initialize Supabase client with environment variables"""
         self.supabase_url: str = os.getenv("SUPABASE_URL")
-        self.supabase_key: str = os.getenv("SUPABASE_KEY")
-        self.supabase_service_key: str = os.getenv("SUPABASE_SERVICE_KEY")
+        self.supabase_key: str = os.getenv("SUPABASE_PUBLISHABLE_KEY")
+        self.supabase_service_key: str = os.getenv("SUPABASE_SECRET_KEY")
 
         if not self.supabase_url or not self.supabase_key:
             raise ValueError("Missing required Supabase credentials in environment variables")
