@@ -8,6 +8,7 @@ import logging
 from typing import Dict, Optional
 
 import jwt
+from jwt import PyJWKClient
 from fastapi import Depends, HTTPException, Header, status
 from dotenv import load_dotenv
 
@@ -15,12 +16,17 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-# Supabase issues JWTs signed with the project's JWT secret.
-# The secret lives in Supabase Dashboard → Settings → API → JWT Secret.
-_JWT_SECRET: Optional[str] = os.getenv("SUPABASE_JWT_SECRET")
-if not _JWT_SECRET:
+# Supabase signs auth JWTs with an asymmetric EC P-256 key (ES256); the
+# public keys are published at the project's JWKS endpoint. We verify
+# against those (no shared HS256 secret needed).
+_SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
+_JWKS_URL = f"{_SUPABASE_URL}/auth/v1/.well-known/jwks.json"
+_jwk_client = PyJWKClient(_JWKS_URL) if _SUPABASE_URL else None
+if _SUPABASE_URL:
+    logger.info("Verifying Supabase JWTs via JWKS (ES256): %s", _JWKS_URL)
+else:
     logger.warning(
-        "SUPABASE_JWT_SECRET is not set. "
+        "SUPABASE_URL is not set. "
         "Auth middleware will reject every request. "
         "Set it in .env for production use."
     )
@@ -43,29 +49,42 @@ class AuthUser(Dict):
 
 def _decode_supabase_jwt(token: str) -> Dict:
     """
-    Decode and verify a Supabase-issued JWT.
+    Decode and verify a Supabase-issued JWT (ES256, verified via JWKS).
 
-    Supabase uses HS256 (HMAC-SHA256) by default.  We verify:
-      • signature against the JWT secret
+    We verify:
+      • signature against the project's published EC P-256 public key
       • "exp" claim (expiration)
       • "aud" claim == "authenticated" (Supabase convention)
 
     Returns the full decoded payload dict.
     """
-    if not _JWT_SECRET:
+    if not _jwk_client:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail={
                 "error": "auth_not_configured",
-                "message": "Server auth is not configured (missing JWT secret).",
+                "message": "Server auth is not configured (missing SUPABASE_URL).",
+            },
+        )
+
+    # Resolve the ES256 signing key by the token's "kid" from the JWKS.
+    try:
+        signing_key = _jwk_client.get_signing_key_from_jwt(token).key
+    except Exception as exc:  # malformed token, unknown kid, or JWKS fetch error
+        logger.debug("JWT signing-key lookup error: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={
+                "error": "invalid_token",
+                "message": "Token is malformed or has an invalid signature.",
             },
         )
 
     try:
         payload: Dict = jwt.decode(
             token,
-            _JWT_SECRET,
-            algorithms=["HS256"],
+            signing_key,
+            algorithms=["ES256"],
             audience="authenticated",
             # Clock-skew tolerance: when the server host clock lags the
             # Supabase auth host by a few seconds, a freshly-issued token's
